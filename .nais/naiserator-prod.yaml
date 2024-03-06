@@ -1,0 +1,80 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: isfrisktilarbeid
+  namespace: teamsykefravr
+  labels:
+    team: teamsykefravr
+spec:
+  image: { { image } }
+  port: 8080
+  replicas:
+    min: 2
+    max: 4
+    cpuThresholdPercentage: 70
+  startup:
+    path: /internal/is_ready
+    periodSeconds: 5
+    timeout: 5
+    failureThreshold: 30
+  liveness:
+    path: /internal/is_alive
+    periodSeconds: 5
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /internal/is_ready
+    periodSeconds: 5
+    timeout: 5
+    failureThreshold: 3
+  leaderElection: true
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  resources:
+    limits:
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 384Mi
+  accessPolicy:
+    inbound:
+      rules:
+        - application: syfomodiaperson
+    outbound:
+      external:
+        - host: "login.microsoftonline.com"
+        - host: "pdl-api.prod-fss-pub.nais.io"
+        - host: "dokarkiv.prod-fss-pub.nais.io"
+      rules:
+        - application: istilgangskontroll
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_15
+        databases:
+          - name: isfrisktilarbeid-db
+        diskAutoresize: true
+  azure:
+    application:
+      allowAllUsers: true
+      enabled: true
+      claims:
+        extra:
+          - "NAVident"
+  kafka:
+    pool: nav-prod
+  env:
+    - name: KTOR_ENV
+      value: "production"
+    - name: ISTILGANGSKONTROLL_CLIENT_ID
+      value: "prod-gcp.teamsykefravr.istilgangskontroll"
+    - name: ISTILGANGSKONTROLL_URL
+      value: "http://istilgangskontroll"
+    - name: PDL_CLIENT_ID
+      value: "prod-fss.pdl.pdl-api"
+    - name: PDL_URL
+      value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
+    - name: DOKARKIV_CLIENT_ID
+      value: "prod-fss.teamdokumenthandtering.dokarkiv"
+    - name: DOKARKIV_URL
+      value: "https://dokarkiv.prod-fss-pub.nais.io"
