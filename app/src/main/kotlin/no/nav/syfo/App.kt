@@ -10,6 +10,8 @@ import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
+import no.nav.syfo.infrastructure.database.applicationDatabase
+import no.nav.syfo.infrastructure.database.databaseModule
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -43,10 +45,14 @@ fun main() {
                 port = applicationPort
             }
             module {
+                databaseModule(
+                    databaseEnvironment = environment.database,
+                )
                 apiModule(
                     applicationState = applicationState,
                     environment = environment,
                     wellKnownInternalAzureAD = wellKnownInternalAzureAD,
+                    database = applicationDatabase,
                     veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 )
             }
