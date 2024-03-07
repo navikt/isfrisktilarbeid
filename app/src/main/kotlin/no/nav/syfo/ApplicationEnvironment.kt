@@ -30,8 +30,8 @@ data class Environment(
                 clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID")
             ),
             pdl = ClientEnvironment(
-                baseUrl = getEnvVar("PDL_CLIENT_ID"),
-                clientId = getEnvVar("PDL_URL"),
+                baseUrl = getEnvVar("PDL_URL"),
+                clientId = getEnvVar("PDL_CLIENT_ID"),
             ),
         ),
 )
