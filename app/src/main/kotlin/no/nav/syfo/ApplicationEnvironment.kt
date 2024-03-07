@@ -23,6 +23,10 @@ data class Environment(
                 baseUrl = getEnvVar("DOKARKIV_URL"),
                 clientId = getEnvVar("DOKARKIV_CLIENT_ID"),
             ),
+            pdl = ClientEnvironment(
+                baseUrl = getEnvVar("PDL_URL"),
+                clientId = getEnvVar("PDL_CLIENT_ID"),
+            ),
         ),
     val publishForhandsvarselEnabled: Boolean = getEnvVar("TOGGLE_PUBLISH_FORHANDSVARSEL").toBoolean()
 )
