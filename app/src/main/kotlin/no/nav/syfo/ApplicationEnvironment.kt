@@ -3,8 +3,18 @@ package no.nav.syfo
 import no.nav.syfo.infrastructure.ClientEnvironment
 import no.nav.syfo.infrastructure.ClientsEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
+import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+
+const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISFRISKTILARBEID_ISFRISKTILARBEID_DB"
 
 data class Environment(
+    val database: DatabaseEnvironment = DatabaseEnvironment(
+        host = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_HOST"),
+        port = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PORT"),
+        name = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_DATABASE"),
+        username = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_USERNAME"),
+        password = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PASSWORD"),
+    ),
     val azure: AzureEnvironment =
         AzureEnvironment(
             appClientId = getEnvVar("AZURE_APP_CLIENT_ID"),
