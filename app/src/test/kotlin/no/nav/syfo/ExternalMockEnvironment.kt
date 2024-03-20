@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.TestDatabase
@@ -24,6 +25,10 @@ class ExternalMockEnvironment private constructor() {
     val wellKnownInternalAzureAD = wellKnownInternalAzureAD()
     val azureAdClient = AzureAdClient(
         azureEnvironment = environment.azure,
+        httpClient = mockHttpClient,
+    )
+    val pdfgenClient = PdfGenClient(
+        pdfGenBaseUrl = environment.clients.ispdfgen.baseUrl,
         httpClient = mockHttpClient,
     )
     val pdlClient = PdlClient(

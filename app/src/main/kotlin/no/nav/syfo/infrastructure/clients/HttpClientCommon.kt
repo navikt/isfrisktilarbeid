@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure
+package no.nav.syfo.infrastructure.clients
 
 import io.ktor.client.*
 import io.ktor.client.engine.*

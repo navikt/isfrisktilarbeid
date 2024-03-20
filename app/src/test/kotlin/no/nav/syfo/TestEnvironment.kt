@@ -1,7 +1,8 @@
 package no.nav.syfo
 
-import no.nav.syfo.infrastructure.ClientEnvironment
-import no.nav.syfo.infrastructure.ClientsEnvironment
+import no.nav.syfo.infrastructure.clients.ClientEnvironment
+import no.nav.syfo.infrastructure.clients.ClientsEnvironment
+import no.nav.syfo.infrastructure.clients.OpenClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
 
@@ -9,13 +10,13 @@ fun testEnvironment() = Environment(
     database = DatabaseEnvironment(
         host = "localhost",
         port = "5432",
-        name = "isaktivitetskrav_dev",
+        name = "isfrisktilarbeid_dev",
         username = "username",
         password = "password",
     ),
     azure = AzureEnvironment(
-        appClientId = "isarbeidsuforhet-client-id",
-        appClientSecret = "isarbeidsuforhet-secret",
+        appClientId = "isfrisktilarbeid-client-id",
+        appClientSecret = "isfrisktilarbeid-secret",
         appWellKnownUrl = "wellknown",
         openidConfigTokenEndpoint = "azureOpenIdTokenEndpoint",
     ),
@@ -27,6 +28,9 @@ fun testEnvironment() = Environment(
         pdl = ClientEnvironment(
             baseUrl = "pdlUrl",
             clientId = "pdlClientId",
+        ),
+        ispdfgen = OpenClientEnvironment(
+            baseUrl = "ispdfgenurl"
         ),
     ),
     electorPath = "electorPath",
