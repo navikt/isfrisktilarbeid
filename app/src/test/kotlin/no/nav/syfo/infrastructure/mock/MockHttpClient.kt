@@ -3,7 +3,7 @@ package no.nav.syfo.infrastructure.mock
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import no.nav.syfo.Environment
-import no.nav.syfo.infrastructure.commonConfig
+import no.nav.syfo.infrastructure.clients.commonConfig
 
 fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
     commonConfig()
@@ -13,6 +13,9 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
             when {
                 requestUrl == "/${environment.azure.openidConfigTokenEndpoint}" -> azureAdMockResponse()
                 requestUrl.startsWith("/${environment.clients.istilgangskontroll.baseUrl}") -> tilgangskontrollResponse(
+                    request
+                )
+                requestUrl.startsWith("/${environment.clients.ispdfgen.baseUrl}") -> pdfGenMockResponse(
                     request
                 )
 

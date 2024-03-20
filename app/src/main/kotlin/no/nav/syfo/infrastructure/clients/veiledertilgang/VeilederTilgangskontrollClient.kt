@@ -10,7 +10,9 @@ import io.micrometer.core.instrument.Counter
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.*
+import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.httpClientDefault
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import org.slf4j.LoggerFactory

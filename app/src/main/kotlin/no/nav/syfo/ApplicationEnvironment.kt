@@ -1,7 +1,8 @@
 package no.nav.syfo
 
-import no.nav.syfo.infrastructure.ClientEnvironment
-import no.nav.syfo.infrastructure.ClientsEnvironment
+import no.nav.syfo.infrastructure.clients.ClientEnvironment
+import no.nav.syfo.infrastructure.clients.ClientsEnvironment
+import no.nav.syfo.infrastructure.clients.OpenClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
 
@@ -28,6 +29,9 @@ data class Environment(
             istilgangskontroll = ClientEnvironment(
                 baseUrl = getEnvVar("ISTILGANGSKONTROLL_URL"),
                 clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID")
+            ),
+            ispdfgen = OpenClientEnvironment(
+                baseUrl = "http://ispdfgen"
             ),
             pdl = ClientEnvironment(
                 baseUrl = getEnvVar("PDL_URL"),
