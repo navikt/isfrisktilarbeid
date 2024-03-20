@@ -13,6 +13,7 @@ object Version {
     const val MICROMETER_REGISTRY = "1.12.2"
     const val JACKSON_DATATYPE = "2.16.1"
     const val KTOR = "2.3.8"
+    const val MQ = "9.3.5.0"
     const val SPEK = "2.0.19"
     const val MOCKK = "1.13.9"
     const val NIMBUS_JOSE_JWT = "9.37.3"
@@ -59,6 +60,9 @@ dependencies {
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Version.JACKSON_DATATYPE}")
+
+    // MQ
+    implementation("com.ibm.mq:com.ibm.mq.allclient:${Version.MQ}")
 
     // Tests
     testImplementation("io.ktor:ktor-server-tests:${Version.KTOR}")
