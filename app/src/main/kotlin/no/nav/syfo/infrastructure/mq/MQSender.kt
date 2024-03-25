@@ -1,7 +1,9 @@
 package no.nav.syfo.application.mq
 
+import io.micrometer.core.instrument.Counter
 import no.nav.syfo.Environment
-import no.nav.syfo.infrastructure.mq.COUNT_MQ_PRODUCER_MESSAGE_SENT
+import no.nav.syfo.infrastructure.metric.METRICS_NS
+import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.jms.JMSContext
@@ -26,6 +28,18 @@ class MQSender(private val env: Environment) {
             val message = context.createTextMessage(payload)
             context.createProducer().send(destination, message)
         }
-        COUNT_MQ_PRODUCER_MESSAGE_SENT.increment()
+        Metrics.COUNT_MQ_PRODUCER_MESSAGE_SENT.increment()
+    }
+}
+
+private class Metrics {
+    companion object {
+        const val MQ_PRODUCER_BASE = "${METRICS_NS}_mq_producer"
+        const val MQ_PRODUCER_MESSAGE_SENT = "${MQ_PRODUCER_BASE}_sent"
+
+        val COUNT_MQ_PRODUCER_MESSAGE_SENT: Counter =
+            Counter.builder(MQ_PRODUCER_MESSAGE_SENT)
+                .description("Counts the number of messages sent to Infotrygd via MQ")
+                .register(METRICS_REGISTRY)
     }
 }
