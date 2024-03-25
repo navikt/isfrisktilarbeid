@@ -43,6 +43,9 @@ spec:
         - application: syfomodiaperson
     outbound:
       external:
+        - host: "mpls02.adeo.no"
+          ports:
+            - port: 1413
         - host: "login.microsoftonline.com"
         - host: "pdl-api.prod-fss-pub.nais.io"
         - host: "dokarkiv.prod-fss-pub.nais.io"
@@ -62,11 +65,23 @@ spec:
       claims:
         extra:
           - "NAVident"
+  envFrom:
+    - secret: isfrisktilarbeid-serviceuser
   kafka:
     pool: nav-prod
   env:
     - name: KTOR_ENV
       value: "production"
+    - name: MQGATEWAY_NAME
+      value: "MPLS02"
+    - name: MQGATEWAY_HOSTNAME
+      value: "mpls02.adeo.no"
+    - name: MQGATEWAY_PORT
+      value: "1414"
+    - name: MQGATEWAY_CHANNEL_NAME
+      value: "P_ISFRISKTILARBEID"
+    - name: MQ_QUEUE_NAME
+      value: "QA.P_278.IT00_N2_MLD_FRA_ARENA"
     - name: ISTILGANGSKONTROLL_CLIENT_ID
       value: "prod-gcp.teamsykefravr.istilgangskontroll"
     - name: ISTILGANGSKONTROLL_URL

@@ -5,6 +5,7 @@ import no.nav.syfo.infrastructure.clients.ClientsEnvironment
 import no.nav.syfo.infrastructure.clients.OpenClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+import no.nav.syfo.infrastructure.mq.MQEnvironment
 
 fun testEnvironment() = Environment(
     database = DatabaseEnvironment(
@@ -32,6 +33,15 @@ fun testEnvironment() = Environment(
         ispdfgen = OpenClientEnvironment(
             baseUrl = "ispdfgenurl"
         ),
+    ),
+    mq = MQEnvironment(
+        mqQueueManager = "mqQueueManager",
+        mqHostname = "mqHostname",
+        mqPort = 1414,
+        mqChannelName = "mqChannelName",
+        mqQueueName = "mqQueueName",
+        serviceuserUsername = "serviceuser",
+        serviceuserPassword = "servicepw",
     ),
     electorPath = "electorPath",
 )
