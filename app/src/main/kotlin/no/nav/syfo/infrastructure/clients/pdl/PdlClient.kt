@@ -6,7 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.micrometer.core.instrument.Counter
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
@@ -22,7 +22,7 @@ class PdlClient(
     private val httpClient: HttpClient = httpClientDefault(),
 ) {
 
-    suspend fun getPerson(personident: PersonIdent): PdlPerson {
+    suspend fun getPerson(personident: Personident): PdlPerson {
         val token = azureAdClient.getSystemToken(pdlEnvironment.clientId)
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
         val request = PdlHentPersonRequest(getPdlQuery(), PdlHentPersonRequestVariables(personident.value))
