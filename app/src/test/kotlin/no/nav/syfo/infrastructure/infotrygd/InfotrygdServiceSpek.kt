@@ -12,7 +12,7 @@ import org.spekframework.spek2.style.specification.describe
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.Month
 
 class InfotrygdServiceSpek : Spek({
@@ -26,14 +26,14 @@ class InfotrygdServiceSpek : Spek({
 
     describe(InfotrygdService::class.java.simpleName) {
         it("sends message to MQ") {
-            val date = LocalDate.of(2024, Month.MARCH, 1)
+            val now = LocalDateTime.of(2024, Month.MARCH, 1, 12, 30, 23)
             infotrygdService.sendMessageToInfotrygd(
                 personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
                 veilederId = "A123456",
                 navKontor = "0219",
-                datoNow = date,
-                datoFra = date,
-                datoTil = date.plusDays(30),
+                now = now,
+                datoFra = now.toLocalDate(),
+                datoTil = now.toLocalDate().plusDays(30),
             )
             val payloadSlot = slot<String>()
             verify(exactly = 1) {

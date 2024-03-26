@@ -6,6 +6,8 @@ import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.mq.JAXB
 import java.math.BigInteger
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.xml.datatype.DatatypeFactory
 
 class InfotrygdService(
@@ -17,7 +19,7 @@ class InfotrygdService(
         personident: PersonIdent,
         veilederId: String,
         navKontor: String,
-        datoNow: LocalDate,
+        now: LocalDateTime,
         datoFra: LocalDate,
         datoTil: LocalDate,
     ) {
@@ -29,8 +31,9 @@ class InfotrygdService(
         infotrygdHeader.kilde = "MODIA"
         infotrygdHeader.brukerId = veilederId
         infotrygdHeader.dato = dataTypeFactory.newXMLGregorianCalendar(
-            datoNow.toString()
+            now.toLocalDate().toString()
         )
+        infotrygdHeader.klokke = timeFormatter.format(now)
         infotrygdHeader.navKontor = navKontor
         infotrygdHeader.fnr = personident.value
         infotrygdHeader.meldKode = "O"
@@ -42,6 +45,7 @@ class InfotrygdService(
         headerTekstlinjer.copyId = "K278M840"
 
         val meldingsspesFelt = objectFactory.createMeldingsspesFelt()
+        meldingsspesFelt.meldVersjon = BigInteger.ONE
         meldingsspesFelt.meldId = "MA-TSP-1"
         val meldingdataMATSP1 = objectFactory.createMeldingsdataMATSP1()
         meldingdataMATSP1.aktType = "FA"
@@ -67,5 +71,9 @@ class InfotrygdService(
             queueName = mqQueueName,
             payload = payload,
         )
+    }
+
+    companion object {
+        val timeFormatter = DateTimeFormatter.ofPattern("HHmmss")
     }
 }
