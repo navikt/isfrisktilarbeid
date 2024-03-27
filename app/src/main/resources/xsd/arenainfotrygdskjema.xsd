@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp1 (http://www.altova.com) by Anne Vold Torland (Aetat Arbeidsdirektoratet) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ai="http://www.aetat.no/arena/arenainfotrygdskjema.xsd" targetNamespace="http://www.aetat.no/arena/arenainfotrygdskjema.xsd" elementFormDefault="qualified" attributeFormDefault="unqualified">
+        <xs:element name="Infotrygd">
+                <xs:complexType>
+                        <xs:sequence>
+                                <!-- Mulige rot-elementer i et svar -->
+                                <xs:element name="Header" type="ai:Header"/>
+                                <xs:element name="HeaderMeldingsdata" type="ai:HeaderMeldingsdata"/>
+                                <xs:element name="MeldingsspesFelt" type="ai:MeldingsspesFelt"/>
+                                <xs:element name="HeaderTekstlinjer" type="ai:HeaderTekstlinjer"/>
+                                <xs:element name="Tekstlinje" type="ai:Tekstlinje" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                </xs:complexType>
+        </xs:element>
+        <!-- Komplekse typer med datastruktur -->
+        <xs:complexType name="Header">
+                <xs:all>
+                        <xs:element name="CopyId" type="xs:string" minOccurs="0"/>
+                        <xs:element name="Aksjon" type="xs:string" minOccurs="0"/>
+                        <xs:element name="Kilde" type="xs:string" minOccurs="0"/>
+                        <xs:element name="BrukerId" type="xs:string" minOccurs="0"/>
+                        <xs:element name="Dato" type="xs:date" minOccurs="0"/>
+                        <xs:element name="Klokke" type="xs:string" minOccurs="0"/>
+                        <xs:element name="NAVKontor" type="xs:string" minOccurs="0"/>
+                        <xs:element name="Fnr" type="xs:string" minOccurs="0"/>
+                        <xs:element name="SpesRolle" type="xs:string" minOccurs="0"/>
+                        <xs:element name="NAVAnsatt" type="xs:string" minOccurs="0"/>
+                        <xs:element name="Ytelse" type="xs:string" minOccurs="0"/>
+                        <xs:element name="MeldKode" type="xs:string" minOccurs="0"/>
+                        <xs:element name="Uaktuell" type="xs:string" minOccurs="0"/>
+                </xs:all>
+                <xs:attribute name="mlen" type="xs:integer"/>
+        </xs:complexType>
+        <xs:complexType name="HeaderMeldingsdata">
+                <xs:all>
+                        <xs:element name="CopyId" type="xs:string" minOccurs="0"/>
+                </xs:all>
+                <xs:attribute name="antall" type="xs:integer"/>
+        </xs:complexType>
+        <xs:complexType name="MeldingsspesFelt">
+                <xs:all>
+                        <xs:element name="MeldId" type="xs:string" minOccurs="0"/>
+                        <xs:element name="Meldingsdata" type="ai:Meldingsdata" minOccurs="0"/>
+                </xs:all>
+                <xs:attribute name="meldVersjon" type="xs:integer"/>
+        </xs:complexType>
+        <xs:complexType name="Meldingsdata">
+                <xs:all>
+                        <xs:element name="MA-STD-1" minOccurs="0">
+                                <xs:complexType>
+                                        <xs:all>
+                                                <xs:element name="StatusTekst" type="xs:string" minOccurs="0"/>
+                                                <xs:element name="OppfolgTekst" type="xs:string" minOccurs="0"/>
+                                                <xs:element name="Filler" type="xs:string" minOccurs="0"/>
+                                        </xs:all>
+                                </xs:complexType>
+                        </xs:element>
+                        <xs:element name="MA-MAN-1" minOccurs="0">
+                                <xs:complexType>
+                                        <xs:all>
+                                                <xs:element name="Filler" type="xs:string" minOccurs="0"/>
+                                        </xs:all>
+                                </xs:complexType>
+                        </xs:element>
+                        <xs:element name="MA-TSP-1" minOccurs="0">
+                                <xs:complexType>
+                                        <xs:all>
+                                                <xs:element name="AktType" type="xs:string" minOccurs="0"/>
+                                                <xs:element name="DatoTil" type="xs:date" minOccurs="0"/>
+                                                <xs:element name="DatoFra" type="xs:date" minOccurs="0"/>
+                                                <xs:element name="DatoForleng" type="xs:date" minOccurs="0"/>
+                                                <xs:element name="Filler" type="xs:string" minOccurs="0"/>
+                                        </xs:all>
+                                </xs:complexType>
+                        </xs:element>
+                        <xs:element name="MA-UAK-1" minOccurs="0">
+                                <xs:complexType>
+                                        <xs:all>
+                                                <xs:element name="Unntakskode" type="xs:string" minOccurs="0"/>
+                                                <xs:element name="IdentDato" type="xs:date" minOccurs="0"/>
+                                                <xs:element name="Filler" type="xs:string" minOccurs="0"/>
+                                        </xs:all>
+                                </xs:complexType>
+                        </xs:element>
+                        <xs:element name="M-MMV-1" minOccurs="0">
+                                <xs:complexType>
+                                        <xs:all>
+                                                <xs:element name="IdentDato" type="xs:date" minOccurs="0"/>
+                                                <xs:element name="Filler" type="xs:string" minOccurs="0"/>
+                                        </xs:all>
+                                </xs:complexType>
+                        </xs:element>
+                        <xs:element name="M-MMV-2" minOccurs="0">
+                                <xs:complexType>
+                                        <xs:all>
+                                                <xs:element name="IdentDato" type="xs:date" minOccurs="0"/>
+                                                <xs:element name="Filler" type="xs:string" minOccurs="0"/>
+                                        </xs:all>
+                                </xs:complexType>
+                        </xs:element>
+                </xs:all>
+        </xs:complexType>
+        <xs:complexType name="HeaderTekstlinjer">
+                <xs:all>
+                        <xs:element name="CopyId" type="xs:string" minOccurs="0"/>
+                </xs:all>
+                <xs:attribute name="antall" type="xs:integer"/>
+        </xs:complexType>
+        <xs:complexType name="Tekstlinje">
+                <xs:all>
+                        <xs:element name="Linje" type="xs:string" minOccurs="0"/>
+                </xs:all>
+        </xs:complexType>
+</xs:schema>
