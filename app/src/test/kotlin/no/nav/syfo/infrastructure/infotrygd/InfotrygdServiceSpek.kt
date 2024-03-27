@@ -29,7 +29,7 @@ class InfotrygdServiceSpek : Spek({
             val now = LocalDateTime.of(2024, Month.MARCH, 1, 12, 30, 23)
             infotrygdService.sendMessageToInfotrygd(
                 personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                veilederId = "A123456",
+                veilederident = "A123456",
                 navKontor = "0219",
                 now = now,
                 datoFra = now.toLocalDate(),

@@ -17,7 +17,7 @@ class InfotrygdService(
 
     fun sendMessageToInfotrygd(
         personident: PersonIdent,
-        veilederId: String,
+        veilederident: String,
         navKontor: String,
         now: LocalDateTime,
         datoFra: LocalDate,
@@ -29,7 +29,7 @@ class InfotrygdService(
         infotrygdHeader.copyId = "K278M810"
         infotrygdHeader.aksjon = "SENDMELDING"
         infotrygdHeader.kilde = "MODIA"
-        infotrygdHeader.brukerId = veilederId
+        infotrygdHeader.brukerId = veilederident
         infotrygdHeader.dato = dataTypeFactory.newXMLGregorianCalendar(
             now.toLocalDate().toString()
         )
