@@ -5,7 +5,7 @@ import io.ktor.server.auth.*
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.getBearerHeader
 import no.nav.syfo.util.getCallId
-import no.nav.syfo.util.getPersonIdent
+import no.nav.syfo.util.getPersonident
 
 class VeilederTilgangskontrollPluginConfig {
     lateinit var action: String
@@ -27,7 +27,7 @@ val VeilederTilgangskontrollPlugin = createRouteScopedPlugin(
 
             else -> {
                 val callId = call.getCallId()
-                val personIdent = call.getPersonIdent()
+                val personIdent = call.getPersonident()
                     ?: throw IllegalArgumentException("Failed to $action: No $NAV_PERSONIDENT_HEADER supplied in request header")
                 val token = call.getBearerHeader()
                     ?: throw IllegalArgumentException("Failed to complete the following action: $action. No Authorization header supplied")

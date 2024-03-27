@@ -8,7 +8,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.micrometer.core.instrument.Counter
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.*
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
@@ -26,7 +26,7 @@ class VeilederTilgangskontrollClient(
 
     suspend fun hasAccess(
         callId: String,
-        personIdent: PersonIdent,
+        personIdent: Personident,
         token: String
     ): Boolean {
         val onBehalfOfToken =

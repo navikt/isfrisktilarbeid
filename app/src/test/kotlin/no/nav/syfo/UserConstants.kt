@@ -1,14 +1,14 @@
 package no.nav.syfo
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import java.util.*
 
 object UserConstants {
-    val ARBEIDSTAKER_PERSONIDENT = PersonIdent("12345678910")
-    val ARBEIDSTAKER_PERSONIDENT_VEILEDER_NO_ACCESS = PersonIdent("11111111111")
-    val ARBEIDSTAKER_PERSONIDENT_NAME_WITH_DASH = PersonIdent("11111111234")
-    val ARBEIDSTAKER_PERSONIDENT_NO_NAME = PersonIdent("11111111222")
-    val ARBEIDSTAKER_PERSONIDENT_PDL_FAILS = PersonIdent("11111111666")
+    val ARBEIDSTAKER_PERSONIDENT = Personident("12345678910")
+    val ARBEIDSTAKER_PERSONIDENT_VEILEDER_NO_ACCESS = Personident("11111111111")
+    val ARBEIDSTAKER_PERSONIDENT_NAME_WITH_DASH = Personident("11111111234")
+    val ARBEIDSTAKER_PERSONIDENT_NO_NAME = Personident("11111111222")
+    val ARBEIDSTAKER_PERSONIDENT_PDL_FAILS = Personident("11111111666")
 
     val PDF_VEDTAK = byteArrayOf(0x2E, 0x28)
     const val VEILEDER_IDENT = "Z999999"
