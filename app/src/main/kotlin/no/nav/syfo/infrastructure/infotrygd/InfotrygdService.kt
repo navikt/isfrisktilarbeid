@@ -2,7 +2,7 @@ package no.nav.syfo.infrastructure.infotrygd
 
 import no.aetat.arena.arenainfotrygdskjema.ObjectFactory
 import no.nav.syfo.application.mq.MQSender
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.mq.JAXB
 import java.math.BigInteger
 import java.time.LocalDate
@@ -16,7 +16,7 @@ class InfotrygdService(
 ) {
 
     fun sendMessageToInfotrygd(
-        personident: PersonIdent,
+        personident: Personident,
         veilederident: String,
         navKontor: String,
         now: LocalDateTime,
