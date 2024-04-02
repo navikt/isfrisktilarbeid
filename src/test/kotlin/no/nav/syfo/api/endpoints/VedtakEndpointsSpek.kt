@@ -3,10 +3,12 @@ package no.nav.syfo.api.endpoints
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.VedtakRequestDTO
+import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
@@ -42,17 +44,20 @@ object VedtakEndpointsSpek : Spek({
                 fritekst = begrunnelse,
                 header = "Vedtak"
             )
+            val vedtakFom = LocalDate.now()
+            val vedtakTom = LocalDate.now().plusWeeks(12)
             val vedtakRequestDTO = VedtakRequestDTO(
                 document = vedtakDocument,
                 begrunnelse = begrunnelse,
-                fom = LocalDate.now(),
-                tom = LocalDate.now().plusWeeks(12),
+                fom = vedtakFom,
+                tom = vedtakTom,
                 behandlerRef = UUID.randomUUID(),
                 behandlerDocument = generateDocumentComponent("Til orientering", header = "Informasjon om vedtak"),
             )
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
+                vedtakRepository = mockk(relaxed = true),
             )
 
             beforeEachTest {
@@ -71,9 +76,19 @@ object VedtakEndpointsSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Created
+
+                            val vedtakResponse = objectMapper.readValue(response.content, VedtakResponseDTO::class.java)
+
+                            vedtakResponse.begrunnelse shouldBeEqualTo begrunnelse
+                            vedtakResponse.document shouldBeEqualTo vedtakDocument
+                            vedtakResponse.fom shouldBeEqualTo vedtakFom
+                            vedtakResponse.tom shouldBeEqualTo vedtakTom
+                            vedtakResponse.personident shouldBeEqualTo personIdent
+                            vedtakResponse.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
                         }
                     }
                 }
+
                 describe("Unhappy path") {
                     it("Throws error when document is empty") {
                         val vedtakWithoutDocument = vedtakRequestDTO.copy(document = emptyList())

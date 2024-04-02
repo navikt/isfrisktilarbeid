@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.clients.pdfgen
 
 import no.nav.syfo.domain.DocumentComponent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.sanitizeForPdfGen
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -24,11 +25,11 @@ sealed class PdfModel private constructor(
     )
 
     class VedtakPdfModel(
-        mottakerFodselsnummer: String,
+        mottakerFodselsnummer: Personident,
         mottakerNavn: String,
         documentComponents: List<DocumentComponent>,
     ) : PdfModel(
-        mottakerFodselsnummer = mottakerFodselsnummer,
+        mottakerFodselsnummer = mottakerFodselsnummer.value,
         mottakerNavn = mottakerNavn,
         documentComponents = documentComponents,
     )
