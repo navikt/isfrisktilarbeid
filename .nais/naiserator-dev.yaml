@@ -43,7 +43,7 @@ spec:
         - application: syfomodiaperson
     outbound:
       external:
-        - host: "b27apvl220.preprod.local"
+        - host: "mqls02.preprod.local"
           ports:
             - port: 1413
         - host: "login.microsoftonline.com"
@@ -75,7 +75,7 @@ spec:
     - name: MQGATEWAY_NAME
       value: "MQLS02"
     - name: MQGATEWAY_HOSTNAME
-      value: "b27apvl220.preprod.local"
+      value: "mqls02.preprod.local"
     - name: MQGATEWAY_PORT
       value: "1413"
     - name: MQGATEWAY_CHANNEL_NAME
