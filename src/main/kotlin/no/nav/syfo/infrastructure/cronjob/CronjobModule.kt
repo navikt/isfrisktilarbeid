@@ -25,10 +25,14 @@ fun launchCronjobs(
     )
     val cronjobs = mutableListOf<Cronjob>()
 
+    log.info("Creating MQSender")
+    val mqSender = MQSender(environment.mq)
+
+    log.info("Creating Cronjob")
     val sendTestMessageCronjob = SendTestMessageCronjob(
         infotrygdService = InfotrygdService(
             mqQueueName = environment.mq.mqQueueName,
-            mqSender = MQSender(environment.mq),
+            mqSender = mqSender,
         ),
         testIdent = environment.testident,
     )
