@@ -7,6 +7,9 @@ import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.launchBackgroundTask
+import org.slf4j.LoggerFactory
+
+private val log = LoggerFactory.getLogger(CronjobRunner::class.java)
 
 fun launchCronjobs(
     applicationState: ApplicationState,
@@ -38,6 +41,7 @@ fun launchCronjobs(
     cronjobs.add(journalforVedtakCronjob)
 
     cronjobs.forEach {
+        log.info("Launching cronjob: $it")
         launchBackgroundTask(
             applicationState = applicationState,
         ) {
