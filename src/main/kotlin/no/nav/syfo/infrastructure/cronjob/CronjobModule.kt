@@ -2,8 +2,10 @@ package no.nav.syfo.infrastructure.cronjob
 
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
-import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.leaderelection.LeaderPodClient
+import no.nav.syfo.application.VedtakService
+import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
+import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.launchBackgroundTask
 
 fun launchCronjobs(
@@ -19,6 +21,15 @@ fun launchCronjobs(
         leaderPodClient = leaderPodClient,
     )
     val cronjobs = mutableListOf<Cronjob>()
+
+    val sendTestMessageCronjob = SendTestMessageCronjob(
+        infotrygdService = InfotrygdService(
+            mqQueueName = environment.mq.mqQueueName,
+            mqSender = MQSender(environment.mq),
+        ),
+        testIdent = environment.testident,
+    )
+    cronjobs.add(sendTestMessageCronjob)
 
     val publishMQCronjob = PublishMQCronjob(vedtakService)
     cronjobs.add(publishMQCronjob)

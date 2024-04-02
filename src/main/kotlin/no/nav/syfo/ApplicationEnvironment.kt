@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.ClientsEnvironment
 import no.nav.syfo.infrastructure.clients.OpenClientEnvironment
@@ -34,6 +35,7 @@ data class Environment(
             serviceuserUsername = getEnvVar("SERVICEUSER_USERNAME"),
             serviceuserPassword = getEnvVar("SERVICEUSER_PASSWORD"),
         ),
+    val testident: Personident = Personident(getEnvVar("TEST_IDENT")),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val clients: ClientsEnvironment =
         ClientsEnvironment(
