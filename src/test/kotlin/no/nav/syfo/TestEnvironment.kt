@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.ClientsEnvironment
 import no.nav.syfo.infrastructure.clients.OpenClientEnvironment
@@ -48,6 +49,7 @@ fun testEnvironment() = Environment(
         serviceuserPassword = "servicepw",
     ),
     electorPath = "electorPath",
+    testident = Personident("01010112345"),
 )
 
 fun testAppState() = ApplicationState(

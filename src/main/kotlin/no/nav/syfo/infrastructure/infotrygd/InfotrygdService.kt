@@ -4,6 +4,7 @@ import no.aetat.arena.arenainfotrygdskjema.ObjectFactory
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.mq.JAXB
 import no.nav.syfo.infrastructure.mq.MQSender
+import org.slf4j.LoggerFactory
 import java.math.BigInteger
 import java.time.format.DateTimeFormatter
 import javax.xml.datatype.DatatypeFactory
@@ -27,7 +28,7 @@ class InfotrygdService(
             vedtak.createdAt.toLocalDate().toString()
         )
         infotrygdHeader.klokke = timeFormatter.format(vedtak.createdAt)
-        infotrygdHeader.navKontor = "" // TODO
+        infotrygdHeader.navKontor = "0315" // TODO
         infotrygdHeader.fnr = vedtak.personident.value
         infotrygdHeader.meldKode = "O"
         val infotygdHeaderMeldingsdata = objectFactory.createHeaderMeldingsdata()
@@ -59,6 +60,7 @@ class InfotrygdService(
         infotrygdMessage.meldingsspesFelt = meldingsspesFelt
 
         val payload = JAXB.marshallInfotrygd(infotrygdMessage)
+        log.info(payload)
 
         mqSender.sendToMQ(
             queueName = mqQueueName,
@@ -68,5 +70,6 @@ class InfotrygdService(
 
     companion object {
         val timeFormatter = DateTimeFormatter.ofPattern("HHmmss")
+        private val log = LoggerFactory.getLogger(InfotrygdService::class.java)
     }
 }
