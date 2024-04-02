@@ -21,13 +21,23 @@ class PdfGenClient(
 
     suspend fun createVedtakPdf(
         callId: String,
-        payload: Any, // TODO: Replace with actual payload
+        payload: PdfModel.VedtakPdfModel,
     ): ByteArray =
         getPdf(
             callId = callId,
             payload = payload,
             pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$VEDTAK_PATH"
         ) ?: throw RuntimeException("Failed to request pdf for vedtak, callId: $callId")
+
+    suspend fun createBehandlerPdf(
+        callId: String,
+        payload: PdfModel.BehandlerMeldingPdfModel,
+    ): ByteArray =
+        getPdf(
+            callId = callId,
+            payload = payload,
+            pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$MELDING_BEHANDLER_PATH"
+        ) ?: throw RuntimeException("Failed to request pdf for melding til behandler, callId: $callId")
 
     private suspend inline fun <reified Payload> getPdf(
         callId: String,
@@ -67,6 +77,7 @@ class PdfGenClient(
     companion object {
         private const val API_BASE_PATH = "/api/v1/genpdf/isfrisktilarbeid"
         const val VEDTAK_PATH = "/vedtak-om-friskmelding-til-arbeidsformidling"
+        const val MELDING_BEHANDLER_PATH = "/melding-til-behandler"
 
         private val log = LoggerFactory.getLogger(PdfGenClient::class.java)
     }

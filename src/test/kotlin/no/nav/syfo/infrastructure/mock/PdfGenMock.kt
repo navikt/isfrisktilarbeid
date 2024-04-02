@@ -12,6 +12,9 @@ fun MockRequestHandleScope.pdfGenMockResponse(request: HttpRequestData): HttpRes
         requestUrl.endsWith(PdfGenClient.Companion.VEDTAK_PATH) -> {
             respond(content = UserConstants.PDF_VEDTAK)
         }
+        requestUrl.endsWith(PdfGenClient.Companion.MELDING_BEHANDLER_PATH) -> {
+            respond(content = UserConstants.PDF_BEHANDLER)
+        }
 
         else -> error("Unhandled pdf $requestUrl")
     }

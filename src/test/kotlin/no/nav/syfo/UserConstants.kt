@@ -11,6 +11,7 @@ object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT_PDL_FAILS = Personident("11111111666")
 
     val PDF_VEDTAK = byteArrayOf(0x2E, 0x28)
+    val PDF_BEHANDLER = byteArrayOf(0x2E, 0x30)
     const val VEILEDER_IDENT = "Z999999"
 
     const val PERSON_FORNAVN = "Fornavn"
