@@ -11,7 +11,7 @@ class SendTestMessageCronjob(
     private val testIdent: Personident,
 ) : Cronjob {
     override val initialDelayMinutes: Long = 1
-    override val intervalDelayMinutes: Long = 365 * 24
+    override val intervalDelayMinutes: Long = 365 * 24 * 60
 
     override suspend fun run() {
         try {
