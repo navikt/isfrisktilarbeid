@@ -7,9 +7,9 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
-import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
+import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import org.slf4j.LoggerFactory
@@ -33,10 +33,6 @@ fun main() {
             azureAdClient = azureAdClient,
             clientEnvironment = environment.clients.istilgangskontroll
         )
-    val pdlClient = PdlClient(
-        azureAdClient = azureAdClient,
-        pdlEnvironment = environment.clients.pdl,
-    )
     val applicationEngineEnvironment =
         applicationEngineEnvironment {
             log = logger
@@ -61,6 +57,11 @@ fun main() {
     applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
         applicationState.ready = true
         logger.info("Application is ready, running Java VM ${Runtime.version()}")
+
+        launchCronjobs(
+            applicationState = applicationState,
+            environment = environment,
+        )
     }
 
     val server = embeddedServer(
