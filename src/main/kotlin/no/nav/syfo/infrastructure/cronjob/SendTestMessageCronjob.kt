@@ -17,7 +17,7 @@ class SendTestMessageCronjob(
         try {
             infotrygdService.sendMessageToInfotrygd(
                 personident = testIdent,
-                veilederident = "",
+                veilederident = "Z994248",
                 navKontor = "0219",
                 now = LocalDateTime.now(),
                 datoFra = LocalDate.now().plusDays(1),
