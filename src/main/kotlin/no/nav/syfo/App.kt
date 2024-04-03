@@ -16,6 +16,8 @@ import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
+import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.slf4j.LoggerFactory
@@ -47,6 +49,10 @@ fun main() {
             clientEnvironment = environment.clients.istilgangskontroll
         )
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
+    val infotrygdService = InfotrygdService(
+        mqQueueName = environment.mq.mqQueueName,
+        mqSender = MQSender(environment.mq),
+    )
 
     lateinit var vedtakService: VedtakService
 
@@ -65,6 +71,7 @@ fun main() {
                 vedtakService = VedtakService(
                     pdfService = pdfService,
                     vedtakRepository = vedtakRepository,
+                    infotrygdService = infotrygdService,
                     journalforingService = JournalforingService(),
                 )
                 apiModule(
@@ -85,6 +92,7 @@ fun main() {
         launchCronjobs(
             applicationState = applicationState,
             environment = environment,
+            vedtakService = vedtakService,
         )
     }
 

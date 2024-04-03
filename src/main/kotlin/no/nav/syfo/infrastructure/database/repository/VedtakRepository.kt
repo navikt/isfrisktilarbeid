@@ -34,6 +34,26 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         }
     }
 
+    override fun getUnpublishedMQVedtak(): List<Vedtak> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_UNPUBLISHED_MQ).use {
+                it.executeQuery().toList { toPVedtak() }
+            }
+        }.map { it.toVedtak() }
+
+    override fun setVedtakPublishedMQ(vedtak: Vedtak) {
+        database.connection.use { connection ->
+            connection.prepareStatement(SET_PUBLISHED_MQ).use {
+                it.setString(1, vedtak.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+            connection.commit()
+        }
+    }
+
     override fun getNotJournalforteVedtak(): List<Pair<Vedtak, ByteArray>> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_NOT_JOURNALFORTE_VEDTAK).use {
@@ -108,6 +128,16 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                     pdf_id
                 ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?)
                 RETURNING *
+            """
+
+        private const val GET_UNPUBLISHED_MQ =
+            """
+                SELECT * FROM VEDTAK WHERE published_mq_at IS NULL
+            """
+
+        private const val SET_PUBLISHED_MQ =
+            """
+                UPDATE VEDTAK SET published_mq_at=now() WHERE uuid=?
             """
 
         private const val UPDATE_VEDTAK =

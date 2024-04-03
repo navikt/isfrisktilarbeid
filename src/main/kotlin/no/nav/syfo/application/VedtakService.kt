@@ -3,12 +3,15 @@ package no.nav.syfo.application
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class VedtakService(
     private val pdfService: IPdfService,
     private val vedtakRepository: IVedtakRepository,
     private val journalforingService: IJournalforingService,
+    private val infotrygdService: InfotrygdService,
 ) {
     suspend fun createVedtak(
         personident: Personident,
@@ -52,5 +55,27 @@ class VedtakService(
                 journalfortVedtak
             }
         }
+    }
+
+    fun publishMQUnpublishedVedtak(): List<Result<Vedtak>> {
+        val unpublished = vedtakRepository.getUnpublishedMQVedtak()
+        val result: MutableList<Result<Vedtak>> = mutableListOf()
+        unpublished.forEach { vedtak ->
+            try {
+                infotrygdService.sendMessageToInfotrygd(
+                    personident = vedtak.personident,
+                    veilederident = vedtak.veilederident,
+                    now = LocalDateTime.now(),
+                    datoFra = vedtak.fom,
+                    datoTil = vedtak.tom,
+                    navKontor = "", // TODO: må diskuteres
+                )
+                vedtakRepository.setVedtakPublishedMQ(vedtak)
+                result.add(Result.success(vedtak))
+            } catch (exc: Exception) {
+                result.add(Result.failure(exc))
+            }
+        }
+        return result
     }
 }

@@ -1,9 +1,9 @@
 package no.nav.syfo.infrastructure.infotrygd
 
 import no.aetat.arena.arenainfotrygdskjema.ObjectFactory
-import no.nav.syfo.application.mq.MQSender
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.mq.JAXB
+import no.nav.syfo.infrastructure.mq.MQSender
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime

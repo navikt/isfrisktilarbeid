@@ -5,7 +5,7 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
-import no.nav.syfo.application.mq.MQSender
+import no.nav.syfo.infrastructure.mq.MQSender
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
