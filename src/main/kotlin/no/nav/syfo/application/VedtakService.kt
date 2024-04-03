@@ -27,13 +27,13 @@ class VedtakService(
             tom = tom,
         )
         val vedtakPdf = pdfService.createVedtakPdf(vedtak = vedtak, callId = callId)
-        vedtakRepository.createVedtak(
+        val createdVedtak = vedtakRepository.createVedtak(
             vedtak = vedtak,
             pdf = vedtakPdf,
         )
 
         // TODO: Lage melding til behandler inkl pdf, lagre denne og produsere til isdialogmelding
 
-        return vedtak
+        return createdVedtak
     }
 }

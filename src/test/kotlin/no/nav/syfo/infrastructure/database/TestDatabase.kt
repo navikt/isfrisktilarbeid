@@ -1,8 +1,13 @@
 package no.nav.syfo.infrastructure.database
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
+import no.nav.syfo.infrastructure.database.repository.PPdf
+import no.nav.syfo.infrastructure.database.repository.PVedtak
+import no.nav.syfo.infrastructure.database.repository.toPPdf
+import no.nav.syfo.infrastructure.database.repository.toPVedtak
 import org.flywaydb.core.Flyway
 import java.sql.Connection
+import java.util.*
 
 class TestDatabase : DatabaseInterface {
     private val pg: EmbeddedPostgres = try {
@@ -27,12 +32,56 @@ class TestDatabase : DatabaseInterface {
 }
 
 fun TestDatabase.dropData() {
-    val queryList = emptyList<String>()
+    val queryList = listOf(
+        """
+        DELETE FROM VEDTAK
+        """.trimIndent(),
+        """
+        DELETE FROM PDF
+        """.trimIndent(),
+        """
+        DELETE FROM BEHANDLER_MELDING
+        """.trimIndent(),
+    )
     this.connection.use { connection ->
         queryList.forEach { query ->
             connection.prepareStatement(query).execute()
         }
         connection.commit()
+    }
+}
+
+private const val queryGetVedtakPdf =
+    """
+        SELECT pdf.*
+        FROM pdf INNER JOIN vedtak v ON v.pdf_id=pdf.id 
+        WHERE v.uuid = ?
+    """
+
+fun TestDatabase.getVedtakPdf(
+    vedtakUuid: UUID,
+): PPdf? =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryGetVedtakPdf).use {
+            it.setString(1, vedtakUuid.toString())
+            it.executeQuery()
+                .toList { toPPdf() }
+                .singleOrNull()
+        }
+    }
+
+private const val queryGetVedtak =
+    """
+        SELECT * FROM vedtak WHERE uuid = ?
+    """
+
+fun TestDatabase.getVedtak(
+    vedtakUuid: UUID
+): PVedtak? = this.connection.use {
+        connection ->
+    connection.prepareStatement(queryGetVedtak).use {
+        it.setString(1, vedtakUuid.toString())
+        it.executeQuery().toList { toPVedtak() }.singleOrNull()
     }
 }
 

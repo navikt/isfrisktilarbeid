@@ -34,4 +34,29 @@ data class Vedtak private constructor(
         tom = tom,
         journalpostId = null,
     )
+
+    companion object {
+
+        fun createFromDatabase(
+            uuid: UUID,
+            personident: Personident,
+            veilederident: String,
+            createdAt: OffsetDateTime,
+            begrunnelse: String,
+            document: List<DocumentComponent>,
+            fom: LocalDate,
+            tom: LocalDate,
+            journalpostId: JournalpostId?,
+        ) = Vedtak(
+            uuid = uuid,
+            personident = personident,
+            veilederident = veilederident,
+            createdAt = createdAt,
+            begrunnelse = begrunnelse,
+            document = document,
+            fom = fom,
+            tom = tom,
+            journalpostId = journalpostId,
+        )
+    }
 }
