@@ -2,14 +2,13 @@ package no.nav.syfo.api
 
 import io.ktor.server.application.*
 import no.nav.syfo.ExternalMockEnvironment
-import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.pdf.PdfService
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
-    vedtakRepository: IVedtakRepository,
 ) {
     val database = externalMockEnvironment.database
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
@@ -22,7 +21,7 @@ fun Application.testApiModule(
         pdlClient = externalMockEnvironment.pdlClient,
     )
     val vedtakService = VedtakService(
-        vedtakRepository = vedtakRepository,
+        vedtakRepository = VedtakRepository(database = database),
         pdfService = pdfService,
     )
 

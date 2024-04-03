@@ -3,9 +3,9 @@ package no.nav.syfo.api.endpoints
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.UserConstants.PDF_VEDTAK
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
@@ -13,6 +13,8 @@ import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.database.dropData
+import no.nav.syfo.infrastructure.database.getVedtak
+import no.nav.syfo.infrastructure.database.getVedtakPdf
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -57,7 +59,6 @@ object VedtakEndpointsSpek : Spek({
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
-                vedtakRepository = mockk(relaxed = true),
             )
 
             beforeEachTest {
@@ -85,6 +86,14 @@ object VedtakEndpointsSpek : Spek({
                             vedtakResponse.tom shouldBeEqualTo vedtakTom
                             vedtakResponse.personident shouldBeEqualTo personIdent
                             vedtakResponse.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
+
+                            val vedtakPdf = database.getVedtakPdf(vedtakUuid = vedtakResponse.uuid)?.pdf!!
+                            vedtakPdf.size shouldBeEqualTo PDF_VEDTAK.size
+                            vedtakPdf[0] shouldBeEqualTo PDF_VEDTAK[0]
+                            vedtakPdf[1] shouldBeEqualTo PDF_VEDTAK[1]
+
+                            val pVedtak = database.getVedtak(vedtakUuid = vedtakResponse.uuid)!!
+                            pVedtak.uuid shouldBeEqualTo vedtakResponse.uuid
                         }
                     }
                 }
