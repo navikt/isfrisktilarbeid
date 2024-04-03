@@ -6,12 +6,17 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
+import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
+import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
+import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import no.nav.syfo.infrastructure.pdf.PdfService
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -28,11 +33,22 @@ fun main() {
     val azureAdClient = AzureAdClient(
         azureEnvironment = environment.azure
     )
+    val pdlClient = PdlClient(
+        azureAdClient = azureAdClient,
+        pdlEnvironment = environment.clients.pdl,
+    )
+    val pdfGenClient = PdfGenClient(
+        pdfGenBaseUrl = environment.clients.ispdfgen.baseUrl,
+    )
     val veilederTilgangskontrollClient =
         VeilederTilgangskontrollClient(
             azureAdClient = azureAdClient,
             clientEnvironment = environment.clients.istilgangskontroll
         )
+    val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
+
+    lateinit var vedtakService: VedtakService
+
     val applicationEngineEnvironment =
         applicationEngineEnvironment {
             log = logger
@@ -44,12 +60,18 @@ fun main() {
                 databaseModule(
                     databaseEnvironment = environment.database,
                 )
+                val vedtakRepository = VedtakRepository(database = applicationDatabase)
+                vedtakService = VedtakService(
+                    pdfService = pdfService,
+                    vedtakRepository = vedtakRepository
+                )
                 apiModule(
                     applicationState = applicationState,
                     environment = environment,
                     wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                     database = applicationDatabase,
                     veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                    vedtakService = vedtakService,
                 )
             }
         }

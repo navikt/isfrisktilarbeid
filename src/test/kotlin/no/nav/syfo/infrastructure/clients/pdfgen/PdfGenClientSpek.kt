@@ -18,7 +18,7 @@ class PdfGenClientSpek : Spek({
                 pdfGenClient.createVedtakPdf(
                     callId = "",
                     payload = PdfModel.VedtakPdfModel(
-                        mottakerFodselsnummer = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
+                        mottakerFodselsnummer = UserConstants.ARBEIDSTAKER_PERSONIDENT,
                         mottakerNavn = UserConstants.PERSON_FULLNAME_DASH,
                         documentComponents = generateDocumentComponent("Litt fritekst"),
                     )

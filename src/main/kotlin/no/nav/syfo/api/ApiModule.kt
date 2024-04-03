@@ -20,6 +20,7 @@ import no.nav.syfo.api.auth.installJwtAuthentication
 import no.nav.syfo.api.endpoints.metricEndpoints
 import no.nav.syfo.api.endpoints.podEndpoints
 import no.nav.syfo.api.endpoints.registerVedtakEndpoints
+import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.clients.veiledertilgang.ForbiddenAccessVeilederException
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
@@ -38,6 +39,7 @@ fun Application.apiModule(
     wellKnownInternalAzureAD: WellKnown,
     database: DatabaseInterface,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    vedtakService: VedtakService,
 ) {
     installMetrics()
     installCallId()
@@ -60,6 +62,7 @@ fun Application.apiModule(
         authenticate(JwtIssuerType.INTERNAL_AZUREAD.name) {
             registerVedtakEndpoints(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                vedtakService = vedtakService,
             )
         }
     }

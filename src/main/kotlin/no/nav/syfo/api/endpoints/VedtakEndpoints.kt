@@ -6,6 +6,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.api.model.VedtakRequestDTO
+import no.nav.syfo.api.model.VedtakResponseDTO
+import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollPlugin
@@ -20,6 +22,7 @@ private const val API_ACTION = "access vedtak for person"
 
 fun Route.registerVedtakEndpoints(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    vedtakService: VedtakService,
 ) {
     route(apiBasePath) {
         install(VeilederTilgangskontrollPlugin) {
@@ -37,7 +40,17 @@ fun Route.registerVedtakEndpoints(
             val navIdent = call.getNAVIdent()
             val callId = call.getCallId()
 
-            call.respond(HttpStatusCode.Created)
+            val newVedtak = vedtakService.createVedtak(
+                personident = personident,
+                veilederident = navIdent,
+                begrunnelse = requestDTO.begrunnelse,
+                document = requestDTO.document,
+                fom = requestDTO.fom,
+                tom = requestDTO.tom,
+                callId = callId,
+            )
+
+            call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = newVedtak))
         }
     }
 }
