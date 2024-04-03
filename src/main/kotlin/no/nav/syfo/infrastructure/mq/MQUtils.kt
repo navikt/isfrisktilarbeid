@@ -17,7 +17,6 @@ fun connectionFactory(env: MQEnvironment): javax.jms.ConnectionFactory =
         setIntProperty(CommonConstants.WMQ_PORT, env.mqPort)
         setStringProperty(CommonConstants.WMQ_CHANNEL, env.mqChannelName)
         setIntProperty(CommonConstants.WMQ_CCSID, UTF_8_WITH_PUA)
-        setStringProperty(CommonConstants.WMQ_SSL_CIPHER_SUITE, "*TLS13ORHIGHER")
         setIntProperty(JmsConstants.JMS_IBM_ENCODING, MQENC_NATIVE)
         setIntProperty(JmsConstants.JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA)
         setBooleanProperty(CommonConstants.USER_AUTHENTICATION_MQCSP, true)
