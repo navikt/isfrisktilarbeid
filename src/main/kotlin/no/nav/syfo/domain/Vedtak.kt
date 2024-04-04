@@ -35,6 +35,8 @@ data class Vedtak private constructor(
         journalpostId = null,
     )
 
+    fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
+
     companion object {
 
         fun createFromDatabase(
