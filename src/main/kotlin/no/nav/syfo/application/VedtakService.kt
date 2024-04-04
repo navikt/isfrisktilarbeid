@@ -8,6 +8,7 @@ import java.time.LocalDate
 class VedtakService(
     private val pdfService: IPdfService,
     private val vedtakRepository: IVedtakRepository,
+    private val journalforingService: IJournalforingService,
 ) {
     suspend fun createVedtak(
         personident: Personident,
@@ -35,5 +36,21 @@ class VedtakService(
         // TODO: Lage melding til behandler inkl pdf, lagre denne og produsere til isdialogmelding
 
         return createdVedtak
+    }
+
+    suspend fun journalforVedtak(): List<Result<Vedtak>> {
+        val notJournalforteVedtak = vedtakRepository.getNotJournalforteVedtak()
+
+        return notJournalforteVedtak.map { (vedtak, pdf) ->
+            journalforingService.journalfor(
+                vedtak = vedtak,
+                pdf = pdf,
+            ).map {
+                val journalfortVedtak = vedtak.journalfor(journalpostId = it)
+                vedtakRepository.update(journalfortVedtak)
+
+                journalfortVedtak
+            }
+        }
     }
 }

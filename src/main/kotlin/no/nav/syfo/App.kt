@@ -16,6 +16,7 @@ import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -63,7 +64,8 @@ fun main() {
                 val vedtakRepository = VedtakRepository(database = applicationDatabase)
                 vedtakService = VedtakService(
                     pdfService = pdfService,
-                    vedtakRepository = vedtakRepository
+                    vedtakRepository = vedtakRepository,
+                    journalforingService = JournalforingService(),
                 )
                 apiModule(
                     applicationState = applicationState,

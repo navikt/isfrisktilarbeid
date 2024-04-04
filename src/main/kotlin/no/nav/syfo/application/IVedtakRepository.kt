@@ -7,4 +7,8 @@ interface IVedtakRepository {
         vedtak: Vedtak,
         pdf: ByteArray,
     ): Vedtak
+
+    fun getNotJournalforteVedtak(): List<Pair<Vedtak, ByteArray>>
+
+    fun update(vedtak: Vedtak)
 }

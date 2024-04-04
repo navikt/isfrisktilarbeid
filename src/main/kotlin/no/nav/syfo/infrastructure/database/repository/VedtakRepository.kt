@@ -12,6 +12,7 @@ import no.nav.syfo.util.nowUTC
 import java.sql.Connection
 import java.sql.Date
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -19,6 +20,7 @@ import java.util.*
 private val mapper = configuredJacksonMapper()
 
 class VedtakRepository(private val database: DatabaseInterface) : IVedtakRepository {
+
     override fun createVedtak(vedtak: Vedtak, pdf: ByteArray): Vedtak {
         database.connection.use { connection ->
             val pPdf = connection.createPdf(pdf = pdf)
@@ -31,6 +33,29 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             return pVedtak.toVedtak()
         }
     }
+
+    override fun getNotJournalforteVedtak(): List<Pair<Vedtak, ByteArray>> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_NOT_JOURNALFORTE_VEDTAK).use {
+                it.executeQuery().toList { toPVedtak() to getBytes("pdf") }
+            }
+        }.map { (pVedtak, pdf) ->
+            pVedtak.toVedtak() to pdf
+        }
+
+    override fun update(vedtak: Vedtak) =
+        database.connection.use { connection ->
+            connection.prepareStatement(UPDATE_VEDTAK).use {
+                it.setString(1, vedtak.journalpostId?.value)
+                it.setObject(2, nowUTC())
+                it.setString(3, vedtak.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+            connection.commit()
+        }
 
     private fun Connection.createPdf(pdf: ByteArray): PPdf =
         prepareStatement(CREATE_PDF).use {
@@ -83,6 +108,19 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                     pdf_id
                 ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?)
                 RETURNING *
+            """
+
+        private const val UPDATE_VEDTAK =
+            """
+                UPDATE VEDTAK SET journalpost_id=?, updated_at=? WHERE uuid=?
+            """
+
+        private const val GET_NOT_JOURNALFORTE_VEDTAK =
+            """
+                 SELECT v.*, p.pdf
+                 FROM vedtak v
+                 INNER JOIN pdf p ON v.pdf_id = p.id
+                 WHERE v.journalpost_id IS NULL
             """
     }
 }

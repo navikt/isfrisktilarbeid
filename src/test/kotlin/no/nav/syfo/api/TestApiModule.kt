@@ -5,6 +5,7 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.pdf.PdfService
 
 fun Application.testApiModule(
@@ -23,6 +24,7 @@ fun Application.testApiModule(
     val vedtakService = VedtakService(
         vedtakRepository = VedtakRepository(database = database),
         pdfService = pdfService,
+        journalforingService = JournalforingService(),
     )
 
     this.apiModule(
