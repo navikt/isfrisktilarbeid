@@ -12,6 +12,7 @@ import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
+import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.mq.JAXB
 import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
@@ -36,6 +37,7 @@ class PublishMQCronjobSpek : Spek({
             val vedtakService = VedtakService(
                 pdfService = PdfService(externalMockEnvironment.pdfgenClient, externalMockEnvironment.pdlClient),
                 vedtakRepository = VedtakRepository(database),
+                journalforingService = mockk<JournalforingService>(relaxed = true),
                 infotrygdService = InfotrygdService(environment.mq.mqQueueName, mqSenderMock)
             )
 
