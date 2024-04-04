@@ -11,7 +11,7 @@ class PublishMQCronjob(
     override val intervalDelayMinutes: Long = 1
 
     override suspend fun run() {
-        val (success, failed) = vedtakService.publishMQUnpublishedVedtak().partition { it.isSuccess }
+        val (success, failed) = vedtakService.sendVedtakToInfotrygd().partition { it.isSuccess }
         failed.forEach {
             log.error("Exception caught while publishing vurdering", it.exceptionOrNull())
         }

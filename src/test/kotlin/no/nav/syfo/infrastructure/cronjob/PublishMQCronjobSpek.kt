@@ -76,16 +76,14 @@ class PublishMQCronjobSpek : Spek({
                     val payloadSlot = slot<String>()
                     verify(exactly = 1) { mqSenderMock.sendToMQ(capture(queueNameSlot), capture(payloadSlot)) }
 
-                    val queueName = queueNameSlot.captured
-                    queueName shouldBeEqualTo environment.mq.mqQueueName
-
-                    val payload = payloadSlot.captured
-                    val message = JAXB.unmarshallObject<Infotrygd>(XMLInputFactory.newInstance().createXMLStreamReader(StringReader(payload)))
+                    queueNameSlot.captured shouldBeEqualTo environment.mq.mqQueueName
+                    val message = JAXB.unmarshallObject<Infotrygd>(XMLInputFactory.newInstance().createXMLStreamReader(StringReader(payloadSlot.captured)))
                     message.header.brukerId shouldBeEqualTo UserConstants.VEILEDER_IDENT
                     message.header.fnr shouldBeEqualTo UserConstants.ARBEIDSTAKER_PERSONIDENT.value
                     message.meldingsspesFelt.meldingsdata.matsP1.datoFra.toString() shouldBeEqualTo fom.toString()
                     message.meldingsspesFelt.meldingsdata.matsP1.datoTil.toString() shouldBeEqualTo tom.toString()
 
+                    // vedtak should not be sent again when already published
                     clearMocks(mqSenderMock)
                     runBlocking {
                         publishMQCronjob.run()

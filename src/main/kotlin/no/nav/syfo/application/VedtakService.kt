@@ -41,23 +41,7 @@ class VedtakService(
         return createdVedtak
     }
 
-    suspend fun journalforVedtak(): List<Result<Vedtak>> {
-        val notJournalforteVedtak = vedtakRepository.getNotJournalforteVedtak()
-
-        return notJournalforteVedtak.map { (vedtak, pdf) ->
-            journalforingService.journalfor(
-                vedtak = vedtak,
-                pdf = pdf,
-            ).map {
-                val journalfortVedtak = vedtak.journalfor(journalpostId = it)
-                vedtakRepository.update(journalfortVedtak)
-
-                journalfortVedtak
-            }
-        }
-    }
-
-    fun publishMQUnpublishedVedtak(): List<Result<Vedtak>> {
+    fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
         val unpublished = vedtakRepository.getUnpublishedMQVedtak()
         val result: MutableList<Result<Vedtak>> = mutableListOf()
         unpublished.forEach { vedtak ->
@@ -77,5 +61,21 @@ class VedtakService(
             }
         }
         return result
+    }
+
+    suspend fun journalforVedtak(): List<Result<Vedtak>> {
+        val notJournalforteVedtak = vedtakRepository.getNotJournalforteVedtak()
+
+        return notJournalforteVedtak.map { (vedtak, pdf) ->
+            journalforingService.journalfor(
+                vedtak = vedtak,
+                pdf = pdf,
+            ).map {
+                val journalfortVedtak = vedtak.journalfor(journalpostId = it)
+                vedtakRepository.update(journalfortVedtak)
+
+                journalfortVedtak
+            }
+        }
     }
 }
