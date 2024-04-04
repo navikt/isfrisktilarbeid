@@ -53,7 +53,7 @@ class VedtakServiceSpek : Spek({
                     vedtak = vedtak,
                     pdf = UserConstants.PDF_VEDTAK,
                 )
-                coEvery { journalforingServiceMock.journalfor(any(), any()) } returns mockedJournalpostId
+                coEvery { journalforingServiceMock.journalfor(any(), any()) } returns Result.success(mockedJournalpostId)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -84,7 +84,7 @@ class VedtakServiceSpek : Spek({
                 val journafortVedtak = vedtak.journalfor(mockedJournalpostId)
                 vedtakRepository.update(journafortVedtak)
 
-                coEvery { journalforingServiceMock.journalfor(any(), any()) } returns mockedJournalpostId
+                coEvery { journalforingServiceMock.journalfor(any(), any()) } returns Result.success(mockedJournalpostId)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -97,7 +97,7 @@ class VedtakServiceSpek : Spek({
                     pdf = UserConstants.PDF_VEDTAK,
                 )
 
-                coEvery { journalforingServiceMock.journalfor(any(), any()) } throws Exception("Journalforing failed")
+                coEvery { journalforingServiceMock.journalfor(any(), any()) } returns Result.failure(Exception("Journalforing failed"))
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 

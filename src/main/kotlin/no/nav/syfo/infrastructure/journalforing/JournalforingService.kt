@@ -5,7 +5,7 @@ import no.nav.syfo.domain.*
 
 class JournalforingService() : IJournalforingService {
 
-    override suspend fun journalfor(vedtak: Vedtak, pdf: ByteArray): JournalpostId {
+    override suspend fun journalfor(vedtak: Vedtak, pdf: ByteArray): Result<JournalpostId> {
         TODO("Not yet implemented")
     }
 }

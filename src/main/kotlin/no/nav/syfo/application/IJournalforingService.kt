@@ -7,5 +7,5 @@ interface IJournalforingService {
     suspend fun journalfor(
         vedtak: Vedtak,
         pdf: ByteArray,
-    ): JournalpostId
+    ): Result<JournalpostId>
 }

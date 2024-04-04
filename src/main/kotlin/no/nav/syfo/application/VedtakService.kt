@@ -42,12 +42,11 @@ class VedtakService(
         val notJournalforteVedtak = vedtakRepository.getNotJournalforteVedtak()
 
         return notJournalforteVedtak.map { (vedtak, pdf) ->
-            runCatching {
-                val journalpostId = journalforingService.journalfor(
-                    vedtak = vedtak,
-                    pdf = pdf,
-                )
-                val journalfortVedtak = vedtak.journalfor(journalpostId = journalpostId)
+            journalforingService.journalfor(
+                vedtak = vedtak,
+                pdf = pdf,
+            ).map {
+                val journalfortVedtak = vedtak.journalfor(journalpostId = it)
                 vedtakRepository.update(journalfortVedtak)
 
                 journalfortVedtak
