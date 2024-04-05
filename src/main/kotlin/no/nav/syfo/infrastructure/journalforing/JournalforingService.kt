@@ -17,7 +17,7 @@ class JournalforingService(private val dokarkivClient: DokarkivClient, private v
         )
         val journalpostId = dokarkivClient.journalfor(journalpostRequest).journalpostId
 
-        return Result.success(JournalpostId(journalpostId.toString()))
+        JournalpostId(journalpostId.toString())
     }
 
     private fun createJournalpostRequest(
