@@ -36,7 +36,8 @@ fun Route.registerVedtakEndpoints(
                 throw IllegalArgumentException("Vedtak can't have an empty begrunnelse or document")
             }
 
-            val personident = call.getPersonident() ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+            val personident = call.getPersonident()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
             val navIdent = call.getNAVIdent()
             val callId = call.getCallId()
 
@@ -48,6 +49,9 @@ fun Route.registerVedtakEndpoints(
                 fom = requestDTO.fom,
                 tom = requestDTO.tom,
                 callId = callId,
+                behandlerRef = requestDTO.behandlerRef,
+                behandlerNavn = requestDTO.behandlerNavn,
+                behandlerDocument = requestDTO.behandlerDocument,
             )
 
             call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = newVedtak))

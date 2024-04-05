@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.JournalpostId
+import no.nav.syfo.generator.generateBehandlerMelding
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtak
@@ -21,6 +22,7 @@ import org.spekframework.spek2.style.specification.describe
 
 val mockedJournalpostId = JournalpostId("123")
 val vedtak = generateVedtak()
+val behandlerMelding = generateBehandlerMelding()
 
 class VedtakServiceSpek : Spek({
     describe(VedtakService::class.java.simpleName) {
@@ -51,9 +53,16 @@ class VedtakServiceSpek : Spek({
             it("journalfører vedtak som ikke er journalført") {
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
-                    pdf = UserConstants.PDF_VEDTAK,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlerMelding = behandlerMelding,
+                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
-                coEvery { journalforingServiceMock.journalfor(any(), any()) } returns Result.success(mockedJournalpostId)
+                coEvery {
+                    journalforingServiceMock.journalfor(
+                        any(),
+                        any()
+                    )
+                } returns Result.success(mockedJournalpostId)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -79,12 +88,19 @@ class VedtakServiceSpek : Spek({
             it("journalfører ikke når vedtak allerede er journalført") {
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
-                    pdf = UserConstants.PDF_VEDTAK,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlerMelding = behandlerMelding,
+                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
                 val journafortVedtak = vedtak.journalfor(mockedJournalpostId)
                 vedtakRepository.update(journafortVedtak)
 
-                coEvery { journalforingServiceMock.journalfor(any(), any()) } returns Result.success(mockedJournalpostId)
+                coEvery {
+                    journalforingServiceMock.journalfor(
+                        any(),
+                        any()
+                    )
+                } returns Result.success(mockedJournalpostId)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -94,10 +110,17 @@ class VedtakServiceSpek : Spek({
             it("journalføring feiler") {
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
-                    pdf = UserConstants.PDF_VEDTAK,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlerMelding = behandlerMelding,
+                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
-                coEvery { journalforingServiceMock.journalfor(any(), any()) } returns Result.failure(Exception("Journalforing failed"))
+                coEvery {
+                    journalforingServiceMock.journalfor(
+                        any(),
+                        any()
+                    )
+                } returns Result.failure(Exception("Journalforing failed"))
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
