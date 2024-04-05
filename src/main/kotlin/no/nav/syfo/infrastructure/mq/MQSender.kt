@@ -11,11 +11,14 @@ private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.infrastructure.mq
 
 class MQSender(env: MQEnvironment) {
 
-    private val jmsContext: JMSContext = connectionFactory(env).createContext()
+    private val jmsContext: JMSContext? = if (env.mqHostname.startsWith("mpls02"))
+        null
+    else
+        connectionFactory(env).createContext()
 
     protected fun finalize() {
         try {
-            jmsContext.close()
+            jmsContext!!.close()
         } catch (exc: Exception) {
             log.warn("Got exception when closing MQ-connection", exc)
         }
@@ -25,7 +28,7 @@ class MQSender(env: MQEnvironment) {
         queueName: String,
         payload: String,
     ) {
-        jmsContext.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
+        jmsContext!!.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
             val destination = context.createQueue("queue:///$queueName")
             val message = context.createTextMessage(payload)
             context.createProducer().send(destination, message)
