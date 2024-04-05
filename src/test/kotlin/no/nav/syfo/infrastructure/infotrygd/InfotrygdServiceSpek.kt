@@ -4,9 +4,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import no.nav.syfo.ExternalMockEnvironment
-import no.nav.syfo.UserConstants
-import no.nav.syfo.domain.Vedtak
-import no.nav.syfo.generator.generateDocumentComponent
+import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.mq.MQSender
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -34,15 +32,10 @@ class InfotrygdServiceSpek : Spek({
                 LocalDateTime.of(2024, Month.MARCH, 1, 12, 30, 23),
                 ZoneOffset.UTC
             )
-            val vedtak = Vedtak(
-                personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                veilederident = "A123456",
-                begrunnelse = "",
-                document = generateDocumentComponent(""),
+            val vedtak = generateVedtak().copy(
                 fom = fixedTime.toLocalDate(),
                 tom = fixedTime.toLocalDate().plusDays(30),
-            ).copy(
-                createdAt = fixedTime
+                createdAt = fixedTime,
             )
             infotrygdService.sendMessageToInfotrygd(vedtak)
             val payloadSlot = slot<String>()
