@@ -11,7 +11,9 @@ import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
+import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
@@ -37,6 +39,10 @@ class VedtakServiceSpek : Spek({
                 pdlClient = externalMockEnvironment.pdlClient,
             ),
             journalforingService = journalforingServiceMock,
+            infotrygdService = InfotrygdService(
+                mqQueueName = externalMockEnvironment.environment.mq.mqQueueName,
+                mqSender = mockk<MQSender>(relaxed = true),
+            )
         )
 
         beforeEachTest {

@@ -3,12 +3,14 @@ package no.nav.syfo.application
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
 
 class VedtakService(
     private val pdfService: IPdfService,
     private val vedtakRepository: IVedtakRepository,
     private val journalforingService: IJournalforingService,
+    private val infotrygdService: InfotrygdService,
 ) {
     suspend fun createVedtak(
         personident: Personident,
@@ -36,6 +38,17 @@ class VedtakService(
         // TODO: Lage melding til behandler inkl pdf, lagre denne og produsere til isdialogmelding
 
         return createdVedtak
+    }
+
+    fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
+        val unpublished = vedtakRepository.getUnpublishedInfotrygd()
+        return unpublished.map { vedtak ->
+            runCatching {
+                infotrygdService.sendMessageToInfotrygd(vedtak)
+                vedtakRepository.setVedtakPublishedInfotrygd(vedtak)
+                vedtak
+            }
+        }
     }
 
     suspend fun journalforVedtak(): List<Result<Vedtak>> {
