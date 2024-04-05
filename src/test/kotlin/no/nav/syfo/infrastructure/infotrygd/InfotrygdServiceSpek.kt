@@ -5,6 +5,8 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.mq.MQSender
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -14,6 +16,8 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.Month
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class InfotrygdServiceSpek : Spek({
     val externalMockEnvironment = ExternalMockEnvironment.instance
@@ -26,15 +30,21 @@ class InfotrygdServiceSpek : Spek({
 
     describe(InfotrygdService::class.java.simpleName) {
         it("sends message to MQ") {
-            val now = LocalDateTime.of(2024, Month.MARCH, 1, 12, 30, 23)
-            infotrygdService.sendMessageToInfotrygd(
+            val fixedTime = OffsetDateTime.of(
+                LocalDateTime.of(2024, Month.MARCH, 1, 12, 30, 23),
+                ZoneOffset.UTC
+            )
+            val vedtak = Vedtak(
                 personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
                 veilederident = "A123456",
-                navKontor = "0219",
-                now = now,
-                datoFra = now.toLocalDate(),
-                datoTil = now.toLocalDate().plusDays(30),
+                begrunnelse = "",
+                document = generateDocumentComponent(""),
+                fom = fixedTime.toLocalDate(),
+                tom = fixedTime.toLocalDate().plusDays(30),
+            ).copy(
+                createdAt = fixedTime
             )
+            infotrygdService.sendMessageToInfotrygd(vedtak)
             val payloadSlot = slot<String>()
             verify(exactly = 1) {
                 mqSender.sendToMQ(any(), capture(payloadSlot))

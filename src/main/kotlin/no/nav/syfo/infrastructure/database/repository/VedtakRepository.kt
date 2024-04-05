@@ -34,16 +34,16 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         }
     }
 
-    override fun getUnpublishedMQVedtak(): List<Vedtak> =
+    override fun getUnpublishedInfotrygd(): List<Vedtak> =
         database.connection.use { connection ->
-            connection.prepareStatement(GET_UNPUBLISHED_MQ).use {
+            connection.prepareStatement(GET_UNPUBLISHED_INFOTRYGD).use {
                 it.executeQuery().toList { toPVedtak() }
             }
         }.map { it.toVedtak() }
 
-    override fun setVedtakPublishedMQ(vedtak: Vedtak) {
+    override fun setVedtakPublishedInfotrygd(vedtak: Vedtak) {
         database.connection.use { connection ->
-            connection.prepareStatement(SET_PUBLISHED_MQ).use {
+            connection.prepareStatement(SET_PUBLISHED_INFOTRYGD).use {
                 it.setString(1, vedtak.uuid.toString())
                 val updated = it.executeUpdate()
                 if (updated != 1) {
@@ -130,14 +130,14 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 RETURNING *
             """
 
-        private const val GET_UNPUBLISHED_MQ =
+        private const val GET_UNPUBLISHED_INFOTRYGD =
             """
-                SELECT * FROM VEDTAK WHERE published_mq_at IS NULL
+                SELECT * FROM VEDTAK WHERE published_infotrygd_at IS NULL
             """
 
-        private const val SET_PUBLISHED_MQ =
+        private const val SET_PUBLISHED_INFOTRYGD =
             """
-                UPDATE VEDTAK SET published_mq_at=now() WHERE uuid=?
+                UPDATE VEDTAK SET published_infotrygd_at=now() WHERE uuid=?
             """
 
         private const val UPDATE_VEDTAK =
@@ -178,5 +178,5 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     ),
     journalpostId = getString("journalpost_id"),
     pdfId = getInt("pdf_id"),
-    publishedMQAt = getObject("published_mq_at", OffsetDateTime::class.java),
+    publishedMQAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
 )

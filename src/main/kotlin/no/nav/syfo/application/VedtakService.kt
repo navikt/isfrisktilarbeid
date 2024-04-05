@@ -5,7 +5,6 @@ import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class VedtakService(
     private val pdfService: IPdfService,
@@ -42,19 +41,12 @@ class VedtakService(
     }
 
     fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
-        val unpublished = vedtakRepository.getUnpublishedMQVedtak()
+        val unpublished = vedtakRepository.getUnpublishedInfotrygd()
         val result: MutableList<Result<Vedtak>> = mutableListOf()
         unpublished.forEach { vedtak ->
             try {
-                infotrygdService.sendMessageToInfotrygd(
-                    personident = vedtak.personident,
-                    veilederident = vedtak.veilederident,
-                    now = LocalDateTime.now(),
-                    datoFra = vedtak.fom,
-                    datoTil = vedtak.tom,
-                    navKontor = "", // TODO: må diskuteres
-                )
-                vedtakRepository.setVedtakPublishedMQ(vedtak)
+                infotrygdService.sendMessageToInfotrygd(vedtak)
+                vedtakRepository.setVedtakPublishedInfotrygd(vedtak)
                 result.add(Result.success(vedtak))
             } catch (exc: Exception) {
                 result.add(Result.failure(exc))
