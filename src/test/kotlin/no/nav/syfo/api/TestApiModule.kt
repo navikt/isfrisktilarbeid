@@ -24,10 +24,14 @@ fun Application.testApiModule(
         pdfGenClient = externalMockEnvironment.pdfgenClient,
         pdlClient = externalMockEnvironment.pdlClient,
     )
+    val journalforingService = JournalforingService(
+        dokarkivClient = externalMockEnvironment.dokarkivClient,
+        pdlClient = externalMockEnvironment.pdlClient,
+    )
     val vedtakService = VedtakService(
         vedtakRepository = VedtakRepository(database = database),
         pdfService = pdfService,
-        journalforingService = JournalforingService(),
+        journalforingService = journalforingService,
         infotrygdService = InfotrygdService(
             mqQueueName = externalMockEnvironment.environment.mq.mqQueueName,
             mqSender = mockk<MQSender>(relaxed = true),
