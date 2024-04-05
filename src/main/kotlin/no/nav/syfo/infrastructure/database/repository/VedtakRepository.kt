@@ -178,5 +178,5 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     ),
     journalpostId = getString("journalpost_id"),
     pdfId = getInt("pdf_id"),
-    publishedMQAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
+    publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
 )

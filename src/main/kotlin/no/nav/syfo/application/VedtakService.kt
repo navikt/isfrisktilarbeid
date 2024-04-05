@@ -42,17 +42,13 @@ class VedtakService(
 
     fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
         val unpublished = vedtakRepository.getUnpublishedInfotrygd()
-        val result: MutableList<Result<Vedtak>> = mutableListOf()
-        unpublished.forEach { vedtak ->
-            try {
+        return unpublished.map { vedtak ->
+            runCatching {
                 infotrygdService.sendMessageToInfotrygd(vedtak)
                 vedtakRepository.setVedtakPublishedInfotrygd(vedtak)
-                result.add(Result.success(vedtak))
-            } catch (exc: Exception) {
-                result.add(Result.failure(exc))
+                vedtak
             }
         }
-        return result
     }
 
     suspend fun journalforVedtak(): List<Result<Vedtak>> {

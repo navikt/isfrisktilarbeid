@@ -65,14 +65,14 @@ class PublishMQCronjobSpek : Spek({
                         )
                     }
                     val lagretVedtakBefore = database.getVedtak(vedtak.uuid)
-                    lagretVedtakBefore!!.publishedMQAt shouldBe null
+                    lagretVedtakBefore!!.publishedInfotrygdAt shouldBe null
 
                     runBlocking {
                         publishMQCronjob.run()
                     }
 
                     val lagretVedtakAfter = database.getVedtak(vedtak.uuid)
-                    lagretVedtakAfter!!.publishedMQAt shouldNotBe null
+                    lagretVedtakAfter!!.publishedInfotrygdAt shouldNotBe null
 
                     val queueNameSlot = slot<String>()
                     val payloadSlot = slot<String>()
