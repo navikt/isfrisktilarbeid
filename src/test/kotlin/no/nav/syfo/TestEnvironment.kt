@@ -5,6 +5,7 @@ import no.nav.syfo.infrastructure.clients.ClientsEnvironment
 import no.nav.syfo.infrastructure.clients.OpenClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.mq.MQEnvironment
 
 fun testEnvironment() = Environment(
@@ -46,6 +47,13 @@ fun testEnvironment() = Environment(
         mqQueueName = "mqQueueName",
         serviceuserUsername = "serviceuser",
         serviceuserPassword = "servicepw",
+    ),
+    kafka = KafkaEnvironment(
+        aivenBootstrapServers = "kafkaBootstrapServers",
+        aivenCredstorePassword = "credstorepassord",
+        aivenKeystoreLocation = "keystore",
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = "truststore",
     ),
     electorPath = "electorPath",
 )

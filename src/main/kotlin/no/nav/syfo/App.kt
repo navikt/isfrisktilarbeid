@@ -20,7 +20,11 @@ import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaEsyfovarselHendelseSerializer
+import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.pdf.PdfService
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -58,6 +62,11 @@ fun main() {
         mqQueueName = environment.mq.mqQueueName,
         mqSender = MQSender(environment.mq),
     )
+    val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
+        kafkaProducer = KafkaProducer(
+            kafkaAivenProducerConfig<KafkaEsyfovarselHendelseSerializer>(kafkaEnvironment = environment.kafka)
+        )
+    )
 
     lateinit var vedtakService: VedtakService
 
@@ -81,6 +90,7 @@ fun main() {
                         dokarkivClient = dokarkivClient,
                         pdlClient = pdlClient,
                     ),
+                    esyfovarselHendelseProducer = esyfovarselHendelseProducer,
                 )
                 apiModule(
                     applicationState = applicationState,

@@ -11,12 +11,15 @@ import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterThan
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -35,6 +38,10 @@ class VedtakServiceSpek : Spek({
             pdlClient = externalMockEnvironment.pdlClient,
         )
         val vedtakRepository = VedtakRepository(database = database)
+        val mockProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+        val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
+            kafkaProducer = mockProducer,
+        )
         val vedtakService = VedtakService(
             vedtakRepository = vedtakRepository,
             pdfService = PdfService(
@@ -45,7 +52,9 @@ class VedtakServiceSpek : Spek({
             infotrygdService = InfotrygdService(
                 mqQueueName = externalMockEnvironment.environment.mq.mqQueueName,
                 mqSender = mockk<MQSender>(relaxed = true),
-            )
+            ),
+            esyfovarselHendelseProducer = esyfovarselHendelseProducer,
+
         )
 
         afterEachTest {

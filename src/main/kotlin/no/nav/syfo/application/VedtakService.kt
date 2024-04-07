@@ -13,6 +13,7 @@ class VedtakService(
     private val vedtakRepository: IVedtakRepository,
     private val journalforingService: IJournalforingService,
     private val infotrygdService: InfotrygdService,
+    private val esyfovarselHendelseProducer: IEsyfovarselHendelseProducer,
 ) {
     suspend fun createVedtak(
         personident: Personident,
@@ -82,5 +83,15 @@ class VedtakService(
                 journalfortVedtak
             }
         }
+    }
+
+    fun publishVedtakVarsel(
+        personident: Personident,
+        vedtak: Vedtak
+    ): Result<Vedtak> {
+        return esyfovarselHendelseProducer.sendVedtakVarsel(
+            personident = personident,
+            vedtak = vedtak
+        )
     }
 }

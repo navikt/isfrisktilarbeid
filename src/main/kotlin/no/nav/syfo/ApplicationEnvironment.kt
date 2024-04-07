@@ -5,6 +5,7 @@ import no.nav.syfo.infrastructure.clients.ClientsEnvironment
 import no.nav.syfo.infrastructure.clients.OpenClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.mq.MQEnvironment
 
 const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISFRISKTILARBEID_ISFRISKTILARBEID_DB"
@@ -34,6 +35,13 @@ data class Environment(
             serviceuserUsername = getEnvVar("SERVICEUSER_USERNAME"),
             serviceuserPassword = getEnvVar("SERVICEUSER_PASSWORD"),
         ),
+    val kafka: KafkaEnvironment = KafkaEnvironment(
+        aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
+        aivenCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
+        aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
+    ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val clients: ClientsEnvironment =
         ClientsEnvironment(
