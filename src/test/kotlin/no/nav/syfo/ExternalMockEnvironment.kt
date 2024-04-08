@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
@@ -34,6 +35,11 @@ class ExternalMockEnvironment private constructor() {
     val pdlClient = PdlClient(
         azureAdClient = azureAdClient,
         pdlEnvironment = environment.clients.pdl,
+        httpClient = mockHttpClient,
+    )
+    val dokarkivClient = DokarkivClient(
+        azureAdClient = azureAdClient,
+        dokarkivEnvironment = environment.clients.dokarkiv,
         httpClient = mockHttpClient,
     )
 

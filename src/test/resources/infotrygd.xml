@@ -4,10 +4,10 @@
         <CopyId>K278M810</CopyId>
         <Aksjon>SENDMELDING</Aksjon>
         <Kilde>MODIA</Kilde>
-        <BrukerId>A123456</BrukerId>
+        <BrukerId>Z999999</BrukerId>
         <Dato>2024-03-01</Dato>
         <Klokke>123023</Klokke>
-        <NAVKontor>0219</NAVKontor>
+        <NAVKontor></NAVKontor>
         <Fnr>12345678910</Fnr>
         <MeldKode>O</MeldKode>
     </Header>
