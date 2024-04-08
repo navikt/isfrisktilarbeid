@@ -29,3 +29,17 @@ enum class DocumentComponentType {
     BULLET_POINTS,
     LINK,
 }
+
+fun List<DocumentComponent>.serialize(): String {
+    return buildString {
+        this@serialize.forEach { documentComponentDTO ->
+            documentComponentDTO.title?.let {
+                appendLine(it)
+            }
+            documentComponentDTO.texts.forEach {
+                appendLine(it)
+            }
+            appendLine()
+        }
+    }
+}

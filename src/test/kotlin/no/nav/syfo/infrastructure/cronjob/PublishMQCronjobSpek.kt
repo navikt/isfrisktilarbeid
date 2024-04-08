@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import no.aetat.arena.arenainfotrygdskjema.Infotrygd
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.application.IBehandlerMeldingProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.database.dropData
@@ -13,12 +14,15 @@ import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
+import no.nav.syfo.infrastructure.kafka.BehandlerMeldingProducer
+import no.nav.syfo.infrastructure.kafka.BehandlerMeldingRecord
 import no.nav.syfo.infrastructure.mq.JAXB
 import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
@@ -35,13 +39,15 @@ class PublishMQCronjobSpek : Spek({
             val database = externalMockEnvironment.database
             val environment = externalMockEnvironment.environment
             val mqSenderMock = mockk<MQSender>(relaxed = true)
+            val mockBehandlerMeldingRecordProducer = mockk<KafkaProducer<String, BehandlerMeldingRecord>>()
+            val behandlerMeldingProducer = BehandlerMeldingProducer(mockBehandlerMeldingRecordProducer)
             val vedtakService = VedtakService(
                 pdfService = PdfService(externalMockEnvironment.pdfgenClient, externalMockEnvironment.pdlClient),
                 vedtakRepository = VedtakRepository(database),
                 journalforingService = mockk<JournalforingService>(relaxed = true),
-                infotrygdService = InfotrygdService(environment.mq.mqQueueName, mqSenderMock)
+                infotrygdService = InfotrygdService(environment.mq.mqQueueName, mqSenderMock),
+                behandlerMeldingProducer = behandlerMeldingProducer,
             )
-
             val publishMQCronjob = PublishMQCronjob(vedtakService)
 
             beforeEachTest {

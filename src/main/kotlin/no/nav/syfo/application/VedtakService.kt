@@ -7,6 +7,7 @@ import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
 import java.util.*
+import kotlin.math.log
 
 class VedtakService(
     private val pdfService: IPdfService,
@@ -52,9 +53,7 @@ class VedtakService(
             behandlerMelding = behandlerMelding,
             behandlerMeldingPdf = behandlerMeldingPdf,
         )
-
-        // TODO: How should we handle result here?
-        behandlerMeldingProducer.send(createdBehandlerMelding, behandlerNavn)
+        behandlerMeldingProducer.send(personident, createdBehandlerMelding, behandlerMeldingPdf)
 
         return createdVedtak
     }
