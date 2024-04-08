@@ -33,6 +33,10 @@ fun testEnvironment() = Environment(
         ispdfgen = OpenClientEnvironment(
             baseUrl = "ispdfgenurl"
         ),
+        dokarkiv = ClientEnvironment(
+            baseUrl = "dokarkivUrl",
+            clientId = "dokarkivClientId",
+        ),
     ),
     mq = MQEnvironment(
         mqQueueManager = "mqQueueManager",

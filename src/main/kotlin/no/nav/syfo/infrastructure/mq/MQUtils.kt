@@ -1,10 +1,9 @@
-package no.nav.syfo.application.mq
+package no.nav.syfo.infrastructure.mq
 
 import com.ibm.mq.constants.CMQC.MQENC_NATIVE
 import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.jms.JmsFactoryFactory
 import com.ibm.msg.client.wmq.common.CommonConstants
-import no.nav.syfo.infrastructure.mq.MQEnvironment
 
 private const val UTF_8_WITH_PUA = 1208
 

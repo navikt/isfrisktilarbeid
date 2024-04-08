@@ -11,6 +11,10 @@ interface IVedtakRepository {
         behandlerMeldingPdf: ByteArray,
     ): Pair<Vedtak, BehandlerMelding>
 
+    fun getUnpublishedInfotrygd(): List<Vedtak>
+
+    fun setVedtakPublishedInfotrygd(vedtak: Vedtak)
+
     fun getNotJournalforteVedtak(): List<Pair<Vedtak, ByteArray>>
 
     fun update(vedtak: Vedtak)

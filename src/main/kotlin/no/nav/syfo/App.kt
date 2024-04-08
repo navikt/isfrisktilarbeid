@@ -8,6 +8,7 @@ import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
@@ -16,6 +17,8 @@ import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
+import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.slf4j.LoggerFactory
@@ -38,6 +41,10 @@ fun main() {
         azureAdClient = azureAdClient,
         pdlEnvironment = environment.clients.pdl,
     )
+    val dokarkivClient = DokarkivClient(
+        azureAdClient = azureAdClient,
+        dokarkivEnvironment = environment.clients.dokarkiv,
+    )
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.clients.ispdfgen.baseUrl,
     )
@@ -47,6 +54,10 @@ fun main() {
             clientEnvironment = environment.clients.istilgangskontroll
         )
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
+    val infotrygdService = InfotrygdService(
+        mqQueueName = environment.mq.mqQueueName,
+        mqSender = MQSender(environment.mq),
+    )
 
     lateinit var vedtakService: VedtakService
 
@@ -65,7 +76,11 @@ fun main() {
                 vedtakService = VedtakService(
                     pdfService = pdfService,
                     vedtakRepository = vedtakRepository,
-                    journalforingService = JournalforingService(),
+                    infotrygdService = infotrygdService,
+                    journalforingService = JournalforingService(
+                        dokarkivClient = dokarkivClient,
+                        pdlClient = pdlClient,
+                    ),
                 )
                 apiModule(
                     applicationState = applicationState,
@@ -85,6 +100,7 @@ fun main() {
         launchCronjobs(
             applicationState = applicationState,
             environment = environment,
+            vedtakService = vedtakService,
         )
     }
 

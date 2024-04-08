@@ -44,6 +44,26 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         }
     }
 
+    override fun getUnpublishedInfotrygd(): List<Vedtak> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_UNPUBLISHED_INFOTRYGD).use {
+                it.executeQuery().toList { toPVedtak() }
+            }
+        }.map { it.toVedtak() }
+
+    override fun setVedtakPublishedInfotrygd(vedtak: Vedtak) {
+        database.connection.use { connection ->
+            connection.prepareStatement(SET_PUBLISHED_INFOTRYGD).use {
+                it.setString(1, vedtak.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+            connection.commit()
+        }
+    }
+
     override fun getNotJournalforteVedtak(): List<Pair<Vedtak, ByteArray>> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_NOT_JOURNALFORTE_VEDTAK).use {
@@ -132,6 +152,16 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 RETURNING *
             """
 
+        private const val GET_UNPUBLISHED_INFOTRYGD =
+            """
+                SELECT * FROM VEDTAK WHERE published_infotrygd_at IS NULL
+            """
+
+        private const val SET_PUBLISHED_INFOTRYGD =
+            """
+                UPDATE VEDTAK SET published_infotrygd_at=now() WHERE uuid=?
+            """
+
         private const val UPDATE_VEDTAK =
             """
                 UPDATE VEDTAK SET journalpost_id=?, updated_at=? WHERE uuid=?
@@ -185,6 +215,7 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     ),
     journalpostId = getString("journalpost_id"),
     pdfId = getInt("pdf_id"),
+    publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
 )
 
 internal fun ResultSet.toPBehandlerMelding(): PBehandlerMelding = PBehandlerMelding(

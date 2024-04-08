@@ -4,6 +4,7 @@ import no.nav.syfo.domain.BehandlerMelding
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
 import java.util.*
 
@@ -11,6 +12,7 @@ class VedtakService(
     private val pdfService: IPdfService,
     private val vedtakRepository: IVedtakRepository,
     private val journalforingService: IJournalforingService,
+    private val infotrygdService: InfotrygdService,
 ) {
     suspend fun createVedtak(
         personident: Personident,
@@ -53,6 +55,17 @@ class VedtakService(
         // TODO: Publiserer behandlermelding på kafka til isdialogmelding
 
         return createdVedtak
+    }
+
+    fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
+        val unpublished = vedtakRepository.getUnpublishedInfotrygd()
+        return unpublished.map { vedtak ->
+            runCatching {
+                infotrygdService.sendMessageToInfotrygd(vedtak)
+                vedtakRepository.setVedtakPublishedInfotrygd(vedtak)
+                vedtak
+            }
+        }
     }
 
     suspend fun journalforVedtak(): List<Result<Vedtak>> {

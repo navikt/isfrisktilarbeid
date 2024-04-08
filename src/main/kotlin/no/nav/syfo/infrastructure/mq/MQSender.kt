@@ -1,22 +1,24 @@
-package no.nav.syfo.application.mq
+package no.nav.syfo.infrastructure.mq
 
 import io.micrometer.core.instrument.Counter
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
-import no.nav.syfo.infrastructure.mq.MQEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.jms.JMSContext
 
-private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.application.mq")
+private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.infrastructure.mq")
 
 class MQSender(env: MQEnvironment) {
 
-    private val jmsContext: JMSContext = connectionFactory(env).createContext()
+    private val jmsContext: JMSContext? = if (env.mqHostname.startsWith("mpls02"))
+        null
+    else
+        connectionFactory(env).createContext()
 
     protected fun finalize() {
         try {
-            jmsContext.close()
+            jmsContext!!.close()
         } catch (exc: Exception) {
             log.warn("Got exception when closing MQ-connection", exc)
         }
@@ -26,7 +28,7 @@ class MQSender(env: MQEnvironment) {
         queueName: String,
         payload: String,
     ) {
-        jmsContext.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
+        jmsContext!!.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
             val destination = context.createQueue("queue:///$queueName")
             val message = context.createTextMessage(payload)
             context.createProducer().send(destination, message)

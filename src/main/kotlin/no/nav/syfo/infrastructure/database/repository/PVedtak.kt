@@ -21,6 +21,7 @@ data class PVedtak(
     val document: List<DocumentComponent>,
     val journalpostId: String?,
     val pdfId: Int,
+    val publishedInfotrygdAt: OffsetDateTime?,
 ) {
     fun toVedtak(): Vedtak = Vedtak.createFromDatabase(
         uuid = uuid,

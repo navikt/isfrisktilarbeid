@@ -1,12 +1,10 @@
 package no.nav.syfo.infrastructure.infotrygd
 
 import no.aetat.arena.arenainfotrygdskjema.ObjectFactory
-import no.nav.syfo.application.mq.MQSender
-import no.nav.syfo.domain.Personident
+import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.mq.JAXB
+import no.nav.syfo.infrastructure.mq.MQSender
 import java.math.BigInteger
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.xml.datatype.DatatypeFactory
 
@@ -16,12 +14,7 @@ class InfotrygdService(
 ) {
 
     fun sendMessageToInfotrygd(
-        personident: Personident,
-        veilederident: String,
-        navKontor: String,
-        now: LocalDateTime,
-        datoFra: LocalDate,
-        datoTil: LocalDate,
+        vedtak: Vedtak,
     ) {
         val objectFactory = ObjectFactory()
         val dataTypeFactory = DatatypeFactory.newInstance()
@@ -29,13 +22,13 @@ class InfotrygdService(
         infotrygdHeader.copyId = "K278M810"
         infotrygdHeader.aksjon = "SENDMELDING"
         infotrygdHeader.kilde = "MODIA"
-        infotrygdHeader.brukerId = veilederident
+        infotrygdHeader.brukerId = vedtak.veilederident
         infotrygdHeader.dato = dataTypeFactory.newXMLGregorianCalendar(
-            now.toLocalDate().toString()
+            vedtak.createdAt.toLocalDate().toString()
         )
-        infotrygdHeader.klokke = timeFormatter.format(now)
-        infotrygdHeader.navKontor = navKontor
-        infotrygdHeader.fnr = personident.value
+        infotrygdHeader.klokke = timeFormatter.format(vedtak.createdAt)
+        infotrygdHeader.navKontor = "" // TODO
+        infotrygdHeader.fnr = vedtak.personident.value
         infotrygdHeader.meldKode = "O"
         val infotygdHeaderMeldingsdata = objectFactory.createHeaderMeldingsdata()
         infotygdHeaderMeldingsdata.antall = BigInteger.ONE
@@ -50,10 +43,10 @@ class InfotrygdService(
         val meldingdataMATSP1 = objectFactory.createMeldingsdataMATSP1()
         meldingdataMATSP1.aktType = "FA"
         meldingdataMATSP1.datoFra = dataTypeFactory.newXMLGregorianCalendar(
-            datoFra.toString()
+            vedtak.fom.toString()
         )
         meldingdataMATSP1.datoTil = dataTypeFactory.newXMLGregorianCalendar(
-            datoTil.toString()
+            vedtak.tom.toString()
         )
         val meldingdata = objectFactory.createMeldingsdata()
         meldingdata.matsP1 = meldingdataMATSP1
