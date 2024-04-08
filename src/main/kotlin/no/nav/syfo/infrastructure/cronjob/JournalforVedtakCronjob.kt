@@ -16,11 +16,13 @@ class JournalforVedtakCronjob(
         failed.forEach {
             log.error("Exception caught while journalforing vedtak", it.exceptionOrNull())
         }
-        log.info(
-            "Completed journalforing vedtak with result: {}, {}",
-            StructuredArguments.keyValue("failed", failed.size),
-            StructuredArguments.keyValue("updated", success.size),
-        )
+        if (failed.size + success.size > 0) {
+            log.info(
+                "Completed journalforing vedtak with result: {}, {}",
+                StructuredArguments.keyValue("failed", failed.size),
+                StructuredArguments.keyValue("updated", success.size),
+            )
+        }
     }
 
     companion object {

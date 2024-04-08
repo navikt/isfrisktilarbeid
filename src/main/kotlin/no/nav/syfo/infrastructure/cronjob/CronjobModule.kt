@@ -23,6 +23,9 @@ fun launchCronjobs(
     val publishMQCronjob = PublishMQCronjob(vedtakService)
     cronjobs.add(publishMQCronjob)
 
+    val journalforVedtakCronjob = JournalforVedtakCronjob(vedtakService = vedtakService)
+    cronjobs.add(journalforVedtakCronjob)
+
     cronjobs.forEach {
         launchBackgroundTask(
             applicationState = applicationState,
