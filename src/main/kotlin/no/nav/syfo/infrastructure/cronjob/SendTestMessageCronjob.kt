@@ -5,7 +5,6 @@ import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class SendTestMessageCronjob(
     private val infotrygdService: InfotrygdService,
