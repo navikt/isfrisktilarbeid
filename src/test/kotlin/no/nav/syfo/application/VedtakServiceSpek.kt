@@ -22,6 +22,7 @@ import org.spekframework.spek2.style.specification.describe
 
 val vedtak = generateVedtak()
 val behandlerMelding = generateBehandlerMelding()
+val otherBehandlerMelding = generateBehandlerMelding()
 
 class VedtakServiceSpek : Spek({
     describe(VedtakService::class.java.simpleName) {
@@ -100,7 +101,9 @@ class VedtakServiceSpek : Spek({
                 val failingVedtak = generateVedtak().copy(uuid = UserConstants.FAILING_EKSTERN_REFERANSE_UUID)
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
-                    pdf = UserConstants.PDF_VEDTAK,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlerMelding = behandlerMelding,
+                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -115,7 +118,9 @@ class VedtakServiceSpek : Spek({
                 val failingVedtak = generateVedtak(personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS)
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
-                    pdf = UserConstants.PDF_VEDTAK,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlerMelding = behandlerMelding,
+                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -130,12 +135,14 @@ class VedtakServiceSpek : Spek({
                 val failingVedtak = generateVedtak(personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS)
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
-                    pdf = UserConstants.PDF_VEDTAK,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlerMelding = behandlerMelding,
+                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlerMelding,
+                    behandlerMelding = otherBehandlerMelding,
                     behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
