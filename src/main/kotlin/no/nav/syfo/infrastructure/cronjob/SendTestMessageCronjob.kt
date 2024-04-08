@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.cronjob
 
 import no.nav.syfo.domain.Personident
+import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -16,12 +17,14 @@ class SendTestMessageCronjob(
     override suspend fun run() {
         try {
             infotrygdService.sendMessageToInfotrygd(
-                personident = testIdent,
-                veilederident = "Z994248",
-                navKontor = "0219",
-                now = LocalDateTime.now(),
-                datoFra = LocalDate.now().plusDays(1),
-                datoTil = LocalDate.now().plusDays(31),
+                Vedtak(
+                    personident = testIdent,
+                    veilederident = "Z994248",
+                    "",
+                    emptyList(),
+                    fom = LocalDate.now().plusDays(1),
+                    tom = LocalDate.now().plusDays(31),
+                )
             )
             log.info("Completed SendTestMessageCronjob")
         } catch (exc: Exception) {
