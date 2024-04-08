@@ -23,6 +23,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
 import java.time.LocalDate
+import java.util.*
 import javax.xml.stream.XMLInputFactory
 
 class PublishMQCronjobSpek : Spek({
@@ -62,6 +63,9 @@ class PublishMQCronjobSpek : Spek({
                             fom = fom,
                             tom = tom,
                             callId = "callId",
+                            behandlerRef = UUID.randomUUID(),
+                            behandlerNavn = "Beate Behandler",
+                            behandlerDocument = generateDocumentComponent("En melding til behandler"),
                         )
                     }
                     val lagretVedtakBefore = database.getVedtak(vedtak.uuid)
@@ -79,7 +83,9 @@ class PublishMQCronjobSpek : Spek({
                     verify(exactly = 1) { mqSenderMock.sendToMQ(capture(queueNameSlot), capture(payloadSlot)) }
 
                     queueNameSlot.captured shouldBeEqualTo environment.mq.mqQueueName
-                    val message = JAXB.unmarshallObject<Infotrygd>(XMLInputFactory.newInstance().createXMLStreamReader(StringReader(payloadSlot.captured)))
+                    val message = JAXB.unmarshallObject<Infotrygd>(
+                        XMLInputFactory.newInstance().createXMLStreamReader(StringReader(payloadSlot.captured))
+                    )
                     message.header.brukerId shouldBeEqualTo UserConstants.VEILEDER_IDENT
                     message.header.fnr shouldBeEqualTo UserConstants.ARBEIDSTAKER_PERSONIDENT.value
                     message.meldingsspesFelt.meldingsdata.matsP1.datoFra.toString() shouldBeEqualTo fom.toString()

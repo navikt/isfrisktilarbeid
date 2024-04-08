@@ -10,5 +10,6 @@ data class VedtakRequestDTO(
     val fom: LocalDate,
     val tom: LocalDate,
     val behandlerRef: UUID,
+    val behandlerNavn: String,
     val behandlerDocument: List<DocumentComponent>,
 )

@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.pdf
 
 import no.nav.syfo.application.IPdfService
+import no.nav.syfo.domain.BehandlerMelding
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfModel.*
@@ -25,6 +26,21 @@ class PdfService(
         return pdfGenClient.createVedtakPdf(
             callId = callId,
             payload = vedtakPdfModel,
+        )
+    }
+
+    override suspend fun createBehandlerMeldingPdf(
+        behandlerMelding: BehandlerMelding,
+        behandlerNavn: String,
+        callId: String
+    ): ByteArray {
+        val behandlerMeldingPdfModel = BehandlerMeldingPdfModel(
+            mottakerNavn = behandlerNavn,
+            documentComponents = behandlerMelding.document,
+        )
+        return pdfGenClient.createBehandlerPdf(
+            callId = callId,
+            payload = behandlerMeldingPdfModel,
         )
     }
 }

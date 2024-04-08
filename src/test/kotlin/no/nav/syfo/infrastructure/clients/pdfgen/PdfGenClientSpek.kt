@@ -39,7 +39,7 @@ class PdfGenClientSpek : Spek({
                 )
             }
 
-            pdf shouldBeEqualTo UserConstants.PDF_BEHANDLER
+            pdf shouldBeEqualTo UserConstants.PDF_BEHANDLER_MELDING
         }
     }
 })

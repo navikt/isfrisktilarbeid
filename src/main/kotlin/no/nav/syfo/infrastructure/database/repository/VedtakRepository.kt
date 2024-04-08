@@ -2,9 +2,7 @@ package no.nav.syfo.infrastructure.database.repository
 
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.IVedtakRepository
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
@@ -21,16 +19,28 @@ private val mapper = configuredJacksonMapper()
 
 class VedtakRepository(private val database: DatabaseInterface) : IVedtakRepository {
 
-    override fun createVedtak(vedtak: Vedtak, pdf: ByteArray): Vedtak {
+    override fun createVedtak(
+        vedtak: Vedtak,
+        vedtakPdf: ByteArray,
+        behandlerMelding: BehandlerMelding,
+        behandlerMeldingPdf: ByteArray
+    ): Pair<Vedtak, BehandlerMelding> {
         database.connection.use { connection ->
-            val pPdf = connection.createPdf(pdf = pdf)
+            val pVedtakPdf = connection.createPdf(pdf = vedtakPdf)
             val pVedtak = connection.createVedtak(
                 vedtak = vedtak,
-                pdfId = pPdf.id
+                pdfId = pVedtakPdf.id
             )
-            connection.commit()
 
-            return pVedtak.toVedtak()
+            val pBehandlerMeldingPdf = connection.createPdf(pdf = behandlerMeldingPdf)
+            val pBehandlerMelding = connection.createBehandlerMelding(
+                behandlerMelding = behandlerMelding,
+                vedtakId = pVedtak.id,
+                pdfId = pBehandlerMeldingPdf.id
+            )
+
+            connection.commit()
+            return Pair(pVedtak.toVedtak(), pBehandlerMelding.toBehandlerMelding())
         }
     }
 
@@ -100,6 +110,18 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             it.executeQuery().toList { toPVedtak() }.single()
         }
 
+    private fun Connection.createBehandlerMelding(behandlerMelding: BehandlerMelding, vedtakId: Int, pdfId: Int) =
+        prepareStatement(CREATE_BEHANDLER_MELDING).use {
+            it.setString(1, behandlerMelding.uuid.toString())
+            it.setObject(2, behandlerMelding.createdAt)
+            it.setObject(3, behandlerMelding.createdAt)
+            it.setString(4, behandlerMelding.behandlerRef.toString())
+            it.setObject(5, mapper.writeValueAsString(behandlerMelding.document))
+            it.setInt(6, vedtakId)
+            it.setInt(7, pdfId)
+            it.executeQuery().toList { toPBehandlerMelding() }.single()
+        }
+
     companion object {
         private const val CREATE_PDF =
             """
@@ -152,6 +174,21 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                  INNER JOIN pdf p ON v.pdf_id = p.id
                  WHERE v.journalpost_id IS NULL
             """
+
+        private const val CREATE_BEHANDLER_MELDING =
+            """
+                INSERT INTO BEHANDLER_MELDING (
+                    id,
+                    uuid,
+                    created_at,
+                    updated_at,
+                    behandler_ref,
+                    document,
+                    vedtak_id,
+                    pdf_id
+                ) values (DEFAULT, ?, ?, ?, ?, ?::jsonb, ?, ?)
+                RETURNING *
+            """
     }
 }
 
@@ -179,4 +216,19 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     journalpostId = getString("journalpost_id"),
     pdfId = getInt("pdf_id"),
     publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
+)
+
+internal fun ResultSet.toPBehandlerMelding(): PBehandlerMelding = PBehandlerMelding(
+    id = getInt("id"),
+    uuid = UUID.fromString(getString("uuid")),
+    createdAt = getObject("created_at", OffsetDateTime::class.java),
+    updatedAt = getObject("updated_at", OffsetDateTime::class.java),
+    behandlerRef = UUID.fromString(getString("behandler_ref")),
+    document = mapper.readValue(
+        getString("document"),
+        object : TypeReference<List<DocumentComponent>>() {}
+    ),
+    journalpostId = getString("journalpost_id")?.let { JournalpostId(it) },
+    vedtakId = getInt("vedtak_id"),
+    pdfId = getInt("pdf_id"),
 )

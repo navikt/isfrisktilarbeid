@@ -1,10 +1,12 @@
 package no.nav.syfo.application
 
+import no.nav.syfo.domain.BehandlerMelding
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
+import java.util.*
 
 class VedtakService(
     private val pdfService: IPdfService,
@@ -20,6 +22,9 @@ class VedtakService(
         fom: LocalDate,
         tom: LocalDate,
         callId: String,
+        behandlerRef: UUID,
+        behandlerNavn: String,
+        behandlerDocument: List<DocumentComponent>,
     ): Vedtak {
         val vedtak = Vedtak(
             personident = personident,
@@ -29,13 +34,25 @@ class VedtakService(
             fom = fom,
             tom = tom,
         )
+        val behandlerMelding = BehandlerMelding(
+            behandlerRef = behandlerRef,
+            document = behandlerDocument,
+        )
         val vedtakPdf = pdfService.createVedtakPdf(vedtak = vedtak, callId = callId)
-        val createdVedtak = vedtakRepository.createVedtak(
+        val behandlerMeldingPdf =
+            pdfService.createBehandlerMeldingPdf(
+                behandlerMelding = behandlerMelding,
+                behandlerNavn = behandlerNavn,
+                callId = callId
+            )
+        val (createdVedtak, createdBehandlerMelding) = vedtakRepository.createVedtak(
             vedtak = vedtak,
-            pdf = vedtakPdf,
+            vedtakPdf = vedtakPdf,
+            behandlerMelding = behandlerMelding,
+            behandlerMeldingPdf = behandlerMeldingPdf,
         )
 
-        // TODO: Lage melding til behandler inkl pdf, lagre denne og produsere til isdialogmelding
+        // TODO: Publiserer behandlermelding på kafka til isdialogmelding
 
         return createdVedtak
     }
