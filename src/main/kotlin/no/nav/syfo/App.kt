@@ -17,7 +17,11 @@ import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
+import no.nav.syfo.infrastructure.kafka.BehandlerMeldingProducer
+import no.nav.syfo.infrastructure.kafka.BehandlerMeldingRecordSerializer
+import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.pdf.PdfService
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -48,6 +52,12 @@ fun main() {
         )
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
 
+    val behandlerMeldingProducer = BehandlerMeldingProducer(
+        produder = KafkaProducer(
+            kafkaAivenProducerConfig<BehandlerMeldingRecordSerializer>(kafkaEnvironment = environment.kafka)
+        )
+    )
+
     lateinit var vedtakService: VedtakService
 
     val applicationEngineEnvironment =
@@ -66,6 +76,7 @@ fun main() {
                     pdfService = pdfService,
                     vedtakRepository = vedtakRepository,
                     journalforingService = JournalforingService(),
+                    behandlerMeldingProducer = behandlerMeldingProducer,
                 )
                 apiModule(
                     applicationState = applicationState,

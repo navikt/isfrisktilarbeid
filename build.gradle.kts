@@ -20,6 +20,7 @@ object Version {
     const val MOCKK = "1.13.9"
     const val NIMBUS_JOSE_JWT = "9.37.3"
     const val KLUENT = "1.73"
+    const val KAFKA = "3.7.0"
 }
 
 plugins {
@@ -63,6 +64,12 @@ dependencies {
     implementation("com.zaxxer:HikariCP:${Version.HIKARI}")
     implementation("org.flywaydb:flyway-database-postgresql:${Version.FLYWAY}")
     testImplementation("io.zonky.test:embedded-postgres:${Version.POSTGRES_EMBEDDED}")
+
+    // Kafka
+    val excludeLog4j = fun ExternalModuleDependency.() {
+        exclude(group = "log4j")
+    }
+    implementation("org.apache.kafka:kafka_2.13:${Version.KAFKA}", excludeLog4j)
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Version.JACKSON_DATATYPE}")

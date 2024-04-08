@@ -11,6 +11,7 @@ class VedtakService(
     private val pdfService: IPdfService,
     private val vedtakRepository: IVedtakRepository,
     private val journalforingService: IJournalforingService,
+    private val behandlerMeldingProducer: IBehandlerMeldingProducer,
 ) {
     suspend fun createVedtak(
         personident: Personident,
@@ -50,8 +51,9 @@ class VedtakService(
             behandlerMeldingPdf = behandlerMeldingPdf,
         )
 
-        // TODO: Publiserer behandlermelding på kafka til isdialogmelding
-
+        // TODO: How should we handle result here?
+        behandlerMeldingProducer.send(createdBehandlerMelding, behandlerNavn)
+        
         return createdVedtak
     }
 
