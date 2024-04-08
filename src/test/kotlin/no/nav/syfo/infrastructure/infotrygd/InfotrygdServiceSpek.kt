@@ -43,7 +43,7 @@ class InfotrygdServiceSpek : Spek({
                 mqSender.sendToMQ(any(), capture(payloadSlot))
             }
             val payload = payloadSlot.captured
-            val expectedPayload = getFileAsString("src/test/resources/infotrygd.xml")
+            val expectedPayload = getFileAsString("src/test/resources/infotrygd.txt")
             payload shouldBeEqualTo expectedPayload
         }
     }

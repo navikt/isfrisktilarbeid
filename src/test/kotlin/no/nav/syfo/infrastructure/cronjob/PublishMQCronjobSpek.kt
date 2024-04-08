@@ -3,7 +3,6 @@ package no.nav.syfo.infrastructure.cronjob
 import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import no.aetat.arena.arenainfotrygdskjema.Infotrygd
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.application.VedtakService
@@ -13,7 +12,6 @@ import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.mq.JAXB
 import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.shouldBe
@@ -21,9 +19,7 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.io.StringReader
 import java.time.LocalDate
-import javax.xml.stream.XMLInputFactory
 
 class PublishMQCronjobSpek : Spek({
 
@@ -79,11 +75,6 @@ class PublishMQCronjobSpek : Spek({
                     verify(exactly = 1) { mqSenderMock.sendToMQ(capture(queueNameSlot), capture(payloadSlot)) }
 
                     queueNameSlot.captured shouldBeEqualTo environment.mq.mqQueueName
-                    val message = JAXB.unmarshallObject<Infotrygd>(XMLInputFactory.newInstance().createXMLStreamReader(StringReader(payloadSlot.captured)))
-                    message.header.brukerId shouldBeEqualTo UserConstants.VEILEDER_IDENT
-                    message.header.fnr shouldBeEqualTo UserConstants.ARBEIDSTAKER_PERSONIDENT.value
-                    message.meldingsspesFelt.meldingsdata.matsP1.datoFra.toString() shouldBeEqualTo fom.toString()
-                    message.meldingsspesFelt.meldingsdata.matsP1.datoTil.toString() shouldBeEqualTo tom.toString()
 
                     // vedtak should not be sent again when already published
                     clearMocks(mqSenderMock)

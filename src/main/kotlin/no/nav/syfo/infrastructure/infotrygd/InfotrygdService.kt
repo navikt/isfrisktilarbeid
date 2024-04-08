@@ -1,13 +1,9 @@
 package no.nav.syfo.infrastructure.infotrygd
 
-import no.aetat.arena.arenainfotrygdskjema.ObjectFactory
 import no.nav.syfo.domain.Vedtak
-import no.nav.syfo.infrastructure.mq.JAXB
 import no.nav.syfo.infrastructure.mq.MQSender
 import org.slf4j.LoggerFactory
-import java.math.BigInteger
 import java.time.format.DateTimeFormatter
-import javax.xml.datatype.DatatypeFactory
 
 class InfotrygdService(
     val mqQueueName: String,
@@ -17,58 +13,36 @@ class InfotrygdService(
     fun sendMessageToInfotrygd(
         vedtak: Vedtak,
     ) {
-        val objectFactory = ObjectFactory()
-        val dataTypeFactory = DatatypeFactory.newInstance()
-        val infotrygdHeader = objectFactory.createHeader()
-        infotrygdHeader.copyId = "K278M810"
-        infotrygdHeader.aksjon = "SENDMELDING"
-        infotrygdHeader.kilde = "MODIA"
-        infotrygdHeader.brukerId = vedtak.veilederident
-        infotrygdHeader.dato = dataTypeFactory.newXMLGregorianCalendar(
-            vedtak.createdAt.toLocalDate().toString()
-        )
-        infotrygdHeader.klokke = timeFormatter.format(vedtak.createdAt)
-        infotrygdHeader.navKontor = "0315" // TODO
-        infotrygdHeader.fnr = vedtak.personident.value
-        infotrygdHeader.meldKode = "O"
-        val infotygdHeaderMeldingsdata = objectFactory.createHeaderMeldingsdata()
-        infotygdHeaderMeldingsdata.antall = BigInteger.ONE
-        infotygdHeaderMeldingsdata.copyId = "K278M830"
-        val headerTekstlinjer = objectFactory.createHeaderTekstlinjer()
-        headerTekstlinjer.antall = BigInteger.ZERO
-        headerTekstlinjer.copyId = "K278M840"
+        val infotrygdMessage = StringBuilder()
+        infotrygdMessage.append("K278M810")
+        infotrygdMessage.append("SENDMELDING")
+        infotrygdMessage.append("MODIA")
+        infotrygdMessage.append(vedtak.veilederident.padEnd(8))
+        infotrygdMessage.append("00000")
+        infotrygdMessage.append(dateFormatter.format(vedtak.createdAt))
+        infotrygdMessage.append(timeFormatter.format(vedtak.createdAt))
+        infotrygdMessage.append("0315") // TODO
+        infotrygdMessage.append(vedtak.personident.value)
+        infotrygdMessage.append("".padEnd(4))
+        infotrygdMessage.append("O".padEnd(2))
+        infotrygdMessage.append("K278M83000001")
+        infotrygdMessage.append("MA-TSP-1".padEnd(10))
+        infotrygdMessage.append("001FA")
+        infotrygdMessage.append(dateFormatter.format(vedtak.fom))
+        infotrygdMessage.append(dateFormatter.format(vedtak.tom))
+        infotrygdMessage.append("".padEnd(72))
+        infotrygdMessage.append("K278M84000000")
 
-        val meldingsspesFelt = objectFactory.createMeldingsspesFelt()
-        meldingsspesFelt.meldVersjon = BigInteger.ONE
-        meldingsspesFelt.meldId = "MA-TSP-1"
-        val meldingdataMATSP1 = objectFactory.createMeldingsdataMATSP1()
-        meldingdataMATSP1.aktType = "FA"
-        meldingdataMATSP1.datoFra = dataTypeFactory.newXMLGregorianCalendar(
-            vedtak.fom.toString()
-        )
-        meldingdataMATSP1.datoTil = dataTypeFactory.newXMLGregorianCalendar(
-            vedtak.tom.toString()
-        )
-        val meldingdata = objectFactory.createMeldingsdata()
-        meldingdata.matsP1 = meldingdataMATSP1
-        meldingsspesFelt.meldingsdata = meldingdata
-
-        val infotrygdMessage = objectFactory.createInfotrygd()
-        infotrygdMessage.headerMeldingsdata = infotygdHeaderMeldingsdata
-        infotrygdMessage.header = infotrygdHeader
-        infotrygdMessage.headerTekstlinjer = headerTekstlinjer
-        infotrygdMessage.meldingsspesFelt = meldingsspesFelt
-
-        val payload = JAXB.marshallInfotrygd(infotrygdMessage)
-        log.info(payload)
+        log.info(infotrygdMessage.toString())
 
         mqSender.sendToMQ(
             queueName = mqQueueName,
-            payload = payload,
+            payload = infotrygdMessage.toString(),
         )
     }
 
     companion object {
+        val dateFormatter = DateTimeFormatter.ofPattern("ddMMYYYY")
         val timeFormatter = DateTimeFormatter.ofPattern("HHmmss")
         private val log = LoggerFactory.getLogger(InfotrygdService::class.java)
     }
