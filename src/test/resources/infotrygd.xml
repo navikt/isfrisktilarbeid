@@ -7,7 +7,7 @@
         <BrukerId>Z999999</BrukerId>
         <Dato>2024-03-01</Dato>
         <Klokke>123023</Klokke>
-        <NAVKontor></NAVKontor>
+        <NAVKontor>0315</NAVKontor>
         <Fnr>12345678910</Fnr>
         <MeldKode>O</MeldKode>
     </Header>
