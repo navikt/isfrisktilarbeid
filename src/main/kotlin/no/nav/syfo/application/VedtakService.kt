@@ -7,7 +7,6 @@ import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
 import java.util.*
-import kotlin.math.log
 
 class VedtakService(
     private val pdfService: IPdfService,
@@ -15,6 +14,7 @@ class VedtakService(
     private val journalforingService: IJournalforingService,
     private val infotrygdService: InfotrygdService,
     private val behandlerMeldingProducer: IBehandlerMeldingProducer,
+    private val esyfovarselHendelseProducer: IEsyfovarselHendelseProducer,
 ) {
     suspend fun createVedtak(
         personident: Personident,
@@ -83,5 +83,15 @@ class VedtakService(
                 journalfortVedtak
             }
         }
+    }
+
+    fun publishVedtakVarsel(
+        personident: Personident,
+        vedtak: Vedtak
+    ): Result<Vedtak> {
+        return esyfovarselHendelseProducer.sendVedtakVarsel(
+            personident = personident,
+            vedtak = vedtak
+        )
     }
 }

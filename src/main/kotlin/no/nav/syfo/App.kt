@@ -18,11 +18,13 @@ import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
-import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.BehandlerMeldingProducer
 import no.nav.syfo.infrastructure.kafka.BehandlerMeldingRecordSerializer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaEsyfovarselHendelseSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
+import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
@@ -62,6 +64,11 @@ fun main() {
         mqQueueName = environment.mq.mqQueueName,
         mqSender = MQSender(environment.mq),
     )
+    val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
+        kafkaProducer = KafkaProducer(
+            kafkaAivenProducerConfig<KafkaEsyfovarselHendelseSerializer>(kafkaEnvironment = environment.kafka)
+        )
+    )
 
     val behandlerMeldingProducer = BehandlerMeldingProducer(
         produder = KafkaProducer(
@@ -92,6 +99,7 @@ fun main() {
                         pdlClient = pdlClient,
                     ),
                     behandlerMeldingProducer = behandlerMeldingProducer,
+                    esyfovarselHendelseProducer = esyfovarselHendelseProducer,
                 )
                 apiModule(
                     applicationState = applicationState,

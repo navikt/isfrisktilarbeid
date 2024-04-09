@@ -13,16 +13,16 @@ import java.util.*
  * kommunikasjon mellom NAV og samhandlere i helsesektoren."
  */
 data class BehandlerMeldingRecord private constructor(
-    private val behandlerRef: UUID,
-    private val personIdent: String,
-    private val dialogmeldingUuid: String,
-    private val dialogmeldingRefParent: String?,
-    private val dialogmeldingRefConversation: String,
-    private val dialogmeldingType: String,
-    private val dialogmeldingKodeverk: String,
-    private val dialogmeldingKode: Int,
-    private val dialogmeldingTekst: String?,
-    private val dialogmeldingVedlegg: ByteArray,
+    val behandlerRef: UUID,
+    val personIdent: String,
+    val dialogmeldingUuid: String,
+    val dialogmeldingRefParent: String?,
+    val dialogmeldingRefConversation: String,
+    val dialogmeldingType: String,
+    val dialogmeldingKodeverk: String,
+    val dialogmeldingKode: Int,
+    val dialogmeldingTekst: String,
+    val dialogmeldingVedlegg: ByteArray,
 ) {
     constructor(
         behandlerRef: UUID,

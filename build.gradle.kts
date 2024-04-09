@@ -14,13 +14,13 @@ object Version {
     const val LOGSTASH_ENCODER = "7.4"
     const val MICROMETER_REGISTRY = "1.12.2"
     const val JACKSON_DATATYPE = "2.16.1"
+    const val KAFKA = "3.7.0"
     const val KTOR = "2.3.8"
     const val MQ = "9.3.5.0"
     const val SPEK = "2.0.19"
     const val MOCKK = "1.13.9"
     const val NIMBUS_JOSE_JWT = "9.37.3"
     const val KLUENT = "1.73"
-    const val KAFKA = "3.7.0"
 }
 
 plugins {
