@@ -6,8 +6,6 @@ version = "0.0.1"
 object Version {
     const val FLYWAY = "10.8.1"
     const val HIKARI = "5.1.0"
-    const val JAXB_JAKARTA = "4.0.2"
-    const val JAXB_RUNTIME = "4.0.5"
     const val POSTGRES = "42.7.2"
     const val POSTGRES_EMBEDDED = "2.0.6"
     const val LOGBACK = "1.4.14"
@@ -27,7 +25,6 @@ plugins {
     kotlin("jvm") version "1.9.23"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("com.github.bjornvester.xjc") version "1.8.2"
 }
 
 repositories {
@@ -47,9 +44,6 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:${Version.KTOR}")
     implementation("io.ktor:ktor-server-netty:${Version.KTOR}")
     implementation("io.ktor:ktor-server-status-pages:${Version.KTOR}")
-
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:${Version.JAXB_JAKARTA}")
-    implementation("org.glassfish.jaxb:jaxb-runtime:${Version.JAXB_RUNTIME}")
 
     // Logging
     implementation("ch.qos.logback:logback-classic:${Version.LOGBACK}")

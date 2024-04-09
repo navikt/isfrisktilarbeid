@@ -3,7 +3,6 @@ package no.nav.syfo.infrastructure.cronjob
 import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import no.aetat.arena.arenainfotrygdskjema.Infotrygd
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.application.IEsyfovarselHendelseProducer
@@ -14,18 +13,14 @@ import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.mq.JAXB
-import no.nav.syfo.infrastructure.mq.MQSender
+import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.shouldBe
-import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.io.StringReader
 import java.time.LocalDate
 import java.util.*
-import javax.xml.stream.XMLInputFactory
 
 class PublishMQCronjobSpek : Spek({
 
@@ -34,13 +29,12 @@ class PublishMQCronjobSpek : Spek({
             start()
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database
-            val environment = externalMockEnvironment.environment
-            val mqSenderMock = mockk<MQSender>(relaxed = true)
+            val mqSenderMock = mockk<InfotrygdMQSender>(relaxed = true)
             val vedtakService = VedtakService(
                 pdfService = PdfService(externalMockEnvironment.pdfgenClient, externalMockEnvironment.pdlClient),
                 vedtakRepository = VedtakRepository(database),
                 journalforingService = mockk<JournalforingService>(relaxed = true),
-                infotrygdService = InfotrygdService(environment.mq.mqQueueName, mqSenderMock),
+                infotrygdService = InfotrygdService(mqSenderMock),
                 esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),
             )
 
@@ -49,7 +43,7 @@ class PublishMQCronjobSpek : Spek({
             beforeEachTest {
                 database.dropData()
                 clearAllMocks()
-                justRun { mqSenderMock.sendToMQ(any(), any()) }
+                justRun { mqSenderMock.sendToMQ(any()) }
             }
 
             describe("Cronjob sender lagrede vedtak") {
@@ -80,25 +74,15 @@ class PublishMQCronjobSpek : Spek({
                     val lagretVedtakAfter = database.getVedtak(vedtak.uuid)
                     lagretVedtakAfter!!.publishedInfotrygdAt shouldNotBe null
 
-                    val queueNameSlot = slot<String>()
                     val payloadSlot = slot<String>()
-                    verify(exactly = 1) { mqSenderMock.sendToMQ(capture(queueNameSlot), capture(payloadSlot)) }
-
-                    queueNameSlot.captured shouldBeEqualTo environment.mq.mqQueueName
-                    val message = JAXB.unmarshallObject<Infotrygd>(
-                        XMLInputFactory.newInstance().createXMLStreamReader(StringReader(payloadSlot.captured))
-                    )
-                    message.header.brukerId shouldBeEqualTo UserConstants.VEILEDER_IDENT
-                    message.header.fnr shouldBeEqualTo UserConstants.ARBEIDSTAKER_PERSONIDENT.value
-                    message.meldingsspesFelt.meldingsdata.matsP1.datoFra.toString() shouldBeEqualTo fom.toString()
-                    message.meldingsspesFelt.meldingsdata.matsP1.datoTil.toString() shouldBeEqualTo tom.toString()
+                    verify(exactly = 1) { mqSenderMock.sendToMQ(capture(payloadSlot)) }
 
                     // vedtak should not be sent again when already published
                     clearMocks(mqSenderMock)
                     runBlocking {
                         publishMQCronjob.run()
                     }
-                    verify(exactly = 0) { mqSenderMock.sendToMQ(any(), any()) }
+                    verify(exactly = 0) { mqSenderMock.sendToMQ(any()) }
                 }
             }
         }

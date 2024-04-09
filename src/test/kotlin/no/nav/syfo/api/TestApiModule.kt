@@ -5,7 +5,7 @@ import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.application.IEsyfovarselHendelseProducer
 import no.nav.syfo.application.VedtakService
-import no.nav.syfo.infrastructure.mq.MQSender
+import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
@@ -34,8 +34,7 @@ fun Application.testApiModule(
         pdfService = pdfService,
         journalforingService = journalforingService,
         infotrygdService = InfotrygdService(
-            mqQueueName = externalMockEnvironment.environment.mq.mqQueueName,
-            mqSender = mockk<MQSender>(relaxed = true),
+            mqSender = mockk<InfotrygdMQSender>(relaxed = true),
         ),
         esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),
     )

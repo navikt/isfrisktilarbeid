@@ -3,9 +3,8 @@ package no.nav.syfo.infrastructure.infotrygd
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.generator.generateVedtak
-import no.nav.syfo.infrastructure.mq.MQSender
+import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -18,11 +17,9 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class InfotrygdServiceSpek : Spek({
-    val externalMockEnvironment = ExternalMockEnvironment.instance
-    val mqSender = mockk<MQSender>(relaxed = true)
+    val mqSender = mockk<InfotrygdMQSender>(relaxed = true)
 
     val infotrygdService = InfotrygdService(
-        mqQueueName = externalMockEnvironment.environment.mq.mqQueueName,
         mqSender = mqSender,
     )
 
@@ -40,10 +37,10 @@ class InfotrygdServiceSpek : Spek({
             infotrygdService.sendMessageToInfotrygd(vedtak)
             val payloadSlot = slot<String>()
             verify(exactly = 1) {
-                mqSender.sendToMQ(any(), capture(payloadSlot))
+                mqSender.sendToMQ(capture(payloadSlot))
             }
             val payload = payloadSlot.captured
-            val expectedPayload = getFileAsString("src/test/resources/infotrygd.xml")
+            val expectedPayload = getFileAsString("src/test/resources/infotrygd.txt")
             payload shouldBeEqualTo expectedPayload
         }
     }
