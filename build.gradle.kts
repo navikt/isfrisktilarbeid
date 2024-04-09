@@ -14,6 +14,7 @@ object Version {
     const val LOGSTASH_ENCODER = "7.4"
     const val MICROMETER_REGISTRY = "1.12.2"
     const val JACKSON_DATATYPE = "2.16.1"
+    const val KAFKA = "3.7.0"
     const val KTOR = "2.3.8"
     const val MQ = "9.3.5.0"
     const val SPEK = "2.0.19"
@@ -69,6 +70,12 @@ dependencies {
 
     // MQ
     implementation("com.ibm.mq:com.ibm.mq.allclient:${Version.MQ}")
+
+    // Kafka
+    val excludeLog4j = fun ExternalModuleDependency.() {
+        exclude(group = "log4j")
+    }
+    implementation("org.apache.kafka:kafka_2.13:${Version.KAFKA}", excludeLog4j)
 
     // Tests
     testImplementation("io.ktor:ktor-server-tests:${Version.KTOR}")

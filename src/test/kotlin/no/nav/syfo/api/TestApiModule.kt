@@ -3,6 +3,7 @@ package no.nav.syfo.api
 import io.ktor.server.application.*
 import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.application.IEsyfovarselHendelseProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.mq.MQSender
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
@@ -36,6 +37,7 @@ fun Application.testApiModule(
             mqQueueName = externalMockEnvironment.environment.mq.mqQueueName,
             mqSender = mockk<MQSender>(relaxed = true),
         ),
+        esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),
     )
 
     this.apiModule(

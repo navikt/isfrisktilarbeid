@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import no.aetat.arena.arenainfotrygdskjema.Infotrygd
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.application.IEsyfovarselHendelseProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.database.dropData
@@ -39,7 +40,8 @@ class PublishMQCronjobSpek : Spek({
                 pdfService = PdfService(externalMockEnvironment.pdfgenClient, externalMockEnvironment.pdlClient),
                 vedtakRepository = VedtakRepository(database),
                 journalforingService = mockk<JournalforingService>(relaxed = true),
-                infotrygdService = InfotrygdService(environment.mq.mqQueueName, mqSenderMock)
+                infotrygdService = InfotrygdService(environment.mq.mqQueueName, mqSenderMock),
+                esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),
             )
 
             val publishMQCronjob = PublishMQCronjob(vedtakService)
