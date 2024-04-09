@@ -77,8 +77,9 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         database.connection.use { connection ->
             connection.prepareStatement(UPDATE_VEDTAK).use {
                 it.setString(1, vedtak.journalpostId?.value)
-                it.setObject(2, nowUTC())
-                it.setString(3, vedtak.uuid.toString())
+                it.setObject(2, vedtak.varselPublishedAt)
+                it.setObject(3, nowUTC())
+                it.setString(4, vedtak.uuid.toString())
                 val updated = it.executeUpdate()
                 if (updated != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -86,6 +87,13 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             }
             connection.commit()
         }
+
+    override fun getUnpublishedVedtakVarsler(): List<Vedtak> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_UNPUBLISHED_VEDTAK_VARSLER).use {
+                it.executeQuery().toList { toPVedtak() }
+            }
+        }.map { it.toVedtak() }
 
     private fun Connection.createPdf(pdf: ByteArray): PPdf =
         prepareStatement(CREATE_PDF).use {
@@ -164,7 +172,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
         private const val UPDATE_VEDTAK =
             """
-                UPDATE VEDTAK SET journalpost_id=?, updated_at=? WHERE uuid=?
+                UPDATE VEDTAK SET journalpost_id = ?, varsel_published_at = ?, updated_at = ? WHERE uuid = ?
             """
 
         private const val GET_NOT_JOURNALFORTE_VEDTAK =
@@ -188,6 +196,13 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                     pdf_id
                 ) values (DEFAULT, ?, ?, ?, ?, ?::jsonb, ?, ?)
                 RETURNING *
+            """
+
+        private const val GET_UNPUBLISHED_VEDTAK_VARSLER =
+            """
+                SELECT *
+                FROM VEDTAK
+                WHERE varsel_published_at IS NULL AND journalpost_id IS NOT NULL
             """
     }
 }
@@ -216,6 +231,7 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     journalpostId = getString("journalpost_id"),
     pdfId = getInt("pdf_id"),
     publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
+    varselPublishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),
 )
 
 internal fun ResultSet.toPBehandlerMelding(): PBehandlerMelding = PBehandlerMelding(

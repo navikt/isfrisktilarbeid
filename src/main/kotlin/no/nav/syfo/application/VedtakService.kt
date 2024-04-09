@@ -85,13 +85,15 @@ class VedtakService(
         }
     }
 
-    fun publishVedtakVarsel(
-        personident: Personident,
-        vedtak: Vedtak
-    ): Result<Vedtak> {
-        return esyfovarselHendelseProducer.sendVedtakVarsel(
-            personident = personident,
-            vedtak = vedtak
-        )
+    fun publishVedtakVarsel(): List<Result<Vedtak>> {
+        val unpublishedVedtakVarsler = vedtakRepository.getUnpublishedVedtakVarsler()
+        return unpublishedVedtakVarsler.map { vedtak ->
+            val result = esyfovarselHendelseProducer.sendVedtakVarsel(vedtak)
+            result.map {
+                val publishedVedtakVarsel = vedtak.publishVarsel()
+                vedtakRepository.update(publishedVedtakVarsel)
+                publishedVedtakVarsel
+            }
+        }
     }
 }
