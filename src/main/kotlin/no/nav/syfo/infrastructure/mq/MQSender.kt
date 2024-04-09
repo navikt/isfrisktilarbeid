@@ -1,5 +1,7 @@
 package no.nav.syfo.infrastructure.mq
 
+import com.ibm.mq.jms.MQDestination
+import com.ibm.msg.client.wmq.common.CommonConstants
 import io.micrometer.core.instrument.Counter
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
@@ -30,6 +32,9 @@ class MQSender(env: MQEnvironment) {
     ) {
         jmsContext!!.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
             val destination = context.createQueue("queue:///$queueName")
+            (destination as MQDestination).targetClient = CommonConstants.WMQ_TARGET_DEST_MQ
+            (destination as MQDestination).messageBodyStyle = CommonConstants.WMQ_MESSAGE_BODY_MQ
+
             val message = context.createTextMessage(payload)
             context.createProducer().send(destination, message)
         }
