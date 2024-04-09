@@ -21,7 +21,7 @@ class InfotrygdService(
         infotrygdMessage.append("00000")
         infotrygdMessage.append(dateFormatter.format(vedtak.createdAt))
         infotrygdMessage.append(timeFormatter.format(vedtak.createdAt))
-        infotrygdMessage.append("0315") // TODO
+        infotrygdMessage.append("5060") // TODO
         infotrygdMessage.append(vedtak.personident.value)
         infotrygdMessage.append("".padEnd(4))
         infotrygdMessage.append("O".padEnd(2))
