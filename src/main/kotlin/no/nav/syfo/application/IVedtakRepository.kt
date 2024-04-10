@@ -18,4 +18,6 @@ interface IVedtakRepository {
     fun getNotJournalforteVedtak(): List<Pair<Vedtak, ByteArray>>
 
     fun update(vedtak: Vedtak)
+
+    fun getUnpublishedVedtakVarsler(): List<Vedtak>
 }

@@ -24,7 +24,7 @@ import no.nav.syfo.infrastructure.kafka.BehandlerMeldingRecordSerializer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaEsyfovarselHendelseSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
-import no.nav.syfo.infrastructure.mq.MQSender
+import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
@@ -61,8 +61,7 @@ fun main() {
         )
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
     val infotrygdService = InfotrygdService(
-        mqQueueName = environment.mq.mqQueueName,
-        mqSender = MQSender(environment.mq),
+        mqSender = InfotrygdMQSender(environment.mq),
     )
     val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
         kafkaProducer = KafkaProducer(

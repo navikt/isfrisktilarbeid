@@ -11,7 +11,7 @@ import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.BehandlerMeldingProducer
 import no.nav.syfo.infrastructure.kafka.BehandlerMeldingRecord
-import no.nav.syfo.infrastructure.mq.MQSender
+import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.apache.kafka.clients.producer.KafkaProducer
 
@@ -39,8 +39,7 @@ fun Application.testApiModule(
         pdfService = pdfService,
         journalforingService = journalforingService,
         infotrygdService = InfotrygdService(
-            mqQueueName = externalMockEnvironment.environment.mq.mqQueueName,
-            mqSender = mockk<MQSender>(relaxed = true),
+            mqSender = mockk<InfotrygdMQSender>(relaxed = true),
         ),
         behandlerMeldingProducer = behandlerMeldingProducer,
         esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),

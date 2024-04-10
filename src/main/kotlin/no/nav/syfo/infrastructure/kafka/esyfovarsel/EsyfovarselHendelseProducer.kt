@@ -1,28 +1,24 @@
 package no.nav.syfo.infrastructure.kafka.esyfovarsel
 
 import no.nav.syfo.application.IEsyfovarselHendelseProducer
-import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.*
-import java.util.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
+import java.util.*
 
 class EsyfovarselHendelseProducer(
     private val kafkaProducer: KafkaProducer<String, EsyfovarselHendelse>,
 ) : IEsyfovarselHendelseProducer {
 
-    override fun sendVedtakVarsel(
-        personident: Personident,
-        vedtak: Vedtak,
-    ): Result<Vedtak> {
+    override fun sendVedtakVarsel(vedtak: Vedtak): Result<Vedtak> {
         if (vedtak.journalpostId == null)
             throw IllegalStateException("JournalpostId is null for vedtak ${vedtak.uuid}")
 
         val varselHendelse = ArbeidstakerHendelse(
             type = HendelseType.SM_VEDTAK_FRISKMELDING_TIL_ARBEIDSFORMIDLING,
-            arbeidstakerFnr = personident.value,
+            arbeidstakerFnr = vedtak.personident.value,
             data = VarselData(
                 journalpost = VarselDataJournalpost(
                     uuid = vedtak.uuid.toString(),
@@ -36,7 +32,7 @@ class EsyfovarselHendelseProducer(
             kafkaProducer.send(
                 ProducerRecord(
                     ESYFOVARSEL_TOPIC,
-                    UUID.nameUUIDFromBytes(personident.value.toByteArray()).toString(),
+                    UUID.nameUUIDFromBytes(vedtak.personident.value.toByteArray()).toString(),
                     varselHendelse,
                 )
             ).get()
