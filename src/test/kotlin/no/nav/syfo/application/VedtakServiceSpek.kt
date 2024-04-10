@@ -14,7 +14,7 @@ import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
-import no.nav.syfo.infrastructure.mq.MQSender
+import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
@@ -50,8 +50,7 @@ class VedtakServiceSpek : Spek({
             ),
             journalforingService = journalforingService,
             infotrygdService = InfotrygdService(
-                mqQueueName = externalMockEnvironment.environment.mq.mqQueueName,
-                mqSender = mockk<MQSender>(relaxed = true),
+                mqSender = mockk<InfotrygdMQSender>(relaxed = true),
             ),
             esyfovarselHendelseProducer = esyfovarselHendelseProducer,
 

@@ -1,5 +1,7 @@
 package no.nav.syfo.infrastructure.mq
 
+import com.ibm.mq.jms.MQDestination
+import com.ibm.msg.client.wmq.common.CommonConstants
 import io.micrometer.core.instrument.Counter
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
@@ -9,7 +11,9 @@ import javax.jms.JMSContext
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.infrastructure.mq")
 
-class MQSender(env: MQEnvironment) {
+class InfotrygdMQSender(
+    val env: MQEnvironment,
+) {
 
     private val jmsContext: JMSContext? = if (env.mqHostname.startsWith("mpls02"))
         null
@@ -25,13 +29,14 @@ class MQSender(env: MQEnvironment) {
     }
 
     fun sendToMQ(
-        queueName: String,
         payload: String,
     ) {
         jmsContext!!.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
-            val destination = context.createQueue("queue:///$queueName")
-            val message = context.createTextMessage(payload)
-            context.createProducer().send(destination, message)
+            val destination = context.createQueue("queue:///${env.mqQueueName}")
+            (destination as MQDestination).targetClient = CommonConstants.WMQ_TARGET_DEST_MQ
+            (destination as MQDestination).messageBodyStyle = CommonConstants.WMQ_MESSAGE_BODY_MQ
+
+            context.createProducer().send(destination, payload)
         }
         Metrics.COUNT_MQ_PRODUCER_MESSAGE_SENT.increment()
     }

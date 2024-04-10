@@ -18,7 +18,7 @@ import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
-import no.nav.syfo.infrastructure.mq.MQSender
+import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaEsyfovarselHendelseSerializer
@@ -59,8 +59,7 @@ fun main() {
         )
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
     val infotrygdService = InfotrygdService(
-        mqQueueName = environment.mq.mqQueueName,
-        mqSender = MQSender(environment.mq),
+        mqSender = InfotrygdMQSender(environment.mq),
     )
     val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
         kafkaProducer = KafkaProducer(
