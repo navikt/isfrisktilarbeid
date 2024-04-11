@@ -18,6 +18,13 @@ data class Environment(
         username = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_USERNAME"),
         password = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PASSWORD"),
     ),
+    val kafka: KafkaEnvironment = KafkaEnvironment(
+        aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
+        aivenCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
+        aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
+    ),
     val azure: AzureEnvironment =
         AzureEnvironment(
             appClientId = getEnvVar("AZURE_APP_CLIENT_ID"),
@@ -35,13 +42,6 @@ data class Environment(
             serviceuserUsername = getEnvVar("SERVICEUSER_USERNAME"),
             serviceuserPassword = getEnvVar("SERVICEUSER_PASSWORD"),
         ),
-    val kafka: KafkaEnvironment = KafkaEnvironment(
-        aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
-        aivenCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
-        aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),
-        aivenSecurityProtocol = "SSL",
-        aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
-    ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val clients: ClientsEnvironment =
         ClientsEnvironment(

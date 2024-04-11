@@ -59,17 +59,17 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:${Version.FLYWAY}")
     testImplementation("io.zonky.test:embedded-postgres:${Version.POSTGRES_EMBEDDED}")
 
-    // (De-)serialization
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Version.JACKSON_DATATYPE}")
-
-    // MQ
-    implementation("com.ibm.mq:com.ibm.mq.allclient:${Version.MQ}")
-
     // Kafka
     val excludeLog4j = fun ExternalModuleDependency.() {
         exclude(group = "log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:${Version.KAFKA}", excludeLog4j)
+
+    // (De-)serialization
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Version.JACKSON_DATATYPE}")
+
+    // MQ
+    implementation("com.ibm.mq:com.ibm.mq.allclient:${Version.MQ}")
 
     // Tests
     testImplementation("io.ktor:ktor-server-tests:${Version.KTOR}")

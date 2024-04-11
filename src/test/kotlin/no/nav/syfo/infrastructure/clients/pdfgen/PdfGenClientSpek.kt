@@ -32,7 +32,7 @@ class PdfGenClientSpek : Spek({
             val pdf = runBlocking {
                 pdfGenClient.createBehandlerPdf(
                     callId = "",
-                    payload = PdfModel.BehandlerMeldingPdfModel(
+                    payload = PdfModel.BehandlermeldingPdfModel(
                         mottakerNavn = UserConstants.PERSON_FULLNAME_DASH,
                         documentComponents = generateDocumentComponent("Litt fritekst"),
                     )

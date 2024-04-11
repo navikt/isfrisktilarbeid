@@ -6,6 +6,7 @@ import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.TestDatabase
+import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.mock.mockHttpClient
 import java.nio.file.Paths
 
@@ -42,6 +43,7 @@ class ExternalMockEnvironment private constructor() {
         dokarkivEnvironment = environment.clients.dokarkiv,
         httpClient = mockHttpClient,
     )
+    val vedtakRepository = VedtakRepository(database = database)
 
     companion object {
         val instance: ExternalMockEnvironment = ExternalMockEnvironment()

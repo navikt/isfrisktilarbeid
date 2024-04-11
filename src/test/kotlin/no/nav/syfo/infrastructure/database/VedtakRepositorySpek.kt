@@ -3,7 +3,7 @@ package no.nav.syfo.infrastructure.database
 import io.ktor.server.testing.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
-import no.nav.syfo.generator.generateBehandlerMelding
+import no.nav.syfo.generator.generateBehandlermelding
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import org.amshove.kluent.shouldBeEqualTo
@@ -13,7 +13,7 @@ import org.spekframework.spek2.style.specification.describe
 class VedtakRepositorySpek : Spek({
 
     val vedtak = generateVedtak()
-    val behandlerMelding = generateBehandlerMelding()
+    val behandlerMelding = generateBehandlermelding()
 
     describe(VedtakRepository::class.java.simpleName) {
         with(TestApplicationEngine()) {
@@ -28,7 +28,7 @@ class VedtakRepositorySpek : Spek({
 
             it("Successfully creates a vedtak and behandlermelding") {
 
-                val (createdVedtak, createdBehandlerMelding) = vedtakRepository.createVedtak(
+                val (createdVedtak, createdBehandlermelding) = vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
                     behandlerMelding = behandlerMelding,
@@ -36,7 +36,7 @@ class VedtakRepositorySpek : Spek({
                 )
 
                 val pVedtak = database.getVedtak(createdVedtak.uuid)
-                val pBehandlermelding = database.getBehandlerMelding(createdBehandlerMelding.uuid)
+                val pBehandlermelding = database.getBehandlerMelding(createdBehandlermelding.uuid)
 
                 vedtak.uuid shouldBeEqualTo pVedtak?.uuid
                 vedtak.personident shouldBeEqualTo pVedtak?.personident

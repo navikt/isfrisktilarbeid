@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.BehandlerMelding
+import no.nav.syfo.domain.Behandlermelding
 import no.nav.syfo.domain.Vedtak
 
 interface IPdfService {
@@ -9,8 +9,8 @@ interface IPdfService {
         callId: String,
     ): ByteArray
 
-    suspend fun createBehandlerMeldingPdf(
-        behandlerMelding: BehandlerMelding,
+    suspend fun createBehandlermeldingPdf(
+        behandlerMelding: Behandlermelding,
         behandlerNavn: String,
         callId: String,
     ): ByteArray

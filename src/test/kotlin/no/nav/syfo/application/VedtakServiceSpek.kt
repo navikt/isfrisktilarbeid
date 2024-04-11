@@ -6,11 +6,10 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.Vedtak
-import no.nav.syfo.generator.generateBehandlerMelding
+import no.nav.syfo.generator.generateBehandlermelding
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtak
-import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
@@ -34,8 +33,8 @@ import org.spekframework.spek2.style.specification.describe
 import java.util.concurrent.Future
 
 val vedtak = generateVedtak()
-val behandlerMelding = generateBehandlerMelding()
-val otherBehandlerMelding = generateBehandlerMelding()
+val behandlermelding = generateBehandlermelding()
+val otherBehandlermelding = generateBehandlermelding()
 val journalpostId = JournalpostId("123")
 
 class VedtakServiceSpek : Spek({
@@ -43,15 +42,16 @@ class VedtakServiceSpek : Spek({
 
         val externalMockEnvironment = ExternalMockEnvironment.instance
         val database = externalMockEnvironment.database
+        val vedtakRepository = externalMockEnvironment.vedtakRepository
 
         val journalforingService = JournalforingService(
             dokarkivClient = externalMockEnvironment.dokarkivClient,
             pdlClient = externalMockEnvironment.pdlClient,
         )
-        val vedtakRepository = VedtakRepository(database = database)
-        val mockProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+
+        val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
         val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
-            kafkaProducer = mockProducer,
+            kafkaProducer = mockEsyfoVarselKafkaProducer,
         )
         val vedtakService = VedtakService(
             vedtakRepository = vedtakRepository,
@@ -64,12 +64,11 @@ class VedtakServiceSpek : Spek({
                 mqSender = mockk<InfotrygdMQSender>(relaxed = true),
             ),
             esyfovarselHendelseProducer = esyfovarselHendelseProducer,
-
         )
 
         beforeEachTest {
             clearAllMocks()
-            coEvery { mockProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+            coEvery { mockEsyfoVarselKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
         }
 
         afterEachTest {
@@ -81,7 +80,7 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlerMelding,
+                    behandlerMelding = behandlermelding,
                     behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
@@ -110,7 +109,7 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlerMelding,
+                    behandlerMelding = behandlermelding,
                     behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
                 val journafortVedtak = vedtak.journalfor(mockedJournalpostId)
@@ -126,7 +125,7 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlerMelding,
+                    behandlerMelding = behandlermelding,
                     behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
@@ -143,7 +142,7 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlerMelding,
+                    behandlerMelding = behandlermelding,
                     behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
@@ -160,13 +159,13 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlerMelding,
+                    behandlerMelding = behandlermelding,
                     behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = otherBehandlerMelding,
+                    behandlerMelding = otherBehandlermelding,
                     behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
@@ -184,7 +183,7 @@ class VedtakServiceSpek : Spek({
                 val unpublishedVedtakVarsel = vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlerMelding,
+                    behandlerMelding = behandlermelding,
                     behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 ).first
                 vedtakRepository.update(unpublishedVedtakVarsel.copy(journalpostId = journalpostId))
@@ -200,7 +199,7 @@ class VedtakServiceSpek : Spek({
                 success.size shouldBeEqualTo 1
 
                 val producerRecordSlot = slot<ProducerRecord<String, EsyfovarselHendelse>>()
-                verify(exactly = 1) { mockProducer.send(capture(producerRecordSlot)) }
+                verify(exactly = 1) { mockEsyfoVarselKafkaProducer.send(capture(producerRecordSlot)) }
 
                 val publishedVedtakVarsel = success.first().getOrThrow()
                 publishedVedtakVarsel.uuid.shouldBeEqualTo(unpublishedVedtakVarsel.uuid)
@@ -225,7 +224,7 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlerMelding,
+                    behandlerMelding = behandlermelding,
                     behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
@@ -247,13 +246,13 @@ class VedtakServiceSpek : Spek({
 
             it("Fails publishing when kafka-producer fails") {
                 val unpublishedVedtak = createUnpublishedVedtakVarsel()
-                every { mockProducer.send(any()) } throws Exception("Error producing to kafka")
+                every { mockEsyfoVarselKafkaProducer.send(any()) } throws Exception("Error producing to kafka")
 
                 val (success, failed) = vedtakService.publishVedtakVarsel().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 1
                 success.size shouldBeEqualTo 0
 
-                verify(exactly = 1) { mockProducer.send(any()) }
+                verify(exactly = 1) { mockEsyfoVarselKafkaProducer.send(any()) }
 
                 val vedtak = vedtakRepository.getUnpublishedVedtakVarsler().first()
                 vedtak.uuid shouldBeEqualTo unpublishedVedtak.uuid

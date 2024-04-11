@@ -5,11 +5,11 @@ import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.application.IEsyfovarselHendelseProducer
 import no.nav.syfo.application.VedtakService
-import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
+import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 
 fun Application.testApiModule(

@@ -20,6 +20,9 @@ object UserConstants {
     const val PERSON_FORNAVN_DASH = "For-Navn"
     const val PERSON_FULLNAME_DASH = "For-Navn Mellomnavn Etternavnesen"
 
+    const val BEHANDLER_NAVN = "Beate Behandler"
+    val BEHANDLER_REF = UUID.randomUUID()
+
     val EXISTING_EKSTERN_REFERANSE_UUID: UUID = UUID.fromString("e7e8e9e0-e1e2-e3e4-e5e6-e7e8e9e0e1e2")
     val FAILING_EKSTERN_REFERANSE_UUID: UUID = UUID.randomUUID()
 }

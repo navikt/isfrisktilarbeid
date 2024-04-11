@@ -16,6 +16,13 @@ fun testEnvironment() = Environment(
         username = "username",
         password = "password",
     ),
+    kafka = KafkaEnvironment(
+        aivenBootstrapServers = "kafkaBootstrapServers",
+        aivenCredstorePassword = "credstorepassord",
+        aivenKeystoreLocation = "keystore",
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = "truststore",
+    ),
     azure = AzureEnvironment(
         appClientId = "isfrisktilarbeid-client-id",
         appClientSecret = "isfrisktilarbeid-secret",
@@ -47,13 +54,6 @@ fun testEnvironment() = Environment(
         mqQueueName = "mqQueueName",
         serviceuserUsername = "serviceuser",
         serviceuserPassword = "servicepw",
-    ),
-    kafka = KafkaEnvironment(
-        aivenBootstrapServers = "kafkaBootstrapServers",
-        aivenCredstorePassword = "credstorepassord",
-        aivenKeystoreLocation = "keystore",
-        aivenSecurityProtocol = "SSL",
-        aivenTruststoreLocation = "truststore",
     ),
     electorPath = "electorPath",
 )

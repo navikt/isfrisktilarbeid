@@ -37,7 +37,6 @@ class PublishMQCronjobSpek : Spek({
                 infotrygdService = InfotrygdService(mqSenderMock),
                 esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),
             )
-
             val publishMQCronjob = PublishMQCronjob(vedtakService)
 
             beforeEachTest {
