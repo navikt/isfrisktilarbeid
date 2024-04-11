@@ -49,8 +49,8 @@ class VedtakService(
         val (createdVedtak, _) = vedtakRepository.createVedtak(
             vedtak = vedtak,
             vedtakPdf = vedtakPdf,
-            behandlerMelding = behandlerMelding,
-            behandlerMeldingPdf = behandlerMeldingPdf,
+            behandlermelding = behandlerMelding,
+            behandlermeldingPdf = behandlerMeldingPdf,
         )
 
         return createdVedtak

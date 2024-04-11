@@ -7,8 +7,8 @@ interface IVedtakRepository {
     fun createVedtak(
         vedtak: Vedtak,
         vedtakPdf: ByteArray,
-        behandlerMelding: Behandlermelding,
-        behandlerMeldingPdf: ByteArray,
+        behandlermelding: Behandlermelding,
+        behandlermeldingPdf: ByteArray,
     ): Pair<Vedtak, Behandlermelding>
 
     fun getUnpublishedInfotrygd(): List<Vedtak>

@@ -22,8 +22,8 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
     override fun createVedtak(
         vedtak: Vedtak,
         vedtakPdf: ByteArray,
-        behandlerMelding: Behandlermelding,
-        behandlerMeldingPdf: ByteArray
+        behandlermelding: Behandlermelding,
+        behandlermeldingPdf: ByteArray
     ): Pair<Vedtak, Behandlermelding> {
         database.connection.use { connection ->
             val pVedtakPdf = connection.createPdf(pdf = vedtakPdf)
@@ -32,15 +32,15 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 pdfId = pVedtakPdf.id
             )
 
-            val pBehandlerMeldingPdf = connection.createPdf(pdf = behandlerMeldingPdf)
+            val pBehandlerMeldingPdf = connection.createPdf(pdf = behandlermeldingPdf)
             val pBehandlerMelding = connection.createBehandlermelding(
-                behandlerMelding = behandlerMelding,
+                behandlerMelding = behandlermelding,
                 vedtakId = pVedtak.id,
                 pdfId = pBehandlerMeldingPdf.id
             )
 
             connection.commit()
-            return Pair(pVedtak.toVedtak(), pBehandlerMelding.toBehandlernelding())
+            return Pair(pVedtak.toVedtak(), pBehandlerMelding.toBehandlermelding())
         }
     }
 
@@ -232,19 +232,4 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     pdfId = getInt("pdf_id"),
     publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
     varselPublishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),
-)
-
-internal fun ResultSet.toPBehandlerMelding(): PBehandlerMelding = PBehandlerMelding(
-    id = getInt("id"),
-    uuid = UUID.fromString(getString("uuid")),
-    createdAt = getObject("created_at", OffsetDateTime::class.java),
-    updatedAt = getObject("updated_at", OffsetDateTime::class.java),
-    behandlerRef = UUID.fromString(getString("behandler_ref")),
-    document = mapper.readValue(
-        getString("document"),
-        object : TypeReference<List<DocumentComponent>>() {}
-    ),
-    journalpostId = getString("journalpost_id")?.let { JournalpostId(it) },
-    vedtakId = getInt("vedtak_id"),
-    pdfId = getInt("pdf_id"),
 )

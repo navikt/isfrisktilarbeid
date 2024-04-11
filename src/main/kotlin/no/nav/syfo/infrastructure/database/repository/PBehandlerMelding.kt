@@ -14,14 +14,16 @@ data class PBehandlerMelding(
     val behandlerRef: UUID,
     val document: List<DocumentComponent>,
     val journalpostId: JournalpostId?,
+    val publishedAt: OffsetDateTime?,
     val vedtakId: Int,
     val pdfId: Int,
 ) {
-    fun toBehandlernelding(): Behandlermelding = Behandlermelding.fromDatabase(
+    fun toBehandlermelding(): Behandlermelding = Behandlermelding.fromDatabase(
         uuid = uuid,
         createdAt = createdAt,
         behandlerRef = behandlerRef,
         document = document,
         journalpostId = journalpostId,
+        publishedAt = publishedAt,
     )
 }

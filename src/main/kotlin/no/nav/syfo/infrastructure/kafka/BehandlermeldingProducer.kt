@@ -9,7 +9,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class BehandlermeldingProducer(private val produder: KafkaProducer<String, BehandlermeldingRecord>) :
+class BehandlermeldingProducer(private val producer: KafkaProducer<String, BehandlermeldingRecord>) :
     IBehandlermeldingProducer {
 
     override fun send(
@@ -18,7 +18,7 @@ class BehandlermeldingProducer(private val produder: KafkaProducer<String, Behan
         behandlermeldingPdf: ByteArray
     ): Result<Behandlermelding> =
         try {
-            produder.send(
+            producer.send(
                 ProducerRecord(
                     TOPIC,
                     UUID.randomUUID().toString(),

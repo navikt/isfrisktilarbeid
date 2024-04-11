@@ -10,6 +10,7 @@ data class Behandlermelding private constructor(
     val behandlerRef: UUID,
     val document: List<DocumentComponent>,
     val journalpostId: JournalpostId?,
+    val publishedAt: OffsetDateTime?,
 ) {
     constructor(
         behandlerRef: UUID,
@@ -20,9 +21,12 @@ data class Behandlermelding private constructor(
         behandlerRef = behandlerRef,
         document = document,
         journalpostId = null,
+        publishedAt = null,
     )
 
     fun journalfor(journalpostId: JournalpostId): Behandlermelding = this.copy(journalpostId = journalpostId)
+
+    fun publish(): Behandlermelding = this.copy(publishedAt = nowUTC())
 
     companion object {
 
@@ -32,6 +36,7 @@ data class Behandlermelding private constructor(
             behandlerRef: UUID,
             document: List<DocumentComponent>,
             journalpostId: JournalpostId?,
+            publishedAt: OffsetDateTime?,
         ) =
             Behandlermelding(
                 uuid = uuid,
@@ -39,6 +44,7 @@ data class Behandlermelding private constructor(
                 behandlerRef = behandlerRef,
                 document = document,
                 journalpostId = journalpostId,
+                publishedAt = publishedAt,
             )
     }
 }

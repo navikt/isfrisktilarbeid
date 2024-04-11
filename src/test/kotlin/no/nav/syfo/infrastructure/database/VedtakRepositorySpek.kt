@@ -31,8 +31,8 @@ class VedtakRepositorySpek : Spek({
                 val (createdVedtak, createdBehandlermelding) = vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlerMelding,
-                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                    behandlermelding = behandlerMelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val pVedtak = database.getVedtak(createdVedtak.uuid)
@@ -51,6 +51,7 @@ class VedtakRepositorySpek : Spek({
                 behandlerMelding.behandlerRef shouldBeEqualTo pBehandlermelding?.behandlerRef
                 behandlerMelding.document shouldBeEqualTo pBehandlermelding?.document
                 behandlerMelding.journalpostId shouldBeEqualTo pBehandlermelding?.journalpostId
+                behandlerMelding.publishedAt shouldBeEqualTo pBehandlermelding?.publishedAt
 
                 pBehandlermelding?.vedtakId shouldBeEqualTo pVedtak?.id
             }
