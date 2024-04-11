@@ -97,7 +97,6 @@ fun main() {
                         dokarkivClient = dokarkivClient,
                         pdlClient = pdlClient,
                     ),
-                    behandlerMeldingProducer = behandlerMeldingProducer,
                     esyfovarselHendelseProducer = esyfovarselHendelseProducer,
                 )
                 apiModule(

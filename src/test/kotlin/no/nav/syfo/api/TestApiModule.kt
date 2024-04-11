@@ -9,11 +9,8 @@ import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontro
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.kafka.BehandlerMeldingProducer
-import no.nav.syfo.infrastructure.kafka.BehandlerMeldingRecord
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
-import org.apache.kafka.clients.producer.KafkaProducer
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
@@ -32,8 +29,6 @@ fun Application.testApiModule(
         dokarkivClient = externalMockEnvironment.dokarkivClient,
         pdlClient = externalMockEnvironment.pdlClient,
     )
-    val mockBehandlerMeldingProducer = mockk<KafkaProducer<String, BehandlerMeldingRecord>>(relaxed = true)
-    val behandlerMeldingProducer = BehandlerMeldingProducer(produder = mockBehandlerMeldingProducer)
     val vedtakService = VedtakService(
         vedtakRepository = VedtakRepository(database = database),
         pdfService = pdfService,
@@ -41,7 +36,6 @@ fun Application.testApiModule(
         infotrygdService = InfotrygdService(
             mqSender = mockk<InfotrygdMQSender>(relaxed = true),
         ),
-        behandlerMeldingProducer = behandlerMeldingProducer,
         esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),
     )
 

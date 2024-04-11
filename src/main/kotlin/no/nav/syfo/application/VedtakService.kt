@@ -13,7 +13,6 @@ class VedtakService(
     private val vedtakRepository: IVedtakRepository,
     private val journalforingService: IJournalforingService,
     private val infotrygdService: InfotrygdService,
-    private val behandlerMeldingProducer: IBehandlerMeldingProducer,
     private val esyfovarselHendelseProducer: IEsyfovarselHendelseProducer,
 ) {
     suspend fun createVedtak(
@@ -47,13 +46,12 @@ class VedtakService(
                 behandlerNavn = behandlerNavn,
                 callId = callId
             )
-        val (createdVedtak, createdBehandlerMelding) = vedtakRepository.createVedtak(
+        val (createdVedtak, _) = vedtakRepository.createVedtak(
             vedtak = vedtak,
             vedtakPdf = vedtakPdf,
             behandlerMelding = behandlerMelding,
             behandlerMeldingPdf = behandlerMeldingPdf,
         )
-        behandlerMeldingProducer.send(personident, createdBehandlerMelding, behandlerMeldingPdf)
 
         return createdVedtak
     }

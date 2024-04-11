@@ -7,14 +7,11 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.generator.generateBehandlerMelding
-import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.kafka.BehandlerMeldingProducer
-import no.nav.syfo.infrastructure.kafka.BehandlerMeldingRecord
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
@@ -33,7 +30,6 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDate
 import java.util.concurrent.Future
 
 val vedtak = generateVedtak()
@@ -53,11 +49,9 @@ class VedtakServiceSpek : Spek({
             pdlClient = externalMockEnvironment.pdlClient,
         )
 
-        val mockBehandlerMeldingRecordProducer = mockk<KafkaProducer<String, BehandlerMeldingRecord>>()
-        val behandlerMeldingProducer = BehandlerMeldingProducer(mockBehandlerMeldingRecordProducer)
-        val mockProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+        val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
         val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
-            kafkaProducer = mockProducer,
+            kafkaProducer = mockEsyfoVarselKafkaProducer,
         )
         val vedtakService = VedtakService(
             vedtakRepository = vedtakRepository,
@@ -69,18 +63,12 @@ class VedtakServiceSpek : Spek({
             infotrygdService = InfotrygdService(
                 mqSender = mockk<InfotrygdMQSender>(relaxed = true),
             ),
-            behandlerMeldingProducer = behandlerMeldingProducer,
             esyfovarselHendelseProducer = esyfovarselHendelseProducer,
         )
 
         beforeEachTest {
             clearAllMocks()
-            coEvery { mockBehandlerMeldingRecordProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
-        }
-
-        beforeEachTest {
-            clearAllMocks()
-            coEvery { mockProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+            coEvery { mockEsyfoVarselKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
         }
 
         afterEachTest {
@@ -189,37 +177,6 @@ class VedtakServiceSpek : Spek({
                 success.size shouldBeEqualTo 1
             }
         }
-        describe("createVedtak") {
-            it("Publiserer behandlermelding om vedtak på kafka til isdialogmelding pa riktig format") {
-                val fom = LocalDate.now()
-                val tom = LocalDate.now().plusDays(30)
-                val behandlerRef = UserConstants.BEHANDLER_REF
-                val createdVedtak = runBlocking {
-                    vedtakService.createVedtak(
-                        personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                        veilederident = UserConstants.VEILEDER_IDENT,
-                        begrunnelse = "En god begrunnelse",
-                        document = generateDocumentComponent("Til orientering", header = "Informasjon om vedtak"),
-                        fom = fom,
-                        tom = tom,
-                        callId = "callId",
-                        behandlerRef = behandlerRef,
-                        behandlerNavn = UserConstants.BEHANDLER_NAVN,
-                        behandlerDocument = generateDocumentComponent("En melding til behandler"),
-                    )
-                }
-
-                val producerRecordSlot = slot<ProducerRecord<String, BehandlerMeldingRecord>>()
-                verify(exactly = 1) { mockBehandlerMeldingRecordProducer.send(capture(producerRecordSlot)) }
-
-                val behandlermeldingRecord = producerRecordSlot.captured.value()
-                behandlermeldingRecord.behandlerRef shouldBeEqualTo behandlerRef
-                behandlermeldingRecord.personIdent shouldBeEqualTo createdVedtak.personident.value
-                behandlermeldingRecord.dialogmeldingType shouldBeEqualTo "DIALOG_NOTAT"
-                behandlermeldingRecord.dialogmeldingKodeverk shouldBeEqualTo "8127"
-                behandlermeldingRecord.dialogmeldingKode shouldBeEqualTo 2
-            }
-        }
 
         describe("Publish varsel for vedtak to esyfovarsel") {
             fun createUnpublishedVedtakVarsel(): Vedtak {
@@ -242,7 +199,7 @@ class VedtakServiceSpek : Spek({
                 success.size shouldBeEqualTo 1
 
                 val producerRecordSlot = slot<ProducerRecord<String, EsyfovarselHendelse>>()
-                verify(exactly = 1) { mockProducer.send(capture(producerRecordSlot)) }
+                verify(exactly = 1) { mockEsyfoVarselKafkaProducer.send(capture(producerRecordSlot)) }
 
                 val publishedVedtakVarsel = success.first().getOrThrow()
                 publishedVedtakVarsel.uuid.shouldBeEqualTo(unpublishedVedtakVarsel.uuid)
@@ -289,13 +246,13 @@ class VedtakServiceSpek : Spek({
 
             it("Fails publishing when kafka-producer fails") {
                 val unpublishedVedtak = createUnpublishedVedtakVarsel()
-                every { mockProducer.send(any()) } throws Exception("Error producing to kafka")
+                every { mockEsyfoVarselKafkaProducer.send(any()) } throws Exception("Error producing to kafka")
 
                 val (success, failed) = vedtakService.publishVedtakVarsel().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 1
                 success.size shouldBeEqualTo 0
 
-                verify(exactly = 1) { mockProducer.send(any()) }
+                verify(exactly = 1) { mockEsyfoVarselKafkaProducer.send(any()) }
 
                 val vedtak = vedtakRepository.getUnpublishedVedtakVarsler().first()
                 vedtak.uuid shouldBeEqualTo unpublishedVedtak.uuid
