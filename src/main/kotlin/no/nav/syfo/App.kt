@@ -19,8 +19,8 @@ import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.kafka.BehandlerMeldingProducer
-import no.nav.syfo.infrastructure.kafka.BehandlerMeldingRecordSerializer
+import no.nav.syfo.infrastructure.kafka.BehandlermeldingProducer
+import no.nav.syfo.infrastructure.kafka.BehandlermeldingRecordSerializer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaEsyfovarselHendelseSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
@@ -69,9 +69,9 @@ fun main() {
         )
     )
 
-    val behandlerMeldingProducer = BehandlerMeldingProducer(
+    val behandlermeldingProducer = BehandlermeldingProducer(
         produder = KafkaProducer(
-            kafkaAivenProducerConfig<BehandlerMeldingRecordSerializer>(kafkaEnvironment = environment.kafka)
+            kafkaAivenProducerConfig<BehandlermeldingRecordSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
 

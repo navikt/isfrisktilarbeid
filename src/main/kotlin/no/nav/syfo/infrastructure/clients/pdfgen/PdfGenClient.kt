@@ -31,7 +31,7 @@ class PdfGenClient(
 
     suspend fun createBehandlerPdf(
         callId: String,
-        payload: PdfModel.BehandlerMeldingPdfModel,
+        payload: PdfModel.BehandlermeldingPdfModel,
     ): ByteArray =
         getPdf(
             callId = callId,

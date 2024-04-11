@@ -34,7 +34,7 @@ sealed class PdfModel private constructor(
         documentComponents = documentComponents,
     )
 
-    class BehandlerMeldingPdfModel(
+    class BehandlermeldingPdfModel(
         mottakerNavn: String,
         documentComponents: List<DocumentComponent>,
     ) : PdfModel(

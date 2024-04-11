@@ -12,7 +12,7 @@ import java.util.*
  * (Se pdf for "Veiledning til anvendelse av dialogmelding for 2-veis
  * kommunikasjon mellom NAV og samhandlere i helsesektoren."
  */
-data class BehandlerMeldingRecord private constructor(
+data class BehandlermeldingRecord private constructor(
     val behandlerRef: UUID,
     val personIdent: String,
     val dialogmeldingUuid: String,
@@ -43,8 +43,8 @@ data class BehandlerMeldingRecord private constructor(
     )
 }
 
-class BehandlerMeldingRecordSerializer : Serializer<BehandlerMeldingRecord> {
+class BehandlermeldingRecordSerializer : Serializer<BehandlermeldingRecord> {
     private val mapper = configuredJacksonMapper()
-    override fun serialize(topic: String?, data: BehandlerMeldingRecord?): ByteArray =
+    override fun serialize(topic: String?, data: BehandlermeldingRecord?): ByteArray =
         mapper.writeValueAsBytes(data)
 }

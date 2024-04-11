@@ -1,7 +1,7 @@
 package no.nav.syfo.infrastructure.kafka
 
-import no.nav.syfo.application.IBehandlerMeldingProducer
-import no.nav.syfo.domain.BehandlerMelding
+import no.nav.syfo.application.IBehandlermeldingProducer
+import no.nav.syfo.domain.Behandlermelding
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.serialize
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -9,20 +9,20 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class BehandlerMeldingProducer(private val produder: KafkaProducer<String, BehandlerMeldingRecord>) :
-    IBehandlerMeldingProducer {
+class BehandlermeldingProducer(private val produder: KafkaProducer<String, BehandlermeldingRecord>) :
+    IBehandlermeldingProducer {
 
     override fun send(
         personident: Personident,
-        behandlermelding: BehandlerMelding,
+        behandlermelding: Behandlermelding,
         behandlermeldingPdf: ByteArray
-    ): Result<BehandlerMelding> =
+    ): Result<Behandlermelding> =
         try {
             produder.send(
                 ProducerRecord(
                     TOPIC,
                     UUID.randomUUID().toString(),
-                    BehandlerMeldingRecord(
+                    BehandlermeldingRecord(
                         behandlerRef = behandlermelding.behandlerRef,
                         personident = personident.value,
                         dialogmeldingTekst = behandlermelding.document.serialize(),
@@ -38,6 +38,6 @@ class BehandlerMeldingProducer(private val produder: KafkaProducer<String, Behan
 
     companion object {
         private const val TOPIC = "teamsykefravr.isdialogmelding-behandler-dialogmelding-bestilling"
-        private val log = LoggerFactory.getLogger(BehandlerMeldingProducer::class.java)
+        private val log = LoggerFactory.getLogger(BehandlermeldingProducer::class.java)
     }
 }

@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.BehandlerMelding
+import no.nav.syfo.domain.Behandlermelding
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
@@ -35,13 +35,13 @@ class VedtakService(
             fom = fom,
             tom = tom,
         )
-        val behandlerMelding = BehandlerMelding(
+        val behandlerMelding = Behandlermelding(
             behandlerRef = behandlerRef,
             document = behandlerDocument,
         )
         val vedtakPdf = pdfService.createVedtakPdf(vedtak = vedtak, callId = callId)
         val behandlerMeldingPdf =
-            pdfService.createBehandlerMeldingPdf(
+            pdfService.createBehandlermeldingPdf(
                 behandlerMelding = behandlerMelding,
                 behandlerNavn = behandlerNavn,
                 callId = callId

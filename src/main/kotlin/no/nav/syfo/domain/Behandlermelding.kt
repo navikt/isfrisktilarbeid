@@ -4,7 +4,7 @@ import no.nav.syfo.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
-data class BehandlerMelding private constructor(
+data class Behandlermelding private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val behandlerRef: UUID,
@@ -22,7 +22,7 @@ data class BehandlerMelding private constructor(
         journalpostId = null,
     )
 
-    fun journalfor(journalpostId: JournalpostId): BehandlerMelding = this.copy(journalpostId = journalpostId)
+    fun journalfor(journalpostId: JournalpostId): Behandlermelding = this.copy(journalpostId = journalpostId)
 
     companion object {
 
@@ -33,7 +33,7 @@ data class BehandlerMelding private constructor(
             document: List<DocumentComponent>,
             journalpostId: JournalpostId?,
         ) =
-            BehandlerMelding(
+            Behandlermelding(
                 uuid = uuid,
                 createdAt = createdAt,
                 behandlerRef = behandlerRef,

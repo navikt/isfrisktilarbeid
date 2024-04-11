@@ -22,9 +22,9 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
     override fun createVedtak(
         vedtak: Vedtak,
         vedtakPdf: ByteArray,
-        behandlerMelding: BehandlerMelding,
+        behandlerMelding: Behandlermelding,
         behandlerMeldingPdf: ByteArray
-    ): Pair<Vedtak, BehandlerMelding> {
+    ): Pair<Vedtak, Behandlermelding> {
         database.connection.use { connection ->
             val pVedtakPdf = connection.createPdf(pdf = vedtakPdf)
             val pVedtak = connection.createVedtak(
@@ -33,14 +33,14 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             )
 
             val pBehandlerMeldingPdf = connection.createPdf(pdf = behandlerMeldingPdf)
-            val pBehandlerMelding = connection.createBehandlerMelding(
+            val pBehandlerMelding = connection.createBehandlermelding(
                 behandlerMelding = behandlerMelding,
                 vedtakId = pVedtak.id,
                 pdfId = pBehandlerMeldingPdf.id
             )
 
             connection.commit()
-            return Pair(pVedtak.toVedtak(), pBehandlerMelding.toBehandlerMelding())
+            return Pair(pVedtak.toVedtak(), pBehandlerMelding.toBehandlernelding())
         }
     }
 
@@ -118,7 +118,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             it.executeQuery().toList { toPVedtak() }.single()
         }
 
-    private fun Connection.createBehandlerMelding(behandlerMelding: BehandlerMelding, vedtakId: Int, pdfId: Int) =
+    private fun Connection.createBehandlermelding(behandlerMelding: Behandlermelding, vedtakId: Int, pdfId: Int) =
         prepareStatement(CREATE_BEHANDLER_MELDING).use {
             it.setString(1, behandlerMelding.uuid.toString())
             it.setObject(2, behandlerMelding.createdAt)

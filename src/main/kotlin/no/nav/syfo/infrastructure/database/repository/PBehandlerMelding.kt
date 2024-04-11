@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database.repository
 
-import no.nav.syfo.domain.BehandlerMelding
+import no.nav.syfo.domain.Behandlermelding
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.JournalpostId
 import java.time.OffsetDateTime
@@ -17,7 +17,7 @@ data class PBehandlerMelding(
     val vedtakId: Int,
     val pdfId: Int,
 ) {
-    fun toBehandlerMelding(): BehandlerMelding = BehandlerMelding.fromDatabase(
+    fun toBehandlernelding(): Behandlermelding = Behandlermelding.fromDatabase(
         uuid = uuid,
         createdAt = createdAt,
         behandlerRef = behandlerRef,

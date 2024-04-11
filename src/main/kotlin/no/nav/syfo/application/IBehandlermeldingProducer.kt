@@ -1,12 +1,12 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.BehandlerMelding
+import no.nav.syfo.domain.Behandlermelding
 import no.nav.syfo.domain.Personident
 
-interface IBehandlerMeldingProducer {
+interface IBehandlermeldingProducer {
     fun send(
         personident: Personident,
-        behandlermelding: BehandlerMelding,
+        behandlermelding: Behandlermelding,
         behandlermeldingPdf: ByteArray,
-    ): Result<BehandlerMelding>
+    ): Result<Behandlermelding>
 }

@@ -1,7 +1,7 @@
 package no.nav.syfo.generator
 
 import no.nav.syfo.UserConstants
-import no.nav.syfo.domain.BehandlerMelding
+import no.nav.syfo.domain.Behandlermelding
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
@@ -21,9 +21,9 @@ fun generateVedtak(
     tom = LocalDate.now().plusWeeks(12),
 )
 
-fun generateBehandlerMelding(
+fun generateBehandlermelding(
     document: List<DocumentComponent> = generateDocumentComponent("En behandlermelding"),
-): BehandlerMelding = BehandlerMelding(
+): Behandlermelding = Behandlermelding(
     behandlerRef = UUID.randomUUID(),
     document = document,
 )
