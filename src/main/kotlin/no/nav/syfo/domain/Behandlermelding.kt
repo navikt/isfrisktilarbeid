@@ -15,7 +15,7 @@ data class Behandlermelding private constructor(
         behandlerRef: UUID,
         document: List<DocumentComponent>,
     ) : this(
-        uuid = behandlerRef,
+        uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
         behandlerRef = behandlerRef,
         document = document,
