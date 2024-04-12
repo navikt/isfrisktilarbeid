@@ -1,0 +1,1 @@
+ALTER TABLE BEHANDLER_MELDING ADD COLUMN published_at timestamptz;

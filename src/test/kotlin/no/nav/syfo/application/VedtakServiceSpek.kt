@@ -80,8 +80,8 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlermelding,
-                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -109,8 +109,8 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlermelding,
-                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
                 val journafortVedtak = vedtak.journalfor(mockedJournalpostId)
                 vedtakRepository.update(journafortVedtak)
@@ -125,8 +125,8 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlermelding,
-                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -142,8 +142,8 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlermelding,
-                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -159,14 +159,14 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlermelding,
-                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = otherBehandlermelding,
-                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                    behandlermelding = otherBehandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -183,8 +183,8 @@ class VedtakServiceSpek : Spek({
                 val unpublishedVedtakVarsel = vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlermelding,
-                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 ).first
                 vedtakRepository.update(unpublishedVedtakVarsel.copy(journalpostId = journalpostId))
                 return unpublishedVedtakVarsel
@@ -224,8 +224,8 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlerMelding = behandlermelding,
-                    behandlerMeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val (success, failed) = vedtakService.publishVedtakVarsel().partition { it.isSuccess }
