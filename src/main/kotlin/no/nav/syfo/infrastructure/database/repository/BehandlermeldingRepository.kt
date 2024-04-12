@@ -48,6 +48,19 @@ class BehandlermeldingRepository(private val database: DatabaseInterface) : IBeh
         }
     }
 
+    override fun getNotJournalforteBehandlermeldinger(): List<Triple<Personident, Behandlermelding, ByteArray>> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_NOT_JOURNALFORT_BEHANDLERMELDING).use {
+                it.executeQuery().toList {
+                    Triple(
+                        Personident(getString("personident")),
+                        toPBehandlerMelding().toBehandlermelding(),
+                        getBytes("pdf")
+                    )
+                }
+            }
+        }
+
     companion object {
         private const val GET_UNPUBLISHED_BEHANDLERMELDING =
             """
@@ -62,6 +75,14 @@ class BehandlermeldingRepository(private val database: DatabaseInterface) : IBeh
                  UPDATE behandler_melding
                  SET published_at = ?, journalpost_id = ?, updated_at = ?
                  WHERE uuid = ?
+            """
+
+        private const val GET_NOT_JOURNALFORT_BEHANDLERMELDING =
+            """
+                SELECT v.personident, pdf.pdf, b.* FROM behandler_melding b
+                INNER JOIN vedtak v ON b.vedtak_id = v.id
+                INNER JOIN pdf ON b.pdf_id = pdf.id
+                WHERE b.journalpost_id IS NULL
             """
     }
 }

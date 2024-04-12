@@ -20,6 +20,10 @@ class JournalforingService(private val dokarkivClient: DokarkivClient, private v
         JournalpostId(journalpostId.toString())
     }
 
+    override suspend fun journalfor(personident: Personident, behandlermelding: Behandlermelding, pdf: ByteArray): Result<JournalpostId> {
+        TODO("Not yet implemented")
+    }
+
     private fun createJournalpostRequest(
         vedtak: Vedtak,
         navn: String,
