@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.pdl
+package no.nav.syfo.infrastructure.clients.pdl
 
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -7,7 +7,8 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
-import no.nav.syfo.infrastructure.clients.pdl.PdlClient
+import no.nav.syfo.infrastructure.clients.pdl.dto.Adressebeskyttelse
+import no.nav.syfo.infrastructure.clients.pdl.dto.Gradering
 import no.nav.syfo.infrastructure.clients.pdl.dto.PdlPerson
 import no.nav.syfo.infrastructure.clients.pdl.dto.PdlPersonNavn
 import org.amshove.kluent.internal.assertFailsWith
@@ -41,7 +42,8 @@ object PdlClientSpek : Spek({
                             mellomnavn = UserConstants.PERSON_MELLOMNAVN,
                             etternavn = UserConstants.PERSON_ETTERNAVN,
                         )
-                    )
+                    ),
+                    adressebeskyttelse = listOf(Adressebeskyttelse(Gradering.UGRADERT))
                 )
                 runBlocking {
                     val person = pdlClient.getPerson(UserConstants.ARBEIDSTAKER_PERSONIDENT)
@@ -53,6 +55,12 @@ object PdlClientSpek : Spek({
                 runBlocking {
                     val fullname = pdlClient.getPerson(UserConstants.ARBEIDSTAKER_PERSONIDENT_NAME_WITH_DASH).fullName
                     fullname shouldBeEqualTo UserConstants.PERSON_FULLNAME_DASH
+                }
+            }
+            it("returns geografisk tilknytning") {
+                runBlocking {
+                    val geografiskTilknytning = pdlClient.geografiskTilknytning(UserConstants.ARBEIDSTAKER_PERSONIDENT)
+                    geografiskTilknytning.kommune shouldBeEqualTo UserConstants.KOMMUNE
                 }
             }
         }

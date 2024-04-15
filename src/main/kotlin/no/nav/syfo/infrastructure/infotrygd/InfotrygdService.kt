@@ -1,14 +1,20 @@
 package no.nav.syfo.infrastructure.infotrygd
 
 import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.infrastructure.clients.pdl.PdlClient
+import no.nav.syfo.infrastructure.clients.pdl.dto.gradering
+import no.nav.syfo.infrastructure.clients.pdl.dto.isKode6
+import no.nav.syfo.infrastructure.clients.pdl.dto.isKode7
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
+import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
 
 class InfotrygdService(
+    val pdlClient: PdlClient,
     val mqSender: InfotrygdMQSender,
 ) {
 
-    fun sendMessageToInfotrygd(
+    suspend fun sendMessageToInfotrygd(
         vedtak: Vedtak,
     ) {
         val infotrygdMessage = StringBuilder()
@@ -19,7 +25,10 @@ class InfotrygdService(
         infotrygdMessage.append("00000")
         infotrygdMessage.append(dateFormatter.format(vedtak.createdAt))
         infotrygdMessage.append(timeFormatter.format(vedtak.createdAt))
-        infotrygdMessage.append("0315") // TODO: nav-kontor eller kommunenr
+        infotrygdMessage.append(
+            hentBostedskommune(vedtak)
+                ?: throw RuntimeException("Cannot send to Infotrygd: bostedskommune missing for vedtak ${vedtak.uuid}")
+        )
         infotrygdMessage.append(vedtak.personident.value)
         infotrygdMessage.append("".padEnd(4))
         infotrygdMessage.append("O".padEnd(2))
@@ -36,7 +45,23 @@ class InfotrygdService(
         )
     }
 
+    private suspend fun hentBostedskommune(vedtak: Vedtak): String? =
+        try {
+            val gradering = pdlClient.getPerson(vedtak.personident).gradering()
+            if (gradering.any { it.isKode6() || it.isKode7() }) {
+                logger.error("Hent geografisk tilknytning feilet for vedtak ${vedtak.uuid}")
+                null
+            } else {
+                pdlClient.geografiskTilknytning(vedtak.personident)?.kommune
+            }
+        } catch (exc: Exception) {
+            logger.error("Hent geografisk tilknytning feilet for vedtak ${vedtak.uuid}", exc)
+            null
+        }
+
     companion object {
+        private val logger = LoggerFactory.getLogger(InfotrygdService::class.java)
+
         val dateFormatter = DateTimeFormatter.ofPattern("ddMMYYYY")
         val timeFormatter = DateTimeFormatter.ofPattern("HHmmss")
     }

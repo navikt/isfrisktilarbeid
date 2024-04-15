@@ -63,6 +63,7 @@ fun main() {
         )
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
     val infotrygdService = InfotrygdService(
+        pdlClient = pdlClient,
         mqSender = InfotrygdMQSender(environment.mq),
     )
     val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
