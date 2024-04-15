@@ -1,6 +1,7 @@
 package no.nav.syfo.application
 
 import io.mockk.*
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.Behandlermelding
@@ -11,11 +12,14 @@ import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getBehandlerMelding
 import no.nav.syfo.infrastructure.database.repository.BehandlermeldingRepository
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.BehandlermeldingProducer
 import no.nav.syfo.infrastructure.kafka.BehandlermeldingRecord
+import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.util.nowUTC
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeGreaterThan
 import org.amshove.kluent.shouldNotBeNull
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -32,10 +36,12 @@ class BehandlermeldingServiceSpek : Spek({
     val mockBehandlerMeldingProducer = mockk<KafkaProducer<String, BehandlermeldingRecord>>(relaxed = true)
     val behandlermeldingProducer = BehandlermeldingProducer(producer = mockBehandlerMeldingProducer)
     val behandlermeldingRepository = BehandlermeldingRepository(database = database)
+    val journalforingServiceMock = mockk<JournalforingService>()
 
     val behandlermeldingService = BehandlermeldingService(
         behandlermeldingRepository = behandlermeldingRepository,
-        behandlermeldingProducer = behandlermeldingProducer
+        behandlermeldingProducer = behandlermeldingProducer,
+        journalforingService = journalforingServiceMock,
     )
 
     val vedtakRepository = VedtakRepository(database = database)
@@ -119,6 +125,69 @@ class BehandlermeldingServiceSpek : Spek({
             val vurderingList = behandlermeldingRepository.getUnpublishedBehandlermeldinger()
             vurderingList.size shouldBeEqualTo 1
             vurderingList.first().second.uuid shouldBeEqualTo behandlermelding.uuid
+        }
+    }
+
+    describe("journalforBehandlermeldinger") {
+        it("journalfører behandlermeldinger som ikke er journalført") {
+            val behandlermelding = createBehandlermelding()
+
+            coEvery {
+                journalforingServiceMock.journalfor(
+                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                    behandlermelding = behandlermelding,
+                    pdf = UserConstants.PDF_BEHANDLER_MELDING
+                )
+            } returns Result.success(mockedJournalpostId)
+
+            val journalforteBehandlermeldinger = runBlocking { behandlermeldingService.journalforBehandlermeldinger() }
+
+            val (success, failed) = journalforteBehandlermeldinger.partition { it.isSuccess }
+
+            failed.shouldBeEmpty()
+            success.size shouldBeEqualTo 1
+
+            val journalfortBehandlermelding = success.first().getOrThrow()
+            journalfortBehandlermelding.journalpostId shouldBeEqualTo mockedJournalpostId
+
+            val pBehandlermelding = database.getBehandlerMelding(behandlerMeldingUuid = journalfortBehandlermelding.uuid)!!
+            pBehandlermelding.updatedAt shouldBeGreaterThan pBehandlermelding.createdAt
+            pBehandlermelding.journalpostId shouldBeEqualTo mockedJournalpostId
+        }
+
+        it("journalfører ikke når ingen behandlermeldinger") {
+            val journalforteBehandlermeldinger = runBlocking { behandlermeldingService.journalforBehandlermeldinger() }
+
+            journalforteBehandlermeldinger.shouldBeEmpty()
+        }
+
+        it("journalfører ikke når behandlermelding allerede er journalført") {
+            val behandlermelding = createBehandlermelding()
+            val journalfortBehandlermelding = behandlermelding.copy(journalpostId = mockedJournalpostId)
+            behandlermeldingRepository.update(journalfortBehandlermelding)
+
+            val journalforteBehandlermeldinger = runBlocking { behandlermeldingService.journalforBehandlermeldinger() }
+
+            journalforteBehandlermeldinger.shouldBeEmpty()
+        }
+
+        it("journalføring feiler") {
+            val behandlermelding = createBehandlermelding()
+
+            coEvery {
+                journalforingServiceMock.journalfor(
+                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                    behandlermelding = behandlermelding,
+                    pdf = UserConstants.PDF_BEHANDLER_MELDING
+                )
+            } returns Result.failure(Exception("Journalforing failed"))
+
+            val journalforteBehandlermeldinger = runBlocking { behandlermeldingService.journalforBehandlermeldinger() }
+
+            val (success, failed) = journalforteBehandlermeldinger.partition { it.isSuccess }
+
+            failed.size shouldBeEqualTo 1
+            success.shouldBeEmpty()
         }
     }
 })

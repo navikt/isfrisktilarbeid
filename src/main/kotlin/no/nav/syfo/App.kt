@@ -75,6 +75,10 @@ fun main() {
             kafkaAivenProducerConfig<BehandlermeldingRecordSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
+    val journalforingService = JournalforingService(
+        dokarkivClient = dokarkivClient,
+        pdlClient = pdlClient,
+    )
 
     lateinit var vedtakService: VedtakService
 
@@ -94,10 +98,7 @@ fun main() {
                     pdfService = pdfService,
                     vedtakRepository = vedtakRepository,
                     infotrygdService = infotrygdService,
-                    journalforingService = JournalforingService(
-                        dokarkivClient = dokarkivClient,
-                        pdlClient = pdlClient,
-                    ),
+                    journalforingService = journalforingService,
                     esyfovarselHendelseProducer = esyfovarselHendelseProducer,
                 )
                 apiModule(
@@ -118,6 +119,7 @@ fun main() {
         val behandlermeldingService = BehandlermeldingService(
             behandlermeldingRepository = BehandlermeldingRepository(database = applicationDatabase),
             behandlermeldingProducer = behandlermeldingProducer,
+            journalforingService = journalforingService,
         )
 
         launchCronjobs(
