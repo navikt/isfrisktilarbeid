@@ -13,7 +13,7 @@ import org.spekframework.spek2.style.specification.describe
 class VedtakRepositorySpek : Spek({
 
     val vedtak = generateVedtak()
-    val behandlerMelding = generateBehandlermelding()
+    val behandlerMelding = generateBehandlermelding(behandlerRef = UserConstants.BEHANDLER_REF)
 
     describe(VedtakRepository::class.java.simpleName) {
         with(TestApplicationEngine()) {

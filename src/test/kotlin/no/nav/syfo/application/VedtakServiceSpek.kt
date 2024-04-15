@@ -33,8 +33,8 @@ import org.spekframework.spek2.style.specification.describe
 import java.util.concurrent.Future
 
 val vedtak = generateVedtak()
-val behandlermelding = generateBehandlermelding()
-val otherBehandlermelding = generateBehandlermelding()
+val behandlermelding = generateBehandlermelding(behandlerRef = UserConstants.BEHANDLER_REF)
+val otherBehandlermelding = generateBehandlermelding(behandlerRef = UserConstants.BEHANDLER_REF)
 val journalpostId = JournalpostId("123")
 
 class VedtakServiceSpek : Spek({
@@ -47,6 +47,7 @@ class VedtakServiceSpek : Spek({
         val journalforingService = JournalforingService(
             dokarkivClient = externalMockEnvironment.dokarkivClient,
             pdlClient = externalMockEnvironment.pdlClient,
+            dialogmeldingBehandlerClient = externalMockEnvironment.dialogmeldingBehandlerClient
         )
 
         val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()

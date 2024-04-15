@@ -45,6 +45,10 @@ fun testEnvironment() = Environment(
             baseUrl = "dokarkivUrl",
             clientId = "dokarkivClientId",
         ),
+        isdialogmelding = ClientEnvironment(
+            baseUrl = "isdialogmeldingUrl",
+            clientId = "isdialogmeldingClientId",
+        ),
     ),
     mq = MQEnvironment(
         mqQueueManager = "mqQueueManager",
