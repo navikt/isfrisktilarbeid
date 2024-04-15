@@ -26,6 +26,11 @@ class InfotrygdServiceSpek : Spek({
         pdlClient = externalMockEnvironment.pdlClient,
         mqSender = mqSender,
     )
+    val fixedTime = OffsetDateTime.of(
+        LocalDateTime.of(2024, Month.MARCH, 1, 12, 30, 23),
+        ZoneOffset.UTC
+    )
+
     beforeEachTest {
         clearAllMocks()
         justRun { mqSender.sendToMQ(any()) }
@@ -33,10 +38,6 @@ class InfotrygdServiceSpek : Spek({
 
     describe(InfotrygdService::class.java.simpleName) {
         it("sends message to MQ") {
-            val fixedTime = OffsetDateTime.of(
-                LocalDateTime.of(2024, Month.MARCH, 1, 12, 30, 23),
-                ZoneOffset.UTC
-            )
             val vedtak = generateVedtak().copy(
                 fom = fixedTime.toLocalDate(),
                 tom = fixedTime.toLocalDate().plusDays(30),
@@ -55,10 +56,6 @@ class InfotrygdServiceSpek : Spek({
             payload shouldBeEqualTo expectedPayload
         }
         it("send message to MQ fails for kode 6") {
-            val fixedTime = OffsetDateTime.of(
-                LocalDateTime.of(2024, Month.MARCH, 1, 12, 30, 23),
-                ZoneOffset.UTC
-            )
             val vedtak = generateVedtak().copy(
                 personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_GRADERT,
                 fom = fixedTime.toLocalDate(),
