@@ -17,9 +17,8 @@ class VedtakService(
 ) {
     fun getVedtak(
         personident: Personident,
-    ): List<Vedtak> {
-        return emptyList()
-    }
+    ): List<Vedtak> =
+        vedtakRepository.getVedtak(personident)
 
     suspend fun createVedtak(
         personident: Personident,
