@@ -75,28 +75,28 @@ class PdlClient(
             variables = PdlGeografiskTilknytningRequestVariables(personident.value)
         )
         try {
-            val pdlPersonResponse: PdlGeografiskTilknytningResponse = httpClient.post(pdlEnvironment.baseUrl) {
+            val pdlGTResponse: PdlGeografiskTilknytningResponse = httpClient.post(pdlEnvironment.baseUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(systemToken))
                 header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
                 header(GT_HEADER, GT_HEADER)
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }.body()
-            if (pdlPersonResponse.errors != null && pdlPersonResponse.errors.isNotEmpty()) {
+            if (pdlGTResponse.errors != null && pdlGTResponse.errors.isNotEmpty()) {
                 Metrics.COUNT_CALL_PDL_GT_FAIL.increment()
-                pdlPersonResponse.errors.forEach {
-                    logger.error("Error while requesting person from PersonDataLosningen: ${it.errorMessage()}")
+                pdlGTResponse.errors.forEach {
+                    logger.error("Error while requesting geografisk tilknytning from PersonDataLosningen: ${it.errorMessage()}")
                 }
                 throw RuntimeException("No Geografisk Tilknytning was found in response from PDL: Errors found in response")
-            } else if (pdlPersonResponse.data == null) {
+            } else if (pdlGTResponse.data == null) {
                 Metrics.COUNT_CALL_PDL_GT_FAIL.increment()
                 val errorMessage =
                     "No Geografisk Tilknytning was found in response from PDL: No data was found in response"
-                logger.error("Error while requesting person from PersonDataLosningen: $errorMessage")
+                logger.error("Error while requesting geografisk tilknytning from PersonDataLosningen: $errorMessage")
                 throw throw RuntimeException(errorMessage)
             } else {
                 Metrics.COUNT_CALL_PDL_GT_SUCCESS.increment()
-                return pdlPersonResponse.data.hentGeografiskTilknytning?.geografiskTilknytning()
+                return pdlGTResponse.data.hentGeografiskTilknytning?.geografiskTilknytning()
                     ?: throw GeografiskTilknytningNotFoundException()
             }
         } catch (e: ResponseException) {
