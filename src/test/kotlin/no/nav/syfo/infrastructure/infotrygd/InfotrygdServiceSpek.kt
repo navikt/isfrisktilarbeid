@@ -6,6 +6,7 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
+import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldStartWith
 import org.spekframework.spek2.Spek
@@ -62,18 +63,15 @@ class InfotrygdServiceSpek : Spek({
                 tom = fixedTime.toLocalDate().plusDays(30),
                 createdAt = fixedTime,
             )
-            val thrown = runBlocking {
-                try {
+            val thrown = assertFailsWith<RuntimeException> {
+                runBlocking {
                     infotrygdService.sendMessageToInfotrygd(vedtak)
-                    null
-                } catch (exc: Exception) {
-                    exc
                 }
             }
             verify(exactly = 0) {
                 mqSender.sendToMQ(any())
             }
-            thrown!!.message!! shouldStartWith "Cannot send to Infotrygd: bostedskommune missing"
+            thrown.message!! shouldStartWith "Cannot send to Infotrygd: bostedskommune missing"
         }
     }
 })

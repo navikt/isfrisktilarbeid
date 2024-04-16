@@ -27,7 +27,7 @@ class PdlClient(
     suspend fun getPerson(personident: Personident): PdlPerson {
         val token = azureAdClient.getSystemToken(pdlEnvironment.clientId)
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
-        val request = PdlHentPersonRequest(getPdlQuery(PDL_QUERY_PATH), PdlHentPersonRequestVariables(personident.value))
+        val request = PdlHentPersonRequest(getPdlQuery(PDL_QUERY_HENT_PERSON_PATH), PdlHentPersonRequestVariables(personident.value))
 
         val response: HttpResponse = httpClient.post(pdlEnvironment.baseUrl) {
             setBody(request)
@@ -69,7 +69,7 @@ class PdlClient(
         )?.accessToken
             ?: throw RuntimeException("Failed to request PDL: Failed to get system token from AzureAD")
 
-        val query = getPdlQuery("/pdl/hentGeografiskTilknytning.graphql")
+        val query = getPdlQuery(PDL_QUERY_GEOGRAFISK_TILKNYTNING_PATH)
         val request = PdlGeografiskTilknytningRequest(
             query = query,
             variables = PdlGeografiskTilknytningRequestVariables(personident.value)
@@ -79,7 +79,6 @@ class PdlClient(
                 header(HttpHeaders.Authorization, bearerHeader(systemToken))
                 header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
                 header(GT_HEADER, GT_HEADER)
-                header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }.body()
@@ -117,7 +116,9 @@ class PdlClient(
             .replace("[\n\r]", "")
 
     companion object {
-        private const val PDL_QUERY_PATH = "/pdl/hentPerson.graphql"
+        private const val PDL_QUERY_HENT_PERSON_PATH = "/pdl/hentPerson.graphql"
+        private const val PDL_QUERY_GEOGRAFISK_TILKNYTNING_PATH = "/pdl/hentGeografiskTilknytning.graphql"
+
         const val GT_HEADER = "geografisktilknytning"
 
         // Se behandlingskatalog https://behandlingskatalog.intern.nav.no/

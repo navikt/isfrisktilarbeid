@@ -18,6 +18,7 @@ class InfotrygdService(
         vedtak: Vedtak,
     ) {
         val infotrygdMessage = StringBuilder()
+        // Format definert her: https://confluence.adeo.no/display/INFOTRYGD/IT30_MA+-+Meldinger+mellom+INFOTRYGD+OG+ARENA
         infotrygdMessage.append("K278M810")
         infotrygdMessage.append("SENDMELDING")
         infotrygdMessage.append("MODIA")
@@ -52,7 +53,7 @@ class InfotrygdService(
                 logger.error("Hent geografisk tilknytning feilet for vedtak ${vedtak.uuid}")
                 null
             } else {
-                pdlClient.geografiskTilknytning(vedtak.personident)?.kommune
+                pdlClient.geografiskTilknytning(vedtak.personident).kommune
             }
         } catch (exc: Exception) {
             logger.error("Hent geografisk tilknytning feilet for vedtak ${vedtak.uuid}", exc)
