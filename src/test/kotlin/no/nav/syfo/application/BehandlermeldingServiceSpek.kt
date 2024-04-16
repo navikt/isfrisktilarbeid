@@ -26,6 +26,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.UUID
 import java.util.concurrent.Future
 
 class BehandlermeldingServiceSpek : Spek({
@@ -36,20 +37,24 @@ class BehandlermeldingServiceSpek : Spek({
     val mockBehandlerMeldingProducer = mockk<KafkaProducer<String, BehandlermeldingRecord>>(relaxed = true)
     val behandlermeldingProducer = BehandlermeldingProducer(producer = mockBehandlerMeldingProducer)
     val behandlermeldingRepository = BehandlermeldingRepository(database = database)
-    val journalforingServiceMock = mockk<JournalforingService>()
+    val journalforingService = JournalforingService(
+        dokarkivClient = externalMockEnvironment.dokarkivClient,
+        pdlClient = externalMockEnvironment.pdlClient,
+        dialogmeldingBehandlerClient = externalMockEnvironment.dialogmeldingBehandlerClient
+    )
 
     val behandlermeldingService = BehandlermeldingService(
         behandlermeldingRepository = behandlermeldingRepository,
         behandlermeldingProducer = behandlermeldingProducer,
-        journalforingService = journalforingServiceMock,
+        journalforingService = journalforingService,
     )
 
     val vedtakRepository = VedtakRepository(database = database)
 
-    fun createBehandlermelding(): Behandlermelding = vedtakRepository.createVedtak(
+    fun createBehandlermelding(behandlerRef: UUID = UserConstants.BEHANDLER_REF): Behandlermelding = vedtakRepository.createVedtak(
         vedtak = generateVedtak(),
         vedtakPdf = UserConstants.PDF_VEDTAK,
-        behandlermelding = generateBehandlermelding(),
+        behandlermelding = generateBehandlermelding(behandlerRef = behandlerRef),
         behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
     ).second
 
@@ -130,15 +135,7 @@ class BehandlermeldingServiceSpek : Spek({
 
     describe("journalforBehandlermeldinger") {
         it("journalfører behandlermeldinger som ikke er journalført") {
-            val behandlermelding = createBehandlermelding()
-
-            coEvery {
-                journalforingServiceMock.journalfor(
-                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                    behandlermelding = behandlermelding,
-                    pdf = UserConstants.PDF_BEHANDLER_MELDING
-                )
-            } returns Result.success(mockedJournalpostId)
+            createBehandlermelding()
 
             val journalforteBehandlermeldinger = runBlocking { behandlermeldingService.journalforBehandlermeldinger() }
 
@@ -172,15 +169,7 @@ class BehandlermeldingServiceSpek : Spek({
         }
 
         it("journalføring feiler") {
-            val behandlermelding = createBehandlermelding()
-
-            coEvery {
-                journalforingServiceMock.journalfor(
-                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                    behandlermelding = behandlermelding,
-                    pdf = UserConstants.PDF_BEHANDLER_MELDING
-                )
-            } returns Result.failure(Exception("Journalforing failed"))
+            createBehandlermelding(behandlerRef = UUID.randomUUID())
 
             val journalforteBehandlermeldinger = runBlocking { behandlermeldingService.journalforBehandlermeldinger() }
 

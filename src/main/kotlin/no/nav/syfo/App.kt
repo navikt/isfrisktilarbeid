@@ -9,6 +9,7 @@ import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.BehandlermeldingService
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.behandler.DialogmeldingBehandlerClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
@@ -61,6 +62,11 @@ fun main() {
             azureAdClient = azureAdClient,
             clientEnvironment = environment.clients.istilgangskontroll
         )
+    val dialogmeldingBehandlerClient = DialogmeldingBehandlerClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.isdialogmelding
+    )
+
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
     val infotrygdService = InfotrygdService(
         mqSender = InfotrygdMQSender(environment.mq),
@@ -78,6 +84,7 @@ fun main() {
     val journalforingService = JournalforingService(
         dokarkivClient = dokarkivClient,
         pdlClient = pdlClient,
+        dialogmeldingBehandlerClient = dialogmeldingBehandlerClient,
     )
 
     lateinit var vedtakService: VedtakService
