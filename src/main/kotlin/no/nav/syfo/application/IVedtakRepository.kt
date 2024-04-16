@@ -1,6 +1,7 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.domain.Behandlermelding
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
 
 interface IVedtakRepository {
@@ -10,6 +11,8 @@ interface IVedtakRepository {
         behandlermelding: Behandlermelding,
         behandlermeldingPdf: ByteArray,
     ): Pair<Vedtak, Behandlermelding>
+
+    fun getVedtak(personident: Personident): List<Vedtak>
 
     fun getUnpublishedInfotrygd(): List<Vedtak>
 

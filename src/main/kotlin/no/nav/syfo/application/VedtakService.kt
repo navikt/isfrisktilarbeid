@@ -15,6 +15,12 @@ class VedtakService(
     private val infotrygdService: InfotrygdService,
     private val esyfovarselHendelseProducer: IEsyfovarselHendelseProducer,
 ) {
+    fun getVedtak(
+        personident: Personident,
+    ): List<Vedtak> {
+        return emptyList()
+    }
+
     suspend fun createVedtak(
         personident: Personident,
         veilederident: String,

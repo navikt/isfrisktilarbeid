@@ -30,6 +30,17 @@ fun Route.registerVedtakEndpoints(
             this.veilederTilgangskontrollClient = veilederTilgangskontrollClient
         }
 
+        get(vedtakPath) {
+            val personident = call.getPersonident()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+
+            val vedtak = vedtakService.getVedtak(
+                personident = personident,
+            )
+            val responseDTO = vedtak.map { VedtakResponseDTO.createFromVedtak(it) }
+            call.respond(HttpStatusCode.OK, responseDTO)
+        }
+
         post(vedtakPath) {
             val requestDTO = call.receive<VedtakRequestDTO>()
             if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
