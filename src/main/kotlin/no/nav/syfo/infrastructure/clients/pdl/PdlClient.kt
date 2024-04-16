@@ -2,10 +2,12 @@ package no.nav.syfo.infrastructure.clients.pdl
 
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.micrometer.core.instrument.Counter
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.bearerHeader
@@ -25,7 +27,7 @@ class PdlClient(
     suspend fun getPerson(personident: Personident): PdlPerson {
         val token = azureAdClient.getSystemToken(pdlEnvironment.clientId)
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
-        val request = PdlHentPersonRequest(getPdlQuery(), PdlHentPersonRequestVariables(personident.value))
+        val request = PdlHentPersonRequest(getPdlQuery(PDL_QUERY_HENT_PERSON_PATH), PdlHentPersonRequestVariables(personident.value))
 
         val response: HttpResponse = httpClient.post(pdlEnvironment.baseUrl) {
             setBody(request)
@@ -59,13 +61,65 @@ class PdlClient(
         return person ?: throw RuntimeException("PDL did not return a person for given fnr")
     }
 
-    private fun getPdlQuery(): String =
-        this::class.java.getResource(PDL_QUERY_PATH)!!
+    suspend fun geografiskTilknytning(
+        personident: Personident,
+    ): GeografiskTilknytning {
+        val systemToken = azureAdClient.getSystemToken(
+            scopeClientId = pdlEnvironment.clientId,
+        )?.accessToken
+            ?: throw RuntimeException("Failed to request PDL: Failed to get system token from AzureAD")
+
+        val query = getPdlQuery(PDL_QUERY_GEOGRAFISK_TILKNYTNING_PATH)
+        val request = PdlGeografiskTilknytningRequest(
+            query = query,
+            variables = PdlGeografiskTilknytningRequestVariables(personident.value)
+        )
+        try {
+            val pdlGTResponse: PdlGeografiskTilknytningResponse = httpClient.post(pdlEnvironment.baseUrl) {
+                header(HttpHeaders.Authorization, bearerHeader(systemToken))
+                header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
+                header(GT_HEADER, GT_HEADER)
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }.body()
+            if (pdlGTResponse.errors != null && pdlGTResponse.errors.isNotEmpty()) {
+                Metrics.COUNT_CALL_PDL_GT_FAIL.increment()
+                pdlGTResponse.errors.forEach {
+                    logger.error("Error while requesting geografisk tilknytning from PersonDataLosningen: ${it.errorMessage()}")
+                }
+                throw RuntimeException("No Geografisk Tilknytning was found in response from PDL: Errors found in response")
+            } else if (pdlGTResponse.data == null) {
+                Metrics.COUNT_CALL_PDL_GT_FAIL.increment()
+                val errorMessage =
+                    "No Geografisk Tilknytning was found in response from PDL: No data was found in response"
+                logger.error("Error while requesting geografisk tilknytning from PersonDataLosningen: $errorMessage")
+                throw throw RuntimeException(errorMessage)
+            } else {
+                Metrics.COUNT_CALL_PDL_GT_SUCCESS.increment()
+                return pdlGTResponse.data.hentGeografiskTilknytning?.geografiskTilknytning()
+                    ?: throw GeografiskTilknytningNotFoundException()
+            }
+        } catch (e: ResponseException) {
+            logger.error(
+                "Error while requesting GeografiskTilknytning from PersonDataLosningen {}, {}",
+                StructuredArguments.keyValue("statusCode", e.response.status.value.toString()),
+                StructuredArguments.keyValue("message", e.message),
+            )
+            Metrics.COUNT_CALL_PDL_GT_FAIL.increment()
+            throw e
+        }
+    }
+
+    private fun getPdlQuery(queryFilePath: String): String =
+        this::class.java.getResource(queryFilePath)!!
             .readText()
             .replace("[\n\r]", "")
 
     companion object {
-        private const val PDL_QUERY_PATH = "/pdl/hentPerson.graphql"
+        private const val PDL_QUERY_HENT_PERSON_PATH = "/pdl/hentPerson.graphql"
+        private const val PDL_QUERY_GEOGRAFISK_TILKNYTNING_PATH = "/pdl/hentGeografiskTilknytning.graphql"
+
+        const val GT_HEADER = "geografisktilknytning"
 
         // Se behandlingskatalog https://behandlingskatalog.intern.nav.no/
         // Behandling: Sykefraværsoppfølging: Vurdere behov for oppfølging og rett til sykepenger etter §§ 8-4 og 8-8
@@ -81,12 +135,20 @@ private class Metrics {
         const val CALL_PDL_PERSON_BASE = "${METRICS_NS}_call_pdl_person"
         const val CALL_PDL_PERSON_SUCCESS = "${CALL_PDL_PERSON_BASE}_success_count"
         const val CALL_PDL_PERSON_FAIL = "${CALL_PDL_PERSON_BASE}_fail_count"
+        const val CALL_PDL_GT_SUCCESS = "${CALL_PDL_PERSON_BASE}_gt_success_count"
+        const val CALL_PDL_GT_FAIL = "${CALL_PDL_PERSON_BASE}_gt_fail_count"
 
         val COUNT_CALL_PDL_PERSON_SUCCESS: Counter = Counter.builder(CALL_PDL_PERSON_SUCCESS)
             .description("Counts the number of successful calls to pdl - person")
             .register(METRICS_REGISTRY)
         val COUNT_CALL_PDL_PERSON_FAIL: Counter = Counter.builder(CALL_PDL_PERSON_FAIL)
             .description("Counts the number of failed calls to pdl - person")
+            .register(METRICS_REGISTRY)
+        val COUNT_CALL_PDL_GT_SUCCESS: Counter = Counter.builder(CALL_PDL_GT_SUCCESS)
+            .description("Counts the number of successful calls to pdl - gt")
+            .register(METRICS_REGISTRY)
+        val COUNT_CALL_PDL_GT_FAIL: Counter = Counter.builder(CALL_PDL_GT_FAIL)
+            .description("Counts the number of failed calls to pdl - gt")
             .register(METRICS_REGISTRY)
     }
 }

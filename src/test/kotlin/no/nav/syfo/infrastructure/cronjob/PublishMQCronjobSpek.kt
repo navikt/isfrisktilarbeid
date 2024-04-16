@@ -34,7 +34,7 @@ class PublishMQCronjobSpek : Spek({
                 pdfService = PdfService(externalMockEnvironment.pdfgenClient, externalMockEnvironment.pdlClient),
                 vedtakRepository = VedtakRepository(database),
                 journalforingService = mockk<JournalforingService>(relaxed = true),
-                infotrygdService = InfotrygdService(mqSenderMock),
+                infotrygdService = InfotrygdService(externalMockEnvironment.pdlClient, mqSenderMock),
                 esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),
             )
             val publishMQCronjob = PublishMQCronjob(vedtakService)

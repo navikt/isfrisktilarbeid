@@ -62,6 +62,7 @@ class VedtakServiceSpek : Spek({
             ),
             journalforingService = journalforingService,
             infotrygdService = InfotrygdService(
+                pdlClient = externalMockEnvironment.pdlClient,
                 mqSender = mockk<InfotrygdMQSender>(relaxed = true),
             ),
             esyfovarselHendelseProducer = esyfovarselHendelseProducer,

@@ -35,6 +35,7 @@ fun Application.testApiModule(
         pdfService = pdfService,
         journalforingService = journalforingService,
         infotrygdService = InfotrygdService(
+            pdlClient = externalMockEnvironment.pdlClient,
             mqSender = mockk<InfotrygdMQSender>(relaxed = true),
         ),
         esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),

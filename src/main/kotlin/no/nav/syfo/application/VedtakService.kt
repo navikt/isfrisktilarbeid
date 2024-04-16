@@ -56,7 +56,7 @@ class VedtakService(
         return createdVedtak
     }
 
-    fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
+    suspend fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
         val unpublished = vedtakRepository.getUnpublishedInfotrygd()
         return unpublished.map { vedtak ->
             runCatching {
