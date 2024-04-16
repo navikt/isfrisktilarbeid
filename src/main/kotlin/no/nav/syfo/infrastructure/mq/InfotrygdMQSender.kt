@@ -39,6 +39,7 @@ class InfotrygdMQSender(
             context.createProducer().send(destination, payload)
         }
         Metrics.COUNT_MQ_PRODUCER_MESSAGE_SENT.increment()
+        log.info("Sent message to MQ: $payload")
     }
 }
 
