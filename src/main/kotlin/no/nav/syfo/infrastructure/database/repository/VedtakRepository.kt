@@ -170,7 +170,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
         private const val GET_VEDTAK =
             """
-                SELECT * FROM VEDTAK WHERE personident=?
+                SELECT * FROM VEDTAK WHERE personident=? ORDER BY created_at DESC
             """
 
         private const val GET_UNPUBLISHED_INFOTRYGD =
