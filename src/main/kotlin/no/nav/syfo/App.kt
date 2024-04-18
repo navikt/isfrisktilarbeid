@@ -22,11 +22,9 @@ import no.nav.syfo.infrastructure.database.repository.BehandlermeldingRepository
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.kafka.BehandlermeldingProducer
-import no.nav.syfo.infrastructure.kafka.BehandlermeldingRecordSerializer
+import no.nav.syfo.infrastructure.kafka.*
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaEsyfovarselHendelseSerializer
-import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -82,6 +80,11 @@ fun main() {
             kafkaAivenProducerConfig<BehandlermeldingRecordSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
+    val vedtakFattetProducer = VedtakFattetProducer(
+        producer = KafkaProducer(
+            kafkaAivenProducerConfig<VedtakFattetRecordSerializer>(kafkaEnvironment = environment.kafka)
+        )
+    )
     val journalforingService = JournalforingService(
         dokarkivClient = dokarkivClient,
         pdlClient = pdlClient,
@@ -108,6 +111,7 @@ fun main() {
                     infotrygdService = infotrygdService,
                     journalforingService = journalforingService,
                     esyfovarselHendelseProducer = esyfovarselHendelseProducer,
+                    vedtakFattetProducer = vedtakFattetProducer,
                 )
                 apiModule(
                     applicationState = applicationState,

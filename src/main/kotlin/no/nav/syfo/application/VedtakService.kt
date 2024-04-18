@@ -14,6 +14,7 @@ class VedtakService(
     private val journalforingService: IJournalforingService,
     private val infotrygdService: InfotrygdService,
     private val esyfovarselHendelseProducer: IEsyfovarselHendelseProducer,
+    private val vedtakFattetProducer: IVedtakFattetProducer,
 ) {
     suspend fun createVedtak(
         personident: Personident,
@@ -91,6 +92,18 @@ class VedtakService(
                 val publishedVedtakVarsel = vedtak.publishVarsel()
                 vedtakRepository.update(publishedVedtakVarsel)
                 publishedVedtakVarsel
+            }
+        }
+    }
+
+    fun publishUnpublishedVedtak(): List<Result<Vedtak>> {
+        val unpublished = vedtakRepository.getUnpublishedVedtak()
+        return unpublished.map { vedtak ->
+            val producerResult = vedtakFattetProducer.send(vedtak)
+            producerResult.map {
+                val publishedVedtak = it.publish()
+                vedtakRepository.update(publishedVedtak)
+                publishedVedtak
             }
         }
     }

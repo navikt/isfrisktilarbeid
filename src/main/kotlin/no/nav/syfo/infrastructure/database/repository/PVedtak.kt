@@ -23,6 +23,7 @@ data class PVedtak(
     val pdfId: Int,
     val publishedInfotrygdAt: OffsetDateTime?,
     val varselPublishedAt: OffsetDateTime?,
+    val publishedAt: OffsetDateTime?,
 ) {
     fun toVedtak(): Vedtak = Vedtak.createFromDatabase(
         uuid = uuid,
@@ -35,5 +36,6 @@ data class PVedtak(
         tom = tom,
         journalpostId = journalpostId?.let { JournalpostId(it) },
         varselPublishedAt = varselPublishedAt,
+        publishedAt = publishedAt,
     )
 }

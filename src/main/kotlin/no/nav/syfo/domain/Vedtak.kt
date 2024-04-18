@@ -16,6 +16,7 @@ data class Vedtak private constructor(
     val tom: LocalDate,
     val journalpostId: JournalpostId?,
     val varselPublishedAt: OffsetDateTime?,
+    val publishedAt: OffsetDateTime?,
 ) {
     constructor(
         personident: Personident,
@@ -35,11 +36,14 @@ data class Vedtak private constructor(
         tom = tom,
         journalpostId = null,
         varselPublishedAt = null,
+        publishedAt = null,
     )
 
     fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
 
     fun publishVarsel(): Vedtak = this.copy(varselPublishedAt = nowUTC())
+
+    fun publish(): Vedtak = this.copy(publishedAt = nowUTC())
 
     companion object {
 
@@ -54,6 +58,7 @@ data class Vedtak private constructor(
             tom: LocalDate,
             journalpostId: JournalpostId?,
             varselPublishedAt: OffsetDateTime?,
+            publishedAt: OffsetDateTime?,
         ) = Vedtak(
             uuid = uuid,
             personident = personident,
@@ -65,6 +70,7 @@ data class Vedtak private constructor(
             tom = tom,
             journalpostId = journalpostId,
             varselPublishedAt = varselPublishedAt,
+            publishedAt = publishedAt,
         )
     }
 }
