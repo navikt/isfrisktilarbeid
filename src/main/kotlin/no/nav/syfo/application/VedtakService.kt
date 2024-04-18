@@ -15,6 +15,9 @@ class VedtakService(
     private val infotrygdService: InfotrygdService,
     private val esyfovarselHendelseProducer: IEsyfovarselHendelseProducer,
 ) {
+    fun getVedtak(personident: Personident) =
+        vedtakRepository.getVedtak(personident)
+
     suspend fun createVedtak(
         personident: Personident,
         veilederident: String,

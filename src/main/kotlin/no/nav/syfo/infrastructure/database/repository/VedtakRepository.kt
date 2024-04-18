@@ -19,6 +19,14 @@ private val mapper = configuredJacksonMapper()
 
 class VedtakRepository(private val database: DatabaseInterface) : IVedtakRepository {
 
+    override fun getVedtak(personident: Personident): List<Vedtak> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_VEDTAK).use {
+                it.setString(1, personident.value)
+                it.executeQuery().toList { toPVedtak() }
+            }
+        }.map { it.toVedtak() }
+
     override fun createVedtak(
         vedtak: Vedtak,
         vedtakPdf: ByteArray,
@@ -158,6 +166,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                     pdf_id
                 ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?)
                 RETURNING *
+            """
+
+        private const val GET_VEDTAK =
+            """
+                SELECT * FROM VEDTAK WHERE personident=? ORDER BY created_at DESC
             """
 
         private const val GET_UNPUBLISHED_INFOTRYGD =
