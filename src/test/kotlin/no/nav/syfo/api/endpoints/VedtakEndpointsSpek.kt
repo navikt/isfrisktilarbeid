@@ -12,6 +12,7 @@ import no.nav.syfo.UserConstants.PDF_VEDTAK
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
+import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
@@ -22,7 +23,6 @@ import no.nav.syfo.infrastructure.database.getVedtakPdf
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.pdf.PdfService
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeAfter
@@ -72,7 +72,7 @@ object VedtakEndpointsSpek : Spek({
                 vedtakRepository = VedtakRepository(database),
                 journalforingService = mockk<JournalforingService>(relaxed = true),
                 infotrygdService = mockk<InfotrygdService>(relaxed = true),
-                esyfovarselHendelseProducer = mockk<EsyfovarselHendelseProducer>(relaxed = true),
+                vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
             )
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
