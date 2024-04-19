@@ -6,7 +6,7 @@ import java.util.*
 
 /**
  * Kombinasjonen av dialogmelding type, kodeverk og kode bestemmer anvendelsen.
- * Dialogmelding type: `DIALOG_NOTAT`, kodeverk: 8127, kode: 2
+ * Dialogmelding type: `DIALOG_NOTAT`, kodeverk: HENVENDELSE (8127), kode: 2
  * Andvendelsen her er: Friskmelding til arbeidsformidling
  *
  * (Se pdf for "Veiledning til anvendelse av dialogmelding for 2-veis
@@ -36,7 +36,7 @@ data class BehandlermeldingRecord private constructor(
         dialogmeldingRefParent = null,
         dialogmeldingRefConversation = UUID.randomUUID().toString(),
         dialogmeldingType = "DIALOG_NOTAT",
-        dialogmeldingKodeverk = "8127",
+        dialogmeldingKodeverk = "HENVENDELSE",
         dialogmeldingKode = 2,
         dialogmeldingTekst = dialogmeldingTekst,
         dialogmeldingVedlegg = dialogmeldingVedlegg,

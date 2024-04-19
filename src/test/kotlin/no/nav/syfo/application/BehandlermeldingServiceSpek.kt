@@ -95,7 +95,7 @@ class BehandlermeldingServiceSpek : Spek({
             behandlermeldingRecord.dialogmeldingTekst shouldBeEqualTo behandlermelding.document.serialize()
             behandlermeldingRecord.dialogmeldingVedlegg[0] shouldBeEqualTo UserConstants.PDF_BEHANDLER_MELDING[0]
             behandlermeldingRecord.dialogmeldingType shouldBeEqualTo "DIALOG_NOTAT"
-            behandlermeldingRecord.dialogmeldingKodeverk shouldBeEqualTo "8127"
+            behandlermeldingRecord.dialogmeldingKodeverk shouldBeEqualTo "HENVENDELSE"
             behandlermeldingRecord.dialogmeldingKode shouldBeEqualTo 2
         }
 
