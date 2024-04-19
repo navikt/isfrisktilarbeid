@@ -23,4 +23,6 @@ interface IVedtakRepository {
     fun update(vedtak: Vedtak)
 
     fun getUnpublishedVedtakVarsler(): List<Vedtak>
+
+    fun getUnpublishedVedtak(): List<Vedtak>
 }

@@ -12,6 +12,9 @@ import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
+import no.nav.syfo.infrastructure.kafka.VedtakFattetProducer
+import no.nav.syfo.infrastructure.kafka.VedtakFattetRecord
+import no.nav.syfo.infrastructure.kafka.VedtakProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
@@ -21,10 +24,7 @@ import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import no.nav.syfo.util.nowUTC
-import org.amshove.kluent.shouldBeEmpty
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterThan
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
@@ -51,9 +51,14 @@ class VedtakServiceSpek : Spek({
         )
 
         val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
-        val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
-            kafkaProducer = mockEsyfoVarselKafkaProducer,
+        val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(mockEsyfoVarselKafkaProducer)
+        val mockVedtakFattetKafkaProducer = mockk<KafkaProducer<String, VedtakFattetRecord>>()
+        val vedtakFattetProducer = VedtakFattetProducer(mockVedtakFattetKafkaProducer)
+        val vedtakProducer = VedtakProducer(
+            esyfovarselHendelseProducer = esyfovarselHendelseProducer,
+            vedtakFattetProducer = vedtakFattetProducer,
         )
+
         val vedtakService = VedtakService(
             vedtakRepository = vedtakRepository,
             pdfService = PdfService(
@@ -65,12 +70,13 @@ class VedtakServiceSpek : Spek({
                 pdlClient = externalMockEnvironment.pdlClient,
                 mqSender = mockk<InfotrygdMQSender>(relaxed = true),
             ),
-            esyfovarselHendelseProducer = esyfovarselHendelseProducer,
+            vedtakProducer = vedtakProducer,
         )
 
         beforeEachTest {
             clearAllMocks()
             coEvery { mockEsyfoVarselKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+            coEvery { mockVedtakFattetKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
         }
 
         afterEachTest {
@@ -258,6 +264,65 @@ class VedtakServiceSpek : Spek({
 
                 val vedtak = vedtakRepository.getUnpublishedVedtakVarsler().first()
                 vedtak.uuid shouldBeEqualTo unpublishedVedtak.uuid
+            }
+        }
+
+        describe("Publish unpublished vedtak") {
+
+            it("publishes unpublished vedtak to kafka") {
+                val unpublishedVedtak = vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                ).first
+
+                val (success, failed) = vedtakService.publishUnpublishedVedtak().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val publishedVedtak = success.first().getOrThrow()
+                publishedVedtak.uuid.shouldBeEqualTo(unpublishedVedtak.uuid)
+                publishedVedtak.publishedAt.shouldNotBeNull()
+
+                vedtakRepository.getUnpublishedVedtak().shouldBeEmpty()
+
+                val producerRecordSlot = slot<ProducerRecord<String, VedtakFattetRecord>>()
+                verify(exactly = 1) { mockVedtakFattetKafkaProducer.send(capture(producerRecordSlot)) }
+
+                val record = producerRecordSlot.captured.value()
+                record.uuid shouldBeEqualTo unpublishedVedtak.uuid
+                record.personident shouldBeEqualTo unpublishedVedtak.personident
+                record.veilederident shouldBeEqualTo unpublishedVedtak.veilederident
+                record.fom shouldBeEqualTo unpublishedVedtak.fom
+                record.tom shouldBeEqualTo unpublishedVedtak.tom
+            }
+
+            it("publishes nothing when no unpublished varsel") {
+                val (success, failed) = vedtakService.publishUnpublishedVedtak().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 0
+
+                verify(exactly = 0) { mockVedtakFattetKafkaProducer.send(any()) }
+            }
+
+            it("fails publishing when kafka-producer fails") {
+                vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                )
+
+                every { mockVedtakFattetKafkaProducer.send(any()) } throws Exception("Error producing to kafka")
+
+                val (success, failed) = vedtakService.publishUnpublishedVedtak().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 1
+                success.size shouldBeEqualTo 0
+
+                verify(exactly = 1) { mockVedtakFattetKafkaProducer.send(any()) }
+
+                vedtakRepository.getUnpublishedVedtak().shouldNotBeEmpty()
             }
         }
     }

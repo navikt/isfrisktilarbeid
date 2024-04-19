@@ -86,8 +86,9 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             connection.prepareStatement(UPDATE_VEDTAK).use {
                 it.setString(1, vedtak.journalpostId?.value)
                 it.setObject(2, vedtak.varselPublishedAt)
-                it.setObject(3, nowUTC())
-                it.setString(4, vedtak.uuid.toString())
+                it.setObject(3, vedtak.publishedAt)
+                it.setObject(4, nowUTC())
+                it.setString(5, vedtak.uuid.toString())
                 val updated = it.executeUpdate()
                 if (updated != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -102,6 +103,13 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 it.executeQuery().toList { toPVedtak() }
             }
         }.map { it.toVedtak() }
+
+    override fun getUnpublishedVedtak(): List<Vedtak> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_UNPUBLISHED_VEDTAK).use {
+                it.executeQuery().toList { toPVedtak() }
+            }.map { it.toVedtak() }
+        }
 
     private fun Connection.createPdf(pdf: ByteArray): PPdf =
         prepareStatement(CREATE_PDF).use {
@@ -185,7 +193,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
         private const val UPDATE_VEDTAK =
             """
-                UPDATE VEDTAK SET journalpost_id = ?, varsel_published_at = ?, updated_at = ? WHERE uuid = ?
+                UPDATE VEDTAK SET journalpost_id = ?, varsel_published_at = ?, published_at = ?, updated_at = ? WHERE uuid = ?
             """
 
         private const val GET_NOT_JOURNALFORTE_VEDTAK =
@@ -217,6 +225,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 FROM VEDTAK
                 WHERE varsel_published_at IS NULL AND journalpost_id IS NOT NULL
             """
+
+        private const val GET_UNPUBLISHED_VEDTAK =
+            """
+                SELECT * FROM VEDTAK WHERE published_at IS NULL ORDER BY created_at ASC
+            """
     }
 }
 
@@ -245,4 +258,6 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     pdfId = getInt("pdf_id"),
     publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
     varselPublishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),
+    publishedAt = getObject("published_at", OffsetDateTime::class.java),
+
 )
