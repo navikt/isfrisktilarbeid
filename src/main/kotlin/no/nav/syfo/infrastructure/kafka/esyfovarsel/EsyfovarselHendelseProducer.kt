@@ -1,6 +1,5 @@
 package no.nav.syfo.infrastructure.kafka.esyfovarsel
 
-import no.nav.syfo.application.IEsyfovarselHendelseProducer
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -10,9 +9,9 @@ import java.util.*
 
 class EsyfovarselHendelseProducer(
     private val kafkaProducer: KafkaProducer<String, EsyfovarselHendelse>,
-) : IEsyfovarselHendelseProducer {
+) {
 
-    override fun sendVedtakVarsel(vedtak: Vedtak): Result<Vedtak> {
+    fun sendVedtakVarsel(vedtak: Vedtak): Result<Vedtak> {
         if (vedtak.journalpostId == null)
             throw IllegalStateException("JournalpostId is null for vedtak ${vedtak.uuid}")
 

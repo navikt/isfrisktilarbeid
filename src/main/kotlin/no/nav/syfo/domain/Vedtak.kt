@@ -43,7 +43,7 @@ data class Vedtak private constructor(
 
     fun publishVarsel(): Vedtak = this.copy(varselPublishedAt = nowUTC())
 
-    fun publish(): Vedtak = this.copy(publishedAt = nowUTC())
+    fun setPublished(): Vedtak = this.copy(publishedAt = nowUTC())
 
     companion object {
 

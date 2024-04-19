@@ -1,6 +1,5 @@
 package no.nav.syfo.infrastructure.kafka
 
-import no.nav.syfo.application.IVedtakFattetProducer
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.util.configuredJacksonMapper
@@ -22,13 +21,9 @@ data class VedtakFattetRecord(
     val tom: LocalDate,
 )
 
-class VedtakFattetProducer(
-    private val producer: KafkaProducer<String, VedtakFattetRecord>,
-) : IVedtakFattetProducer {
+class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFattetRecord>) {
 
-    override fun send(
-        vedtak: Vedtak,
-    ): Result<Vedtak> =
+    fun send(vedtak: Vedtak): Result<Vedtak> =
         try {
             producer.send(
                 ProducerRecord(

@@ -70,20 +70,22 @@ fun main() {
         pdlClient = pdlClient,
         mqSender = InfotrygdMQSender(environment.mq),
     )
-    val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
-        kafkaProducer = KafkaProducer(
-            kafkaAivenProducerConfig<KafkaEsyfovarselHendelseSerializer>(kafkaEnvironment = environment.kafka)
-        )
-    )
     val behandlermeldingProducer = BehandlermeldingProducer(
         producer = KafkaProducer(
             kafkaAivenProducerConfig<BehandlermeldingRecordSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
-    val vedtakFattetProducer = VedtakFattetProducer(
-        producer = KafkaProducer(
-            kafkaAivenProducerConfig<VedtakFattetRecordSerializer>(kafkaEnvironment = environment.kafka)
-        )
+    val vedtakProducer = VedtakProducer(
+        esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
+            kafkaProducer = KafkaProducer(
+                kafkaAivenProducerConfig<KafkaEsyfovarselHendelseSerializer>(kafkaEnvironment = environment.kafka)
+            )
+        ),
+        vedtakFattetProducer = VedtakFattetProducer(
+            producer = KafkaProducer(
+                kafkaAivenProducerConfig<VedtakFattetRecordSerializer>(kafkaEnvironment = environment.kafka)
+            )
+        ),
     )
     val journalforingService = JournalforingService(
         dokarkivClient = dokarkivClient,
@@ -110,8 +112,7 @@ fun main() {
                     vedtakRepository = vedtakRepository,
                     infotrygdService = infotrygdService,
                     journalforingService = journalforingService,
-                    esyfovarselHendelseProducer = esyfovarselHendelseProducer,
-                    vedtakFattetProducer = vedtakFattetProducer,
+                    vedtakProducer = vedtakProducer,
                 )
                 apiModule(
                     applicationState = applicationState,

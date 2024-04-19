@@ -14,6 +14,7 @@ import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.VedtakFattetProducer
 import no.nav.syfo.infrastructure.kafka.VedtakFattetRecord
+import no.nav.syfo.infrastructure.kafka.VedtakProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
@@ -50,12 +51,13 @@ class VedtakServiceSpek : Spek({
         )
 
         val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
-        val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
-            kafkaProducer = mockEsyfoVarselKafkaProducer,
-        )
-
+        val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(mockEsyfoVarselKafkaProducer)
         val mockVedtakFattetKafkaProducer = mockk<KafkaProducer<String, VedtakFattetRecord>>()
-        val vedtakFattetProducer = VedtakFattetProducer(producer = mockVedtakFattetKafkaProducer)
+        val vedtakFattetProducer = VedtakFattetProducer(mockVedtakFattetKafkaProducer)
+        val vedtakProducer = VedtakProducer(
+            esyfovarselHendelseProducer = esyfovarselHendelseProducer,
+            vedtakFattetProducer = vedtakFattetProducer,
+        )
 
         val vedtakService = VedtakService(
             vedtakRepository = vedtakRepository,
@@ -68,8 +70,7 @@ class VedtakServiceSpek : Spek({
                 pdlClient = externalMockEnvironment.pdlClient,
                 mqSender = mockk<InfotrygdMQSender>(relaxed = true),
             ),
-            esyfovarselHendelseProducer = esyfovarselHendelseProducer,
-            vedtakFattetProducer = vedtakFattetProducer,
+            vedtakProducer = vedtakProducer,
         )
 
         beforeEachTest {

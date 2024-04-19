@@ -3,8 +3,7 @@ package no.nav.syfo.api
 import io.ktor.server.application.*
 import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
-import no.nav.syfo.application.IEsyfovarselHendelseProducer
-import no.nav.syfo.application.IVedtakFattetProducer
+import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
@@ -39,8 +38,7 @@ fun Application.testApiModule(
             pdlClient = externalMockEnvironment.pdlClient,
             mqSender = mockk<InfotrygdMQSender>(relaxed = true),
         ),
-        esyfovarselHendelseProducer = mockk<IEsyfovarselHendelseProducer>(relaxed = true),
-        vedtakFattetProducer = mockk<IVedtakFattetProducer>(relaxed = true),
+        vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
     )
 
     this.apiModule(
