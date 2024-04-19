@@ -62,7 +62,7 @@ class JournalforingService(
         val dokumenter = listOf(
             createPdfDokument(
                 pdf = pdf,
-                brevkode = BrevkodeType.BEHANDLERMELDING_FRISKMELDING_TIL_ARBEIDSFORMIDLING,
+                brevkode = BrevkodeType.FRISKMELDING_TIL_ARBEIDSFORMIDLING_BEHANDLER,
                 tittel = tittel
             ),
         )

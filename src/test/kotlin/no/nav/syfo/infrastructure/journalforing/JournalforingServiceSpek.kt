@@ -96,7 +96,7 @@ class JournalforingServiceSpek : Spek({
                     dokarkivMock.journalfor(
                         journalpostRequest = generateJournalpostRequest(
                             tittel = "Melding til behandler om friskmelding til arbeidsformidling",
-                            brevkodeType = BrevkodeType.BEHANDLERMELDING_FRISKMELDING_TIL_ARBEIDSFORMIDLING,
+                            brevkodeType = BrevkodeType.FRISKMELDING_TIL_ARBEIDSFORMIDLING_BEHANDLER,
                             kanal = JournalpostKanal.HELSENETTET,
                             overstyrInnsynsregler = OverstyrInnsynsregler.VISES_MASKINELT_GODKJENT,
                             pdf = UserConstants.PDF_BEHANDLER_MELDING,
