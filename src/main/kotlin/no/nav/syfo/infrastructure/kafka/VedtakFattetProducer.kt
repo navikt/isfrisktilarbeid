@@ -1,6 +1,5 @@
 package no.nav.syfo.infrastructure.kafka
 
-import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -13,7 +12,7 @@ import java.util.*
 
 data class VedtakFattetRecord(
     val uuid: UUID,
-    val personident: Personident,
+    val personident: String,
     val veilederident: String,
     val createdAt: OffsetDateTime,
     val begrunnelse: String,
@@ -31,7 +30,7 @@ class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFat
                     UUID.randomUUID().toString(),
                     VedtakFattetRecord(
                         uuid = vedtak.uuid,
-                        personident = vedtak.personident,
+                        personident = vedtak.personident.value,
                         veilederident = vedtak.veilederident,
                         createdAt = vedtak.createdAt,
                         begrunnelse = vedtak.begrunnelse,
