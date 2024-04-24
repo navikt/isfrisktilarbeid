@@ -292,7 +292,7 @@ class VedtakServiceSpek : Spek({
 
                 val record = producerRecordSlot.captured.value()
                 record.uuid shouldBeEqualTo unpublishedVedtak.uuid
-                record.personident shouldBeEqualTo unpublishedVedtak.personident
+                record.personident shouldBeEqualTo unpublishedVedtak.personident.value
                 record.veilederident shouldBeEqualTo unpublishedVedtak.veilederident
                 record.fom shouldBeEqualTo unpublishedVedtak.fom
                 record.tom shouldBeEqualTo unpublishedVedtak.tom
