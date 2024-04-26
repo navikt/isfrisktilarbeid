@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.infotrygd
 
 import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.infrastructure.clients.pdl.GeografiskTilknytningType
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.pdl.dto.gradering
 import no.nav.syfo.infrastructure.clients.pdl.dto.isKode6
@@ -53,7 +54,15 @@ class InfotrygdService(
                 logger.error("Hent geografisk tilknytning feilet for vedtak ${vedtak.uuid}")
                 null
             } else {
-                pdlClient.geografiskTilknytning(vedtak.personident).kommune
+                val geografiskTilknytning = pdlClient.geografiskTilknytning(vedtak.personident)
+                if (geografiskTilknytning.type == GeografiskTilknytningType.KOMMUNE) {
+                    geografiskTilknytning.kommune
+                } else if (geografiskTilknytning.type == GeografiskTilknytningType.BYDEL) {
+                    geografiskTilknytning.bydel?.substring(0, 4)
+                } else {
+                    logger.error("Geografisk tilknytning er UTLAND/UDEFINERT for vedtak ${vedtak.uuid}")
+                    null
+                }
             }
         } catch (exc: Exception) {
             logger.error("Hent geografisk tilknytning feilet for vedtak ${vedtak.uuid}", exc)
