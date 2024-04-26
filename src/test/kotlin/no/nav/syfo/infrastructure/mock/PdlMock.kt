@@ -28,7 +28,10 @@ suspend fun MockRequestHandleScope.pdlMockResponse(request: HttpRequestData): Ht
             else -> respond(generatePdlPersonResponse(generatePdlPersonNavn()))
         }
     } else if (pdlRequest.query.contains("hentGeografiskTilknytning")) {
-        respond(generateGeografisktilknytingResponse())
+        when (Personident(pdlRequest.variables.ident)) {
+            UserConstants.ARBEIDSTAKER_PERSONIDENT_BYDEL -> respond(generateGeografisktilknytingBydelResponse())
+            else -> respond(generateGeografisktilknytingResponse())
+        }
     } else throw RuntimeException()
 }
 
@@ -47,6 +50,18 @@ fun generateGeografisktilknytingResponse() = PdlGeografiskTilknytningResponse(
             gtType = PdlGeografiskTilknytningType.KOMMUNE.name,
             gtKommune = UserConstants.KOMMUNE,
             gtBydel = null,
+            gtLand = null,
+        )
+    ),
+    errors = emptyList(),
+)
+
+fun generateGeografisktilknytingBydelResponse() = PdlGeografiskTilknytningResponse(
+    data = PdlHentGeografiskTilknytning(
+        hentGeografiskTilknytning = PdlGeografiskTilknytning(
+            gtType = PdlGeografiskTilknytningType.BYDEL.name,
+            gtKommune = null,
+            gtBydel = UserConstants.BYDEL,
             gtLand = null,
         )
     ),
