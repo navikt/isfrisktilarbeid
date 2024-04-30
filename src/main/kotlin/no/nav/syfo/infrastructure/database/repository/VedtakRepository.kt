@@ -89,8 +89,9 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 it.setObject(3, vedtak.publishedAt)
                 it.setObject(4, vedtak.ferdigbehandletAt)
                 it.setString(5, vedtak.ferdigbehandletBy)
-                it.setObject(6, nowUTC())
-                it.setString(7, vedtak.uuid.toString())
+                it.setObject(6, vedtak.ferdigbehandletPublishedAt)
+                it.setObject(7, nowUTC())
+                it.setString(8, vedtak.uuid.toString())
                 val updated = it.executeUpdate()
                 if (updated != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -109,6 +110,13 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
     override fun getUnpublishedVedtak(): List<Vedtak> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_UNPUBLISHED_VEDTAK).use {
+                it.executeQuery().toList { toPVedtak() }
+            }.map { it.toVedtak() }
+        }
+
+    override fun getUnpublishedFerdigbehandletVedtak(): List<Vedtak> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_UNPUBLISHED_FERDIGBEHANDLET_VEDTAK).use {
                 it.executeQuery().toList { toPVedtak() }
             }.map { it.toVedtak() }
         }
@@ -201,6 +209,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                     published_at = ?, 
                     ferdigbehandlet_at = ?,
                     ferdigbehandlet_by = ?,
+                    ferdigbehandlet_published_at = ?,
                     updated_at = ? 
                 WHERE uuid = ?
             """
@@ -239,6 +248,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             """
                 SELECT * FROM VEDTAK WHERE published_at IS NULL ORDER BY created_at ASC
             """
+
+        private const val GET_UNPUBLISHED_FERDIGBEHANDLET_VEDTAK =
+            """
+                SELECT * FROM VEDTAK WHERE ferdigbehandlet_at IS NOT NULL AND published_at IS NOT NULL AND ferdigbehandlet_published_at IS NULL ORDER BY created_at ASC
+            """
     }
 }
 
@@ -270,4 +284,5 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
     ferdigbehandletAt = getObject("ferdigbehandlet_at", OffsetDateTime::class.java),
     ferdigbehandletBy = getString("ferdigbehandlet_by"),
+    ferdigbehandletPublishedAt = getObject("ferdigbehandlet_published_at", OffsetDateTime::class.java),
 )

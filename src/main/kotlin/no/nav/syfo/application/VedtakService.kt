@@ -106,14 +106,29 @@ class VedtakService(
     }
 
     fun publishUnpublishedVedtak(): List<Result<Vedtak>> {
+        val result = mutableListOf<Result<Vedtak>>()
         val unpublished = vedtakRepository.getUnpublishedVedtak()
-        return unpublished.map { vedtak ->
-            val producerResult = vedtakProducer.sendFattetVedtak(vedtak)
-            producerResult.map {
-                val publishedVedtak = it.setPublished()
-                vedtakRepository.update(publishedVedtak)
-                publishedVedtak
+        result.addAll(
+            unpublished.map { vedtak ->
+                val producerResult = vedtakProducer.sendVedtakStatus(vedtak)
+                producerResult.map {
+                    val publishedVedtak = it.setPublished()
+                    vedtakRepository.update(publishedVedtak)
+                    publishedVedtak
+                }
             }
-        }
+        )
+        val unpublishedFerdigbehandlet = vedtakRepository.getUnpublishedFerdigbehandletVedtak()
+        result.addAll(
+            unpublishedFerdigbehandlet.map { vedtak ->
+                val producerResult = vedtakProducer.sendVedtakStatus(vedtak)
+                producerResult.map {
+                    val ferdigbehandletPublishedVedtak = it.setFerdigbehandletPublishedAt()
+                    vedtakRepository.update(ferdigbehandletPublishedVedtak)
+                    ferdigbehandletPublishedVedtak
+                }
+            }
+        )
+        return result
     }
 }

@@ -25,4 +25,6 @@ interface IVedtakRepository {
     fun getUnpublishedVedtakVarsler(): List<Vedtak>
 
     fun getUnpublishedVedtak(): List<Vedtak>
+
+    fun getUnpublishedFerdigbehandletVedtak(): List<Vedtak>
 }

@@ -6,9 +6,9 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 
 class VedtakProducer(
     private val esyfovarselHendelseProducer: EsyfovarselHendelseProducer,
-    private val vedtakFattetProducer: VedtakFattetProducer,
+    private val vedtakStatusProducer: VedtakStatusProducer,
 ) : IVedtakProducer {
-    override fun sendFattetVedtak(vedtak: Vedtak): Result<Vedtak> = vedtakFattetProducer.send(vedtak)
+    override fun sendVedtakStatus(vedtak: Vedtak): Result<Vedtak> = vedtakStatusProducer.send(vedtak)
 
     override fun sendVedtakVarsel(vedtak: Vedtak): Result<Vedtak> = esyfovarselHendelseProducer.sendVedtakVarsel(vedtak)
 }
