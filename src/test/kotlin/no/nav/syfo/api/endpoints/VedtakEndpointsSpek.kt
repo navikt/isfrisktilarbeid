@@ -25,8 +25,7 @@ import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import no.nav.syfo.util.configuredJacksonMapper
-import org.amshove.kluent.shouldBeAfter
-import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
@@ -48,6 +47,11 @@ object VedtakEndpointsSpek : Spek({
                 audience = externalMockEnvironment.environment.azure.appClientId,
                 issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
                 navIdent = UserConstants.VEILEDER_IDENT,
+            )
+            val validTokenOther = generateJWT(
+                audience = externalMockEnvironment.environment.azure.appClientId,
+                issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
+                navIdent = UserConstants.VEILEDER_IDENT_OTHER,
             )
             val personident = UserConstants.ARBEIDSTAKER_PERSONIDENT
 
@@ -196,6 +200,26 @@ object VedtakEndpointsSpek : Spek({
                             pVedtak.uuid shouldBeEqualTo vedtakResponse.uuid
                         }
                     }
+                    it("Sets vedtak ferdigbehandlet and updates veileder") {
+                        val vedtak = createVedtak(vedtakRequestDTO)
+                        vedtak.ferdigbehandletAt shouldBe null
+                        with(
+                            handleRequest(HttpMethod.Put, "$urlVedtak/${vedtak.uuid}/ferdigbehandling") {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenOther))
+                                addHeader(NAV_PERSONIDENT_HEADER, personident.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val vedtakResponse = objectMapper.readValue(response.content, VedtakResponseDTO::class.java)
+                            vedtakResponse.uuid shouldBeEqualTo vedtak.uuid
+                            vedtakResponse.ferdigbehandletAt shouldNotBe null
+                            vedtakResponse.ferdigbehandletBy shouldBeEqualTo UserConstants.VEILEDER_IDENT_OTHER
+
+                            val pVedtak = database.getVedtak(vedtakUuid = vedtak.uuid)!!
+                            pVedtak.ferdigbehandletAt shouldNotBe null
+                            pVedtak.ferdigbehandletBy shouldBeEqualTo UserConstants.VEILEDER_IDENT_OTHER
+                        }
+                    }
                 }
 
                 describe("Unhappy path") {
@@ -220,6 +244,28 @@ object VedtakEndpointsSpek : Spek({
                                 addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, personident.value)
                                 setBody(objectMapper.writeValueAsString(vedtakWithoutBegrunnelse))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                        }
+                    }
+                    it("Throws error when ferdigstiller unknown vedtak") {
+                        with(
+                            handleRequest(HttpMethod.Put, "$urlVedtak/${UUID.randomUUID()}/ferdigbehandling") {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personident.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                        }
+                    }
+                    it("Throws error when ferdigbehandler already ferdigbehandlet vedtak") {
+                        val vedtak = createVedtak(vedtakRequestDTO)
+                        vedtakService.ferdigbehandleVedtak(vedtak, UserConstants.VEILEDER_IDENT)
+                        with(
+                            handleRequest(HttpMethod.Put, "$urlVedtak/${vedtak.uuid}/ferdigbehandling") {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personident.value)
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest

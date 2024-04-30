@@ -14,9 +14,12 @@ import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontro
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getNAVIdent
 import no.nav.syfo.util.getPersonident
+import java.util.UUID
 
+const val vedtakUUIDParam = "vedtakUUID"
 const val apiBasePath = "/api/internad/v1/frisktilarbeid"
 const val vedtakPath = "/vedtak"
+const val ferdigbehandlingPath = "/vedtak/{$vedtakUUIDParam}/ferdigbehandling"
 
 private const val API_ACTION = "access vedtak for person"
 
@@ -66,6 +69,22 @@ fun Route.registerVedtakEndpoints(
             )
 
             call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = newVedtak))
+        }
+        put(ferdigbehandlingPath) {
+            val vedtakUUID = UUID.fromString(this.call.parameters[vedtakUUIDParam])
+            val personident = call.getPersonident()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+            val navIdent = call.getNAVIdent()
+            val vedtak = vedtakService.getVedtak(personident).firstOrNull { it.uuid == vedtakUUID }
+            if (vedtak == null || vedtak.ferdigbehandletAt != null) {
+                call.respond(HttpStatusCode.BadRequest, "Finner ikke åpent vedtak med uuid=$vedtakUUID")
+            } else {
+                val ferdigbehandletVedtak = vedtakService.ferdigbehandleVedtak(
+                    vedtak = vedtak,
+                    veilederident = navIdent,
+                )
+                call.respond(HttpStatusCode.OK, VedtakResponseDTO.createFromVedtak(vedtak = ferdigbehandletVedtak))
+            }
         }
     }
 }

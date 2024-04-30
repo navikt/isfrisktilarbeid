@@ -59,6 +59,13 @@ class VedtakService(
         return createdVedtak
     }
 
+    fun ferdigbehandleVedtak(
+        vedtak: Vedtak,
+        veilederident: String,
+    ) = vedtak.ferdigbehandle(veilederident).also {
+        vedtakRepository.update(it)
+    }
+
     suspend fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
         val unpublished = vedtakRepository.getUnpublishedInfotrygd()
         return unpublished.map { vedtak ->
