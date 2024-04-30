@@ -15,6 +15,8 @@ data class VedtakResponseDTO private constructor(
     val fom: LocalDate,
     val tom: LocalDate,
     val document: List<DocumentComponent>,
+    val ferdigbehandletAt: LocalDateTime?,
+    val ferdigbehandletBy: String?,
 ) {
     companion object {
         fun createFromVedtak(vedtak: Vedtak) = VedtakResponseDTO(
@@ -26,6 +28,8 @@ data class VedtakResponseDTO private constructor(
             fom = vedtak.fom,
             tom = vedtak.tom,
             document = vedtak.document,
+            ferdigbehandletAt = vedtak.ferdigbehandletAt?.toLocalDateTime(),
+            ferdigbehandletBy = vedtak.ferdigbehandletBy,
         )
     }
 }

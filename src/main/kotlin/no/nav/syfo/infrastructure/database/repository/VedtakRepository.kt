@@ -87,8 +87,10 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 it.setString(1, vedtak.journalpostId?.value)
                 it.setObject(2, vedtak.varselPublishedAt)
                 it.setObject(3, vedtak.publishedAt)
-                it.setObject(4, nowUTC())
-                it.setString(5, vedtak.uuid.toString())
+                it.setObject(4, vedtak.ferdigbehandletAt)
+                it.setString(5, vedtak.ferdigbehandletBy)
+                it.setObject(6, nowUTC())
+                it.setString(7, vedtak.uuid.toString())
                 val updated = it.executeUpdate()
                 if (updated != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -193,7 +195,14 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
         private const val UPDATE_VEDTAK =
             """
-                UPDATE VEDTAK SET journalpost_id = ?, varsel_published_at = ?, published_at = ?, updated_at = ? WHERE uuid = ?
+                UPDATE VEDTAK SET 
+                    journalpost_id = ?, 
+                    varsel_published_at = ?, 
+                    published_at = ?, 
+                    ferdigbehandlet_at = ?,
+                    ferdigbehandlet_by = ?,
+                    updated_at = ? 
+                WHERE uuid = ?
             """
 
         private const val GET_NOT_JOURNALFORTE_VEDTAK =
@@ -259,5 +268,6 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
     varselPublishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
-
+    ferdigbehandletAt = getObject("ferdigbehandlet_at", OffsetDateTime::class.java),
+    ferdigbehandletBy = getString("ferdigbehandlet_by"),
 )
