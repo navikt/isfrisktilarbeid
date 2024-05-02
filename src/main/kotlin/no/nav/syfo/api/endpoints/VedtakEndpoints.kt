@@ -55,20 +55,24 @@ fun Route.registerVedtakEndpoints(
             val navIdent = call.getNAVIdent()
             val callId = call.getCallId()
 
-            val newVedtak = vedtakService.createVedtak(
-                personident = personident,
-                veilederident = navIdent,
-                begrunnelse = requestDTO.begrunnelse,
-                document = requestDTO.document,
-                fom = requestDTO.fom,
-                tom = requestDTO.tom,
-                callId = callId,
-                behandlerRef = requestDTO.behandlerRef,
-                behandlerNavn = requestDTO.behandlerNavn,
-                behandlerDocument = requestDTO.behandlerDocument,
-            )
+            if (vedtakService.getVedtak(personident).any { it.ferdigbehandletAt == null }) {
+                call.respond(HttpStatusCode.Conflict, "Finnes allerede et åpent vedtak for personen")
+            } else {
+                val newVedtak = vedtakService.createVedtak(
+                    personident = personident,
+                    veilederident = navIdent,
+                    begrunnelse = requestDTO.begrunnelse,
+                    document = requestDTO.document,
+                    fom = requestDTO.fom,
+                    tom = requestDTO.tom,
+                    callId = callId,
+                    behandlerRef = requestDTO.behandlerRef,
+                    behandlerNavn = requestDTO.behandlerNavn,
+                    behandlerDocument = requestDTO.behandlerDocument,
+                )
 
-            call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = newVedtak))
+                call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = newVedtak))
+            }
         }
         put(ferdigbehandlingPath) {
             val vedtakUUID = UUID.fromString(this.call.parameters[vedtakUUIDParam])

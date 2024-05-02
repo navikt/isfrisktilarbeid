@@ -249,6 +249,22 @@ object VedtakEndpointsSpek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                         }
                     }
+
+                    it("Returns status Conflict when vedtak not ferdigbehandlet exists") {
+                        createVedtak(vedtakRequestDTO)
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlVedtak) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personident.value)
+                                setBody(objectMapper.writeValueAsString(vedtakRequestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
+                        }
+                    }
+
                     it("Throws error when ferdigstiller unknown vedtak") {
                         with(
                             handleRequest(HttpMethod.Put, "$urlVedtak/${UUID.randomUUID()}/ferdigbehandling") {
