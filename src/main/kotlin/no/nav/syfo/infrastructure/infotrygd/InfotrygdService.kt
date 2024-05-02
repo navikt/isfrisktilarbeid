@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.infotrygd
 
+import no.nav.syfo.domain.Status
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.clients.pdl.GeografiskTilknytningType
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
@@ -18,12 +19,13 @@ class InfotrygdService(
     suspend fun sendMessageToInfotrygd(
         vedtak: Vedtak,
     ) {
+        val vedtakStatusFattet = vedtak.statusListe.firstOrNull { it.status == Status.FATTET }
         val infotrygdMessage = StringBuilder()
         // Format definert her: https://confluence.adeo.no/display/INFOTRYGD/IT30_MA+-+Meldinger+mellom+INFOTRYGD+OG+ARENA
         infotrygdMessage.append("K278M810")
         infotrygdMessage.append("SENDMELDING")
         infotrygdMessage.append("MODIA")
-        infotrygdMessage.append(vedtak.veilederident.padEnd(8))
+        infotrygdMessage.append((vedtakStatusFattet?.veilederident ?: "").padEnd(8))
         infotrygdMessage.append("00000")
         infotrygdMessage.append(dateFormatter.format(vedtak.createdAt))
         infotrygdMessage.append(timeFormatter.format(vedtak.createdAt))

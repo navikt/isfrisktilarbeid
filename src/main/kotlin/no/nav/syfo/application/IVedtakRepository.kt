@@ -3,6 +3,7 @@ package no.nav.syfo.application
 import no.nav.syfo.domain.Behandlermelding
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.domain.VedtakStatus
 
 interface IVedtakRepository {
     fun createVedtak(
@@ -24,5 +25,9 @@ interface IVedtakRepository {
 
     fun getUnpublishedVedtakVarsler(): List<Vedtak>
 
+    fun setVedtakVarselPublished(vedtak: Vedtak): Vedtak
+
     fun getUnpublishedVedtak(): List<Vedtak>
+
+    fun setVedtakStatusPublished(vedtakStatus: VedtakStatus)
 }

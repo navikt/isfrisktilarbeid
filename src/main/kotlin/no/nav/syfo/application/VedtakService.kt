@@ -1,9 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.Behandlermelding
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
 import java.util.*
@@ -98,9 +95,7 @@ class VedtakService(
         return unpublishedVedtakVarsler.map { vedtak ->
             val result = vedtakProducer.sendVedtakVarsel(vedtak)
             result.map {
-                val publishedVedtakVarsel = vedtak.publishVarsel()
-                vedtakRepository.update(publishedVedtakVarsel)
-                publishedVedtakVarsel
+                vedtakRepository.setVedtakVarselPublished(it)
             }
         }
     }
@@ -108,11 +103,11 @@ class VedtakService(
     fun publishUnpublishedVedtak(): List<Result<Vedtak>> {
         val unpublished = vedtakRepository.getUnpublishedVedtak()
         return unpublished.map { vedtak ->
+            val vedtakStatus = vedtak.statusListe.first { it.status == Status.FATTET }
             val producerResult = vedtakProducer.sendFattetVedtak(vedtak)
             producerResult.map {
-                val publishedVedtak = it.setPublished()
-                vedtakRepository.update(publishedVedtak)
-                publishedVedtak
+                vedtakRepository.setVedtakStatusPublished(vedtakStatus)
+                it
             }
         }
     }
