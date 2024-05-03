@@ -8,7 +8,6 @@ import io.ktor.server.routing.*
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.application.VedtakService
-import no.nav.syfo.domain.Status
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollPlugin
@@ -77,7 +76,7 @@ fun Route.registerVedtakEndpoints(
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
             val navIdent = call.getNAVIdent()
             val vedtak = vedtakService.getVedtak(personident).firstOrNull { it.uuid == vedtakUUID }
-            if (vedtak == null || vedtak.statusListe.lastOrNull()?.status == Status.FATTET) {
+            if (vedtak == null || vedtak.isFerdigbehandlet()) {
                 call.respond(HttpStatusCode.BadRequest, "Finner ikke åpent vedtak med uuid=$vedtakUUID")
             } else {
                 val ferdigbehandletVedtak = vedtakService.ferdigbehandleVedtak(

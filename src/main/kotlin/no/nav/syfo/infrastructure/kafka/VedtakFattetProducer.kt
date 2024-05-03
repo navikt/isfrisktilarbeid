@@ -24,7 +24,6 @@ class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFat
 
     fun send(vedtak: Vedtak): Result<Vedtak> =
         try {
-            val vedtakStatus = vedtak.statusListe.first()
             producer.send(
                 ProducerRecord(
                     TOPIC,
@@ -32,7 +31,7 @@ class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFat
                     VedtakFattetRecord(
                         uuid = vedtak.uuid,
                         personident = vedtak.personident.value,
-                        veilederident = vedtakStatus.veilederident,
+                        veilederident = vedtak.getFattetStatus().veilederident,
                         createdAt = vedtak.createdAt,
                         begrunnelse = vedtak.begrunnelse,
                         fom = vedtak.fom,

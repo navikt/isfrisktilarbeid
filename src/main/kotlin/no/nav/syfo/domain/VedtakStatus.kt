@@ -1,6 +1,5 @@
 package no.nav.syfo.domain
 
-import no.nav.syfo.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 

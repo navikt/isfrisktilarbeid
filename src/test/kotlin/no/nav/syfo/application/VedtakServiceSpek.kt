@@ -23,7 +23,6 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
-import no.nav.syfo.util.nowUTC
 import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord

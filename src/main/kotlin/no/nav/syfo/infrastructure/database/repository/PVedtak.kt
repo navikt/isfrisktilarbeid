@@ -33,7 +33,7 @@ data class PVedtak(
         tom = tom,
         journalpostId = journalpostId?.let { JournalpostId(it) },
         vedtakStatus = statusListe.map {
-          it.toVedtakStatus()
+            it.toVedtakStatus()
         },
     )
 }

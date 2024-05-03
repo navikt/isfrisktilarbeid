@@ -103,10 +103,9 @@ class VedtakService(
     fun publishUnpublishedVedtak(): List<Result<Vedtak>> {
         val unpublished = vedtakRepository.getUnpublishedVedtak()
         return unpublished.map { vedtak ->
-            val vedtakStatus = vedtak.statusListe.first { it.status == Status.FATTET }
             val producerResult = vedtakProducer.sendFattetVedtak(vedtak)
             producerResult.map {
-                vedtakRepository.setVedtakStatusPublished(vedtakStatus)
+                vedtakRepository.setVedtakStatusPublished(vedtak.getFattetStatus())
                 it
             }
         }

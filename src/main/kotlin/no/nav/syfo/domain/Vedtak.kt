@@ -57,6 +57,12 @@ data class Vedtak private constructor(
         }
     )
 
+    fun isFerdigbehandlet(): Boolean = statusListe.any { it.status == Status.FERDIG_BEHANDLET }
+
+    fun getFattetStatus(): VedtakStatus = statusListe.first { it.status == Status.FATTET }
+
+    fun getFerdigbehandletStatus(): VedtakStatus? = statusListe.firstOrNull { it.status == Status.FERDIG_BEHANDLET }
+
     companion object {
 
         fun createFromDatabase(

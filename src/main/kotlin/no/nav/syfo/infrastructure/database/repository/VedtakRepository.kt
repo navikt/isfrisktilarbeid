@@ -24,9 +24,22 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             connection.prepareStatement(GET_VEDTAK).use {
                 it.setString(1, personident.value)
                 it.executeQuery().toList { toPVedtak() }
-            }.map {
-                it.toVedtak(connection.getVedtakStatus(it.id))
+            }.map { pVedtak ->
+                pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
             }
+        }
+
+    override fun getVedtak(uuid: UUID): Vedtak =
+        database.connection.use { connection ->
+            connection.getPVedtak(uuid).let { pVedtak ->
+                pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
+            }
+        }
+
+    private fun Connection.getPVedtak(uuid: UUID): PVedtak =
+        this.prepareStatement(GET_VEDTAK_FOR_UUID).use {
+            it.setString(1, uuid.toString())
+            it.executeQuery().toList { toPVedtak() }.single()
         }
 
     private fun Connection.getVedtakStatus(vedtakId: Int) =
@@ -70,8 +83,8 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         database.connection.use { connection ->
             connection.prepareStatement(GET_UNPUBLISHED_INFOTRYGD).use {
                 it.executeQuery().toList { toPVedtak() }
-            }.map {
-                it.toVedtak(connection.getVedtakStatus(it.id))
+            }.map { pVedtak ->
+                pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
             }
         }
 
@@ -92,20 +105,27 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         database.connection.use { connection ->
             connection.prepareStatement(GET_NOT_JOURNALFORTE_VEDTAK).use {
                 it.executeQuery().toList { toPVedtak() to getBytes("pdf") }
+            }.map { (pVedtak, pdf) ->
+                pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id)) to pdf
             }
-        }.map { (pVedtak, pdf) ->
-            pVedtak.toVedtak(emptyList()) to pdf
         }
 
     override fun update(vedtak: Vedtak) =
         database.connection.use { connection ->
             connection.prepareStatement(UPDATE_VEDTAK).use {
                 it.setString(1, vedtak.journalpostId?.value)
-                it.setObject(6, nowUTC())
-                it.setString(7, vedtak.uuid.toString())
+                it.setObject(2, nowUTC())
+                it.setString(3, vedtak.uuid.toString())
                 val updated = it.executeUpdate()
                 if (updated != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+            val pVedtak = connection.getPVedtak(vedtak.uuid)
+            val existingStatusUUIDs = connection.getVedtakStatus(pVedtak.id).map { it.uuid }
+            vedtak.statusListe.forEach {
+                if (!existingStatusUUIDs.contains(it.uuid)) {
+                    connection.createVedtakStatus(pVedtak.id, it)
                 }
             }
             connection.commit()
@@ -116,11 +136,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             connection.prepareStatement(GET_UNPUBLISHED_VEDTAK_VARSLER).use {
                 it.executeQuery().toList { toPVedtak() }
             }.map { pVedtak ->
-                val statusListe = connection.prepareStatement(GET_VEDTAK_STATUS).use {
-                    it.setInt(1, pVedtak.id)
-                    it.executeQuery().toList { toPVedtakStatus() }
-                }
-                pVedtak.toVedtak(statusListe)
+                pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
             }
         }
 
@@ -141,7 +157,9 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         database.connection.use { connection ->
             connection.prepareStatement(GET_UNPUBLISHED_VEDTAK).use {
                 it.executeQuery().toList { toPVedtak() }
-            }.map { it.toVedtak(emptyList()) }
+            }.map { pVedtak ->
+                pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
+            }
         }
 
     override fun setVedtakStatusPublished(vedtakStatus: VedtakStatus) =
@@ -170,11 +188,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             it.setObject(2, vedtak.createdAt)
             it.setObject(3, vedtak.createdAt)
             it.setString(4, vedtak.personident.value)
-            it.setDate(6, Date.valueOf(vedtak.fom))
-            it.setDate(7, Date.valueOf(vedtak.tom))
-            it.setString(8, vedtak.begrunnelse)
-            it.setObject(9, mapper.writeValueAsString(vedtak.document))
-            it.setInt(10, pdfId)
+            it.setDate(5, Date.valueOf(vedtak.fom))
+            it.setDate(6, Date.valueOf(vedtak.tom))
+            it.setString(7, vedtak.begrunnelse)
+            it.setObject(8, mapper.writeValueAsString(vedtak.document))
+            it.setInt(9, pdfId)
             it.executeQuery().toList { toPVedtak() }.single()
         }
 
@@ -220,13 +238,12 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                     created_at,
                     updated_at,
                     personident,
-                    veilederident,
                     fom,
                     tom,
                     begrunnelse,
                     document,
                     pdf_id
-                ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?)
+                ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?)
                 RETURNING *
             """
 
@@ -248,6 +265,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 SELECT * FROM VEDTAK WHERE personident=? ORDER BY created_at DESC
             """
 
+        private const val GET_VEDTAK_FOR_UUID =
+            """
+                SELECT * FROM VEDTAK WHERE uuid=?
+            """
+
         private const val GET_UNPUBLISHED_INFOTRYGD =
             """
                 SELECT * FROM VEDTAK WHERE published_infotrygd_at IS NULL
@@ -262,10 +284,6 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             """
                 UPDATE VEDTAK SET 
                     journalpost_id = ?, 
-                    varsel_published_at = ?, 
-                    published_at = ?, 
-                    ferdigbehandlet_at = ?,
-                    ferdigbehandlet_by = ?,
                     updated_at = ? 
                 WHERE uuid = ?
             """
@@ -312,6 +330,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 WHERE vedtak_id=? ORDER BY created_at
             """
 
+        private const val GET_VEDTAK_ID_FROM_UUID =
+            """
+                SELECT id FROM VEDTAK WHERE uuid=?
+            """
+
         private const val GET_UNPUBLISHED_VEDTAK =
             """
                 SELECT v.* FROM VEDTAK v INNER JOIN VEDTAK_STATUS s ON (v.id = s.vedtak_id) WHERE s.status='FATTET' AND s.published_at IS NULL ORDER BY s.created_at ASC
@@ -353,9 +376,8 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
 internal fun ResultSet.toPVedtakStatus(): PVedtakStatus = PVedtakStatus(
     id = getInt("id"),
     uuid = UUID.fromString(getString("uuid")),
-    vedtak_id = getInt("vedtak:id"),
+    vedtak_id = getInt("vedtak_id"),
     createdAt = getObject("created_at", OffsetDateTime::class.java),
     veilederident = getString("veilederident"),
     status = getString("status"),
 )
-

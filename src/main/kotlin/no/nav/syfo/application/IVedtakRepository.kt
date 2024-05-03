@@ -4,6 +4,7 @@ import no.nav.syfo.domain.Behandlermelding
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.domain.VedtakStatus
+import java.util.UUID
 
 interface IVedtakRepository {
     fun createVedtak(
@@ -14,6 +15,8 @@ interface IVedtakRepository {
     ): Pair<Vedtak, Behandlermelding>
 
     fun getVedtak(personident: Personident): List<Vedtak>
+
+    fun getVedtak(uuid: UUID): Vedtak
 
     fun getUnpublishedInfotrygd(): List<Vedtak>
 
