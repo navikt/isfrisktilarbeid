@@ -140,7 +140,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             }
         }
 
-    override fun setVedtakVarselPublished(vedtak: Vedtak): Vedtak =
+    override fun setVedtakVarselPublished(vedtak: Vedtak) =
         database.connection.use { connection ->
             connection.prepareStatement(SET_PUBLISHED_VEDTAK_VARSEL).use {
                 it.setString(1, vedtak.uuid.toString())
@@ -150,7 +150,6 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 }
             }
             connection.commit()
-            vedtak
         }
 
     override fun getUnpublishedVedtak(): List<Vedtak> =

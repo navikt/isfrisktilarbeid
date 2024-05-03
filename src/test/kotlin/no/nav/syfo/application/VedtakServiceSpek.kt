@@ -9,6 +9,7 @@ import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.generator.generateBehandlermelding
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
+import no.nav.syfo.infrastructure.database.getVedtakVarselPublishedAt
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.VedtakFattetProducer
@@ -208,7 +209,7 @@ class VedtakServiceSpek : Spek({
 
                 val publishedVedtakVarsel = success.first().getOrThrow()
                 publishedVedtakVarsel.uuid.shouldBeEqualTo(unpublishedVedtakVarsel.uuid)
-                // publishedVedtakVarsel.varselPublishedAt.shouldNotBeNull()
+                database.getVedtakVarselPublishedAt(publishedVedtakVarsel.uuid).shouldNotBeNull()
 
                 val esyfovarselHendelse = producerRecordSlot.captured.value() as ArbeidstakerHendelse
                 esyfovarselHendelse.type shouldBeEqualTo HendelseType.SM_VEDTAK_FRISKMELDING_TIL_ARBEIDSFORMIDLING

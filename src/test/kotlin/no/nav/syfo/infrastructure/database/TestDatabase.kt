@@ -82,6 +82,18 @@ fun TestDatabase.getPublishedInfotrygdAt(
         }
     }
 
+fun TestDatabase.getVedtakVarselPublishedAt(
+    vedtakUuid: UUID,
+): OffsetDateTime? =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryGetVedtakVarselPublishedAt).use {
+            it.setString(1, vedtakUuid.toString())
+            it.executeQuery()
+                .toList { getObject("varsel_published_at", OffsetDateTime::class.java) }
+                .singleOrNull()
+        }
+    }
+
 private const val queryGetVedtak =
     """
         SELECT * FROM vedtak WHERE uuid = ?
@@ -90,6 +102,11 @@ private const val queryGetVedtak =
 private const val queryGetPublishedInfotrygdAt =
     """
         SELECT published_infotrygd_at FROM vedtak WHERE uuid = ?
+    """
+
+private const val queryGetVedtakVarselPublishedAt =
+    """
+        SELECT varsel_published_at FROM vedtak WHERE uuid = ?
     """
 
 private const val queryGetBehandlerMelding =

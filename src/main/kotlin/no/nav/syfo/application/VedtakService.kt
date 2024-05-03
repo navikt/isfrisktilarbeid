@@ -96,6 +96,7 @@ class VedtakService(
             val result = vedtakProducer.sendVedtakVarsel(vedtak)
             result.map {
                 vedtakRepository.setVedtakVarselPublished(it)
+                it
             }
         }
     }
