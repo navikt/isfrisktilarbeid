@@ -6,6 +6,7 @@ import no.nav.syfo.infrastructure.database.repository.toPPdf
 import no.nav.syfo.infrastructure.database.repository.toPVedtak
 import org.flywaydb.core.Flyway
 import java.sql.Connection
+import java.time.OffsetDateTime
 import java.util.*
 
 class TestDatabase : DatabaseInterface {
@@ -69,9 +70,26 @@ fun TestDatabase.getVedtakPdf(
         }
     }
 
+fun TestDatabase.getPublishedInfotrygdAt(
+    vedtakUuid: UUID,
+): OffsetDateTime? =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryGetPublishedInfotrygdAt).use {
+            it.setString(1, vedtakUuid.toString())
+            it.executeQuery()
+                .toList { getObject("published_infotrygd_at", OffsetDateTime::class.java) }
+                .singleOrNull()
+        }
+    }
+
 private const val queryGetVedtak =
     """
         SELECT * FROM vedtak WHERE uuid = ?
+    """
+
+private const val queryGetPublishedInfotrygdAt =
+    """
+        SELECT published_infotrygd_at FROM vedtak WHERE uuid = ?
     """
 
 private const val queryGetBehandlerMelding =

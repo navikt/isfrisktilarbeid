@@ -23,7 +23,7 @@ class InfotrygdService(
         infotrygdMessage.append("K278M810")
         infotrygdMessage.append("SENDMELDING")
         infotrygdMessage.append("MODIA")
-        infotrygdMessage.append((vedtak.getFattetStatus().veilederident).padEnd(8))
+        infotrygdMessage.append(vedtak.getFattetStatus().veilederident.padEnd(8))
         infotrygdMessage.append("00000")
         infotrygdMessage.append(dateFormatter.format(vedtak.createdAt))
         infotrygdMessage.append(timeFormatter.format(vedtak.createdAt))

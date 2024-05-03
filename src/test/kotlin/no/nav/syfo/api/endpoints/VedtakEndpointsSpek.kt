@@ -18,7 +18,6 @@ import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.database.dropData
-import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.database.getVedtakPdf
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
@@ -71,9 +70,10 @@ object VedtakEndpointsSpek : Spek({
                 behandlerNavn = "Beate Behandler",
                 behandlerDocument = generateDocumentComponent("Til orientering", header = "Informasjon om vedtak"),
             )
+            val vedtakRepository = VedtakRepository(database)
             val vedtakService = VedtakService(
                 pdfService = PdfService(externalMockEnvironment.pdfgenClient, externalMockEnvironment.pdlClient),
-                vedtakRepository = VedtakRepository(database),
+                vedtakRepository = vedtakRepository,
                 journalforingService = mockk<JournalforingService>(relaxed = true),
                 infotrygdService = mockk<InfotrygdService>(relaxed = true),
                 vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
@@ -144,8 +144,8 @@ object VedtakEndpointsSpek : Spek({
                             vedtakPdf[0] shouldBeEqualTo PDF_VEDTAK[0]
                             vedtakPdf[1] shouldBeEqualTo PDF_VEDTAK[1]
 
-                            val pVedtak = database.getVedtak(vedtakUuid = vedtakResponse[0].uuid)!!
-                            pVedtak.uuid shouldBeEqualTo vedtakResponse[0].uuid
+                            val vedtak = vedtakRepository.getVedtak(vedtakResponse[0].uuid)
+                            vedtak.uuid shouldBeEqualTo vedtakResponse[0].uuid
                         }
                     }
                     it("Successfully gets list of multiple vedtak") {
@@ -196,8 +196,8 @@ object VedtakEndpointsSpek : Spek({
                             vedtakPdf[0] shouldBeEqualTo PDF_VEDTAK[0]
                             vedtakPdf[1] shouldBeEqualTo PDF_VEDTAK[1]
 
-                            val pVedtak = database.getVedtak(vedtakUuid = vedtakResponse.uuid)!!
-                            pVedtak.uuid shouldBeEqualTo vedtakResponse.uuid
+                            val vedtak = vedtakRepository.getVedtak(vedtakResponse.uuid)
+                            vedtak.uuid shouldBeEqualTo vedtakResponse.uuid
                         }
                     }
                     it("Sets vedtak ferdigbehandlet and updates veileder") {
@@ -214,10 +214,10 @@ object VedtakEndpointsSpek : Spek({
                             vedtakResponse.ferdigbehandletAt shouldNotBe null
                             vedtakResponse.ferdigbehandletBy shouldBeEqualTo UserConstants.VEILEDER_IDENT_OTHER
 
-                            val pVedtak = database.getVedtak(vedtakUuid = vedtak.uuid)!!
+                            val vedtakPersisted = vedtakRepository.getVedtak(vedtak.uuid)
 
-                            // pVedtak.ferdigbehandletAt shouldNotBe null
-                            // pVedtak.ferdigbehandletBy shouldBeEqualTo UserConstants.VEILEDER_IDENT_OTHER
+                            vedtakPersisted.isFerdigbehandlet() shouldBe true
+                            vedtakPersisted.getFerdigbehandletStatus()!!.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT_OTHER
                         }
                     }
                 }

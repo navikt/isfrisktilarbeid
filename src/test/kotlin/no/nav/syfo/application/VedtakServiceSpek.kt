@@ -9,7 +9,6 @@ import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.generator.generateBehandlermelding
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
-import no.nav.syfo.infrastructure.database.getVedtak
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.VedtakFattetProducer
@@ -101,9 +100,8 @@ class VedtakServiceSpek : Spek({
                 val journalfortVedtak = success.first().getOrThrow()
                 journalfortVedtak.journalpostId shouldBeEqualTo mockedJournalpostId
 
-                val pVedtak = database.getVedtak(vedtakUuid = journalfortVedtak.uuid)
-                pVedtak!!.updatedAt shouldBeGreaterThan pVedtak.createdAt
-                pVedtak.journalpostId shouldBeEqualTo mockedJournalpostId.value
+                val persistedVedtak = vedtakRepository.getVedtak(journalfortVedtak.uuid)
+                persistedVedtak.journalpostId!!.value shouldBeEqualTo mockedJournalpostId.value
             }
 
             it("journalfører ikke når ingen vedtak") {
