@@ -110,9 +110,9 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             }
         }
 
-    override fun update(vedtak: Vedtak) =
+    override fun setJournalpostId(vedtak: Vedtak) =
         database.connection.use { connection ->
-            connection.prepareStatement(UPDATE_VEDTAK).use {
+            connection.prepareStatement(SET_JOURNALPOST_ID).use {
                 it.setString(1, vedtak.journalpostId?.value)
                 it.setObject(2, nowUTC())
                 it.setString(3, vedtak.uuid.toString())
@@ -121,13 +121,13 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                     throw SQLException("Expected a single row to be updated, got update count $updated")
                 }
             }
+            connection.commit()
+        }
+
+    override fun addVedtakStatus(vedtak: Vedtak, vedtakStatus: VedtakStatus) =
+        database.connection.use { connection ->
             val pVedtak = connection.getPVedtak(vedtak.uuid)
-            val existingStatusUUIDs = connection.getVedtakStatus(pVedtak.id).map { it.uuid }
-            vedtak.statusListe.forEach {
-                if (!existingStatusUUIDs.contains(it.uuid)) {
-                    connection.createVedtakStatus(pVedtak.id, it)
-                }
-            }
+            connection.createVedtakStatus(pVedtak.id, vedtakStatus)
             connection.commit()
         }
 
@@ -279,7 +279,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 UPDATE VEDTAK SET published_infotrygd_at=now() WHERE uuid=?
             """
 
-        private const val UPDATE_VEDTAK =
+        private const val SET_JOURNALPOST_ID =
             """
                 UPDATE VEDTAK SET 
                     journalpost_id = ?, 
@@ -327,11 +327,6 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 SELECT *
                 FROM VEDTAK_STATUS
                 WHERE vedtak_id=? ORDER BY created_at
-            """
-
-        private const val GET_VEDTAK_ID_FROM_UUID =
-            """
-                SELECT id FROM VEDTAK WHERE uuid=?
             """
 
         private const val GET_UNPUBLISHED_VEDTAK =

@@ -24,13 +24,15 @@ interface IVedtakRepository {
 
     fun getNotJournalforteVedtak(): List<Pair<Vedtak, ByteArray>>
 
-    fun update(vedtak: Vedtak)
+    fun setJournalpostId(vedtak: Vedtak)
 
     fun getUnpublishedVedtakVarsler(): List<Vedtak>
 
     fun setVedtakVarselPublished(vedtak: Vedtak)
 
     fun getUnpublishedVedtak(): List<Vedtak>
+
+    fun addVedtakStatus(vedtak: Vedtak, vedtakStatus: VedtakStatus)
 
     fun setVedtakStatusPublished(vedtakStatus: VedtakStatus)
 }

@@ -2,6 +2,7 @@ package no.nav.syfo.application
 
 import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
+import no.nav.syfo.util.nowUTC
 import java.time.LocalDate
 import java.util.*
 
@@ -59,8 +60,15 @@ class VedtakService(
     fun ferdigbehandleVedtak(
         vedtak: Vedtak,
         veilederident: String,
-    ) = vedtak.ferdigbehandle(veilederident).also {
-        vedtakRepository.update(it)
+    ): Vedtak {
+        val vedtakStatus = VedtakStatus(
+            uuid = UUID.randomUUID(),
+            createdAt = nowUTC(),
+            veilederident = veilederident,
+            status = Status.FERDIG_BEHANDLET,
+        )
+        vedtakRepository.addVedtakStatus(vedtak, vedtakStatus)
+        return vedtak.ferdigbehandle(vedtakStatus)
     }
 
     suspend fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
@@ -83,7 +91,7 @@ class VedtakService(
                 pdf = pdf,
             ).map {
                 val journalfortVedtak = vedtak.journalfor(journalpostId = it)
-                vedtakRepository.update(journalfortVedtak)
+                vedtakRepository.setJournalpostId(journalfortVedtak)
 
                 journalfortVedtak
             }

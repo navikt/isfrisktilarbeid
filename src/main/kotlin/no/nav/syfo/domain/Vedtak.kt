@@ -44,16 +44,9 @@ data class Vedtak private constructor(
 
     fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
 
-    fun ferdigbehandle(ferdigbehandletVeilederident: String): Vedtak = this.copy(
+    fun ferdigbehandle(vedtakStatus: VedtakStatus): Vedtak = this.copy(
         statusListe = this.statusListe.toMutableList().also {
-            it.add(
-                VedtakStatus(
-                    uuid = UUID.randomUUID(),
-                    createdAt = nowUTC(),
-                    veilederident = ferdigbehandletVeilederident,
-                    status = Status.FERDIG_BEHANDLET,
-                )
-            )
+            it.add(vedtakStatus)
         }
     )
 

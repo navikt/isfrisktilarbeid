@@ -119,7 +119,7 @@ class VedtakServiceSpek : Spek({
                     behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
                 val journafortVedtak = vedtak.journalfor(mockedJournalpostId)
-                vedtakRepository.update(journafortVedtak)
+                vedtakRepository.setJournalpostId(journafortVedtak)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -192,7 +192,7 @@ class VedtakServiceSpek : Spek({
                     behandlermelding = behandlermelding,
                     behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 ).first
-                vedtakRepository.update(unpublishedVedtakVarsel.copy(journalpostId = journalpostId))
+                vedtakRepository.setJournalpostId(unpublishedVedtakVarsel.copy(journalpostId = journalpostId))
                 return unpublishedVedtakVarsel
             }
 
