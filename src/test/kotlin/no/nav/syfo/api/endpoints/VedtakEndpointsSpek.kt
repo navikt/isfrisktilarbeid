@@ -93,9 +93,6 @@ object VedtakEndpointsSpek : Spek({
                     fom = requestDTO.fom,
                     tom = requestDTO.tom,
                     callId = UUID.randomUUID().toString(),
-                    behandlerRef = requestDTO.behandlerRef,
-                    behandlerNavn = requestDTO.behandlerNavn,
-                    behandlerDocument = requestDTO.behandlerDocument,
                 )
             }
 

@@ -20,7 +20,6 @@ import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
-import java.util.*
 
 class PublishMQCronjobSpek : Spek({
 
@@ -59,9 +58,6 @@ class PublishMQCronjobSpek : Spek({
                             fom = fom,
                             tom = tom,
                             callId = "callId",
-                            behandlerRef = UUID.randomUUID(),
-                            behandlerNavn = "Beate Behandler",
-                            behandlerDocument = generateDocumentComponent("En melding til behandler"),
                         )
                     }
                     database.getPublishedInfotrygdAt(vedtak.uuid) shouldBe null

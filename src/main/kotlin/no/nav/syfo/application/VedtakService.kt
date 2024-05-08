@@ -3,7 +3,6 @@ package no.nav.syfo.application
 import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
-import java.util.*
 
 class VedtakService(
     private val pdfService: IPdfService,
@@ -23,9 +22,6 @@ class VedtakService(
         fom: LocalDate,
         tom: LocalDate,
         callId: String,
-        behandlerRef: UUID,
-        behandlerNavn: String,
-        behandlerDocument: List<DocumentComponent>,
     ): Vedtak {
         val vedtak = Vedtak(
             personident = personident,
@@ -35,22 +31,10 @@ class VedtakService(
             fom = fom,
             tom = tom,
         )
-        val behandlerMelding = Behandlermelding(
-            behandlerRef = behandlerRef,
-            document = behandlerDocument,
-        )
         val vedtakPdf = pdfService.createVedtakPdf(vedtak = vedtak, callId = callId)
-        val behandlerMeldingPdf =
-            pdfService.createBehandlermeldingPdf(
-                behandlerMelding = behandlerMelding,
-                behandlerNavn = behandlerNavn,
-                callId = callId
-            )
-        val (createdVedtak, _) = vedtakRepository.createVedtak(
+        val createdVedtak = vedtakRepository.createVedtak(
             vedtak = vedtak,
             vedtakPdf = vedtakPdf,
-            behandlermelding = behandlerMelding,
-            behandlermeldingPdf = behandlerMeldingPdf,
         )
 
         return createdVedtak

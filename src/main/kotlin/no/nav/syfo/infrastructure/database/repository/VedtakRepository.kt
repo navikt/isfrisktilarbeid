@@ -51,9 +51,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
     override fun createVedtak(
         vedtak: Vedtak,
         vedtakPdf: ByteArray,
-        behandlermelding: Behandlermelding,
-        behandlermeldingPdf: ByteArray
-    ): Pair<Vedtak, Behandlermelding> {
+    ): Vedtak {
         database.connection.use { connection ->
             val pVedtakPdf = connection.createPdf(pdf = vedtakPdf)
             val pVedtak = connection.createVedtak(
@@ -67,15 +65,8 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 )
             }
 
-            val pBehandlerMeldingPdf = connection.createPdf(pdf = behandlermeldingPdf)
-            val pBehandlerMelding = connection.createBehandlermelding(
-                behandlerMelding = behandlermelding,
-                vedtakId = pVedtak.id,
-                pdfId = pBehandlerMeldingPdf.id
-            )
-
             connection.commit()
-            return Pair(pVedtak.toVedtak(pVedtakStatusListe), pBehandlerMelding.toBehandlermelding())
+            return pVedtak.toVedtak(pVedtakStatusListe)
         }
     }
 
