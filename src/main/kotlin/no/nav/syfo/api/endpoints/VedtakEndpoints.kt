@@ -55,7 +55,7 @@ fun Route.registerVedtakEndpoints(
             val navIdent = call.getNAVIdent()
             val callId = call.getCallId()
 
-            if (vedtakService.getVedtak(personident).any { it.ferdigbehandletAt == null }) {
+            if (vedtakService.getVedtak(personident).any { !it.isFerdigbehandlet() }) {
                 call.respond(HttpStatusCode.Conflict, "Finnes allerede et åpent vedtak for personen")
             } else {
                 val newVedtak = vedtakService.createVedtak(
