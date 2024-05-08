@@ -154,7 +154,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
     override fun getUnpublishedVedtak(): List<Vedtak> =
         database.connection.use { connection ->
-            connection.prepareStatement(GET_UNPUBLISHED_VEDTAK).use {
+            connection.prepareStatement(GET_UNPUBLISHED_VEDTAK_STATUS).use {
                 it.executeQuery().toList { toPVedtak() }
             }.map { pVedtak ->
                 pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
@@ -329,7 +329,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 WHERE vedtak_id=? ORDER BY created_at
             """
 
-        private const val GET_UNPUBLISHED_VEDTAK =
+        private const val GET_UNPUBLISHED_VEDTAK_STATUS =
             """
                 SELECT v.* FROM VEDTAK v INNER JOIN VEDTAK_STATUS s ON (v.id = s.vedtak_id) WHERE s.status='FATTET' AND s.published_at IS NULL ORDER BY s.created_at ASC
             """
