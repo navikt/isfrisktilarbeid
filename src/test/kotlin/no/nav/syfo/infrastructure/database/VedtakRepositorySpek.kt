@@ -6,6 +6,7 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.generator.generateBehandlermelding
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -41,6 +42,7 @@ class VedtakRepositorySpek : Spek({
                 vedtak.uuid shouldBeEqualTo persistedVedtak.uuid
                 vedtak.personident shouldBeEqualTo persistedVedtak.personident
                 vedtak.getFattetStatus().veilederident shouldBeEqualTo persistedVedtak.getFattetStatus().veilederident
+                vedtak.getFerdigbehandletStatus() shouldBe null
                 vedtak.begrunnelse shouldBeEqualTo persistedVedtak.begrunnelse
                 vedtak.document shouldBeEqualTo persistedVedtak.document
                 vedtak.fom shouldBeEqualTo persistedVedtak.fom

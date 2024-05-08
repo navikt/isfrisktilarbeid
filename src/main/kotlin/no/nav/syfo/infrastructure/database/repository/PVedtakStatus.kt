@@ -13,7 +13,7 @@ data class PVedtakStatus(
     val veilederident: String,
     val status: String,
 ) {
-    fun toVedtakStatus() = VedtakStatus(
+    fun toVedtakStatus() = VedtakStatus.createFromDatabase(
         uuid = uuid,
         createdAt = createdAt,
         veilederident = veilederident,

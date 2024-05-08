@@ -82,6 +82,26 @@ class VedtakServiceSpek : Spek({
             database.dropData()
         }
 
+        describe("ferdigbehandler vedtak") {
+            it("successfully ferdigbehandler a vedtak") {
+                val (createdVedtak,) = vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                )
+
+                val persistedVedtak = vedtakRepository.getVedtak(createdVedtak.uuid)
+                persistedVedtak.isFerdigbehandlet() shouldBe false
+
+                vedtakService.ferdigbehandleVedtak(persistedVedtak, UserConstants.VEILEDER_IDENT_OTHER)
+
+                val persistedFerdigbehandletVedtak = vedtakRepository.getVedtak(createdVedtak.uuid)
+                persistedFerdigbehandletVedtak.isFerdigbehandlet() shouldBe true
+                persistedFerdigbehandletVedtak.getFerdigbehandletStatus()!!.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT_OTHER
+            }
+        }
+
         describe("journalforVedtak") {
             it("journalfører vedtak som ikke er journalført") {
                 vedtakRepository.createVedtak(
@@ -118,8 +138,8 @@ class VedtakServiceSpek : Spek({
                     behandlermelding = behandlermelding,
                     behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
-                val journafortVedtak = vedtak.journalfor(mockedJournalpostId)
-                vedtakRepository.setJournalpostId(journafortVedtak)
+                val journalfortVedtak = vedtak.journalfor(mockedJournalpostId)
+                vedtakRepository.setJournalpostId(journalfortVedtak)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
