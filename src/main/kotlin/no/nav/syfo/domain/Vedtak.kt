@@ -8,17 +8,13 @@ import java.util.*
 data class Vedtak private constructor(
     val uuid: UUID,
     val personident: Personident,
-    val veilederident: String,
     val createdAt: OffsetDateTime,
     val begrunnelse: String,
     val document: List<DocumentComponent>,
     val fom: LocalDate,
     val tom: LocalDate,
     val journalpostId: JournalpostId?,
-    val varselPublishedAt: OffsetDateTime?,
-    val publishedAt: OffsetDateTime?,
-    val ferdigbehandletAt: OffsetDateTime?,
-    val ferdigbehandletBy: String?,
+    val statusListe: List<VedtakStatus>,
 ) {
     constructor(
         personident: Personident,
@@ -30,60 +26,56 @@ data class Vedtak private constructor(
     ) : this(
         uuid = UUID.randomUUID(),
         personident = personident,
-        veilederident = veilederident,
         createdAt = nowUTC(),
         begrunnelse = begrunnelse,
         document = document,
         fom = fom,
         tom = tom,
         journalpostId = null,
-        varselPublishedAt = null,
-        publishedAt = null,
-        ferdigbehandletAt = null,
-        ferdigbehandletBy = null,
+        statusListe = listOf(
+            VedtakStatus(
+                veilederident = veilederident,
+                status = Status.FATTET,
+            )
+        ),
     )
 
     fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
 
-    fun publishVarsel(): Vedtak = this.copy(varselPublishedAt = nowUTC())
-
-    fun setPublished(): Vedtak = this.copy(publishedAt = nowUTC())
-
-    fun ferdigbehandle(veilderIdent: String): Vedtak = this.copy(
-        ferdigbehandletAt = nowUTC(),
-        ferdigbehandletBy = veilderIdent,
+    fun addVedtakstatus(vedtakStatus: VedtakStatus): Vedtak = this.copy(
+        statusListe = this.statusListe.toMutableList().also {
+            it.add(vedtakStatus)
+        }
     )
+
+    fun isFerdigbehandlet(): Boolean = statusListe.any { it.status == Status.FERDIG_BEHANDLET }
+
+    fun getFattetStatus(): VedtakStatus = statusListe.first { it.status == Status.FATTET }
+
+    fun getFerdigbehandletStatus(): VedtakStatus? = statusListe.firstOrNull { it.status == Status.FERDIG_BEHANDLET }
 
     companion object {
 
         fun createFromDatabase(
             uuid: UUID,
             personident: Personident,
-            veilederident: String,
             createdAt: OffsetDateTime,
             begrunnelse: String,
             document: List<DocumentComponent>,
             fom: LocalDate,
             tom: LocalDate,
             journalpostId: JournalpostId?,
-            varselPublishedAt: OffsetDateTime?,
-            publishedAt: OffsetDateTime?,
-            ferdigbehandletAt: OffsetDateTime?,
-            ferdigbehandletBy: String?,
+            vedtakStatus: List<VedtakStatus>,
         ) = Vedtak(
             uuid = uuid,
             personident = personident,
-            veilederident = veilederident,
             createdAt = createdAt,
             begrunnelse = begrunnelse,
             document = document,
             fom = fom,
             tom = tom,
             journalpostId = journalpostId,
-            varselPublishedAt = varselPublishedAt,
-            publishedAt = publishedAt,
-            ferdigbehandletAt = ferdigbehandletAt,
-            ferdigbehandletBy = ferdigbehandletBy,
+            statusListe = vedtakStatus,
         )
     }
 }

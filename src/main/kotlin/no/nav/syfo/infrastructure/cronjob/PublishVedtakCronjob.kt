@@ -8,5 +8,5 @@ class PublishVedtakCronjob(
     override val initialDelayMinutes: Long = 3
     override val intervalDelayMinutes: Long = 1
 
-    override suspend fun run() = vedtakService.publishUnpublishedVedtak()
+    override suspend fun run() = vedtakService.publishUnpublishedVedtakStatus()
 }

@@ -31,7 +31,7 @@ class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFat
                     VedtakFattetRecord(
                         uuid = vedtak.uuid,
                         personident = vedtak.personident.value,
-                        veilederident = vedtak.veilederident,
+                        veilederident = vedtak.getFattetStatus().veilederident,
                         createdAt = vedtak.createdAt,
                         begrunnelse = vedtak.begrunnelse,
                         fom = vedtak.fom,

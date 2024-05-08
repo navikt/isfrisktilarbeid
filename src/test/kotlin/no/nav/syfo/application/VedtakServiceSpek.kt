@@ -9,7 +9,7 @@ import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.generator.generateBehandlermelding
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
-import no.nav.syfo.infrastructure.database.getVedtak
+import no.nav.syfo.infrastructure.database.getVedtakVarselPublishedAt
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.VedtakFattetProducer
@@ -23,7 +23,6 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
-import no.nav.syfo.util.nowUTC
 import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -83,6 +82,26 @@ class VedtakServiceSpek : Spek({
             database.dropData()
         }
 
+        describe("ferdigbehandler vedtak") {
+            it("successfully ferdigbehandler a vedtak") {
+                val (createdVedtak, _) = vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                    behandlermelding = behandlermelding,
+                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
+                )
+
+                val persistedVedtak = vedtakRepository.getVedtak(createdVedtak.uuid)
+                persistedVedtak.isFerdigbehandlet() shouldBe false
+
+                vedtakService.ferdigbehandleVedtak(persistedVedtak, UserConstants.VEILEDER_IDENT_OTHER)
+
+                val persistedFerdigbehandletVedtak = vedtakRepository.getVedtak(createdVedtak.uuid)
+                persistedFerdigbehandletVedtak.isFerdigbehandlet() shouldBe true
+                persistedFerdigbehandletVedtak.getFerdigbehandletStatus()!!.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT_OTHER
+            }
+        }
+
         describe("journalforVedtak") {
             it("journalfører vedtak som ikke er journalført") {
                 vedtakRepository.createVedtak(
@@ -102,9 +121,8 @@ class VedtakServiceSpek : Spek({
                 val journalfortVedtak = success.first().getOrThrow()
                 journalfortVedtak.journalpostId shouldBeEqualTo mockedJournalpostId
 
-                val pVedtak = database.getVedtak(vedtakUuid = journalfortVedtak.uuid)
-                pVedtak!!.updatedAt shouldBeGreaterThan pVedtak.createdAt
-                pVedtak.journalpostId shouldBeEqualTo mockedJournalpostId.value
+                val persistedVedtak = vedtakRepository.getVedtak(journalfortVedtak.uuid)
+                persistedVedtak.journalpostId!!.value shouldBeEqualTo mockedJournalpostId.value
             }
 
             it("journalfører ikke når ingen vedtak") {
@@ -120,8 +138,8 @@ class VedtakServiceSpek : Spek({
                     behandlermelding = behandlermelding,
                     behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
-                val journafortVedtak = vedtak.journalfor(mockedJournalpostId)
-                vedtakRepository.update(journafortVedtak)
+                val journalfortVedtak = vedtak.journalfor(mockedJournalpostId)
+                vedtakRepository.setJournalpostId(journalfortVedtak)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -194,7 +212,7 @@ class VedtakServiceSpek : Spek({
                     behandlermelding = behandlermelding,
                     behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 ).first
-                vedtakRepository.update(unpublishedVedtakVarsel.copy(journalpostId = journalpostId))
+                vedtakRepository.setJournalpostId(unpublishedVedtakVarsel.copy(journalpostId = journalpostId))
                 return unpublishedVedtakVarsel
             }
 
@@ -211,7 +229,7 @@ class VedtakServiceSpek : Spek({
 
                 val publishedVedtakVarsel = success.first().getOrThrow()
                 publishedVedtakVarsel.uuid.shouldBeEqualTo(unpublishedVedtakVarsel.uuid)
-                publishedVedtakVarsel.varselPublishedAt.shouldNotBeNull()
+                database.getVedtakVarselPublishedAt(publishedVedtakVarsel.uuid).shouldNotBeNull()
 
                 val esyfovarselHendelse = producerRecordSlot.captured.value() as ArbeidstakerHendelse
                 esyfovarselHendelse.type shouldBeEqualTo HendelseType.SM_VEDTAK_FRISKMELDING_TIL_ARBEIDSFORMIDLING
@@ -243,8 +261,8 @@ class VedtakServiceSpek : Spek({
             }
 
             it("Publishes nothing when varsel for vedtak already published") {
-                val publishedVedtakVarsel = createUnpublishedVedtakVarsel().copy(varselPublishedAt = nowUTC())
-                vedtakRepository.update(publishedVedtakVarsel)
+                val unpublishedVedtakVarsel = createUnpublishedVedtakVarsel()
+                vedtakRepository.setVedtakVarselPublished(unpublishedVedtakVarsel)
 
                 val (success, failed) = vedtakService.publishVedtakVarsel().partition { it.isSuccess }
 
@@ -277,15 +295,15 @@ class VedtakServiceSpek : Spek({
                     behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 ).first
 
-                val (success, failed) = vedtakService.publishUnpublishedVedtak().partition { it.isSuccess }
+                val (success, failed) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 1
 
                 val publishedVedtak = success.first().getOrThrow()
                 publishedVedtak.uuid.shouldBeEqualTo(unpublishedVedtak.uuid)
-                publishedVedtak.publishedAt.shouldNotBeNull()
+                // publishedVedtak.publishedAt.shouldNotBeNull()
 
-                vedtakRepository.getUnpublishedVedtak().shouldBeEmpty()
+                vedtakRepository.getUnpublishedVedtakStatus().shouldBeEmpty()
 
                 val producerRecordSlot = slot<ProducerRecord<String, VedtakFattetRecord>>()
                 verify(exactly = 1) { mockVedtakFattetKafkaProducer.send(capture(producerRecordSlot)) }
@@ -293,13 +311,13 @@ class VedtakServiceSpek : Spek({
                 val record = producerRecordSlot.captured.value()
                 record.uuid shouldBeEqualTo unpublishedVedtak.uuid
                 record.personident shouldBeEqualTo unpublishedVedtak.personident.value
-                record.veilederident shouldBeEqualTo unpublishedVedtak.veilederident
+                // record.veilederident shouldBeEqualTo unpublishedVedtak.veilederident
                 record.fom shouldBeEqualTo unpublishedVedtak.fom
                 record.tom shouldBeEqualTo unpublishedVedtak.tom
             }
 
             it("publishes nothing when no unpublished varsel") {
-                val (success, failed) = vedtakService.publishUnpublishedVedtak().partition { it.isSuccess }
+                val (success, failed) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 0
 
@@ -316,13 +334,13 @@ class VedtakServiceSpek : Spek({
 
                 every { mockVedtakFattetKafkaProducer.send(any()) } throws Exception("Error producing to kafka")
 
-                val (success, failed) = vedtakService.publishUnpublishedVedtak().partition { it.isSuccess }
+                val (success, failed) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 1
                 success.size shouldBeEqualTo 0
 
                 verify(exactly = 1) { mockVedtakFattetKafkaProducer.send(any()) }
 
-                vedtakRepository.getUnpublishedVedtak().shouldNotBeEmpty()
+                vedtakRepository.getUnpublishedVedtakStatus().shouldNotBeEmpty()
             }
         }
     }

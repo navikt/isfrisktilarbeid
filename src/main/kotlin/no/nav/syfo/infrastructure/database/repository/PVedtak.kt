@@ -14,7 +14,6 @@ data class PVedtak(
     val createdAt: OffsetDateTime,
     val updatedAt: OffsetDateTime,
     val personident: Personident,
-    val veilederident: String,
     val fom: LocalDate,
     val tom: LocalDate,
     val begrunnelse: String,
@@ -23,23 +22,18 @@ data class PVedtak(
     val pdfId: Int,
     val publishedInfotrygdAt: OffsetDateTime?,
     val varselPublishedAt: OffsetDateTime?,
-    val publishedAt: OffsetDateTime?,
-    val ferdigbehandletAt: OffsetDateTime?,
-    val ferdigbehandletBy: String?,
 ) {
-    fun toVedtak(): Vedtak = Vedtak.createFromDatabase(
+    fun toVedtak(statusListe: List<PVedtakStatus>): Vedtak = Vedtak.createFromDatabase(
         uuid = uuid,
         personident = personident,
-        veilederident = veilederident,
         createdAt = createdAt,
         begrunnelse = begrunnelse,
         document = document,
         fom = fom,
         tom = tom,
         journalpostId = journalpostId?.let { JournalpostId(it) },
-        varselPublishedAt = varselPublishedAt,
-        publishedAt = publishedAt,
-        ferdigbehandletAt = ferdigbehandletAt,
-        ferdigbehandletBy = ferdigbehandletBy,
+        vedtakStatus = statusListe.map {
+            it.toVedtakStatus()
+        },
     )
 }

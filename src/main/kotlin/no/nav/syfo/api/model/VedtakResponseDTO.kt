@@ -19,17 +19,18 @@ data class VedtakResponseDTO private constructor(
     val ferdigbehandletBy: String?,
 ) {
     companion object {
-        fun createFromVedtak(vedtak: Vedtak) = VedtakResponseDTO(
-            uuid = vedtak.uuid,
-            createdAt = vedtak.createdAt.toLocalDateTime(),
-            personident = vedtak.personident.value,
-            veilederident = vedtak.veilederident,
-            begrunnelse = vedtak.begrunnelse,
-            fom = vedtak.fom,
-            tom = vedtak.tom,
-            document = vedtak.document,
-            ferdigbehandletAt = vedtak.ferdigbehandletAt?.toLocalDateTime(),
-            ferdigbehandletBy = vedtak.ferdigbehandletBy,
-        )
+        fun createFromVedtak(vedtak: Vedtak): VedtakResponseDTO =
+            VedtakResponseDTO(
+                uuid = vedtak.uuid,
+                createdAt = vedtak.createdAt.toLocalDateTime(),
+                personident = vedtak.personident.value,
+                begrunnelse = vedtak.begrunnelse,
+                fom = vedtak.fom,
+                tom = vedtak.tom,
+                document = vedtak.document,
+                veilederident = vedtak.getFattetStatus().veilederident,
+                ferdigbehandletAt = vedtak.getFerdigbehandletStatus()?.createdAt?.toLocalDateTime(),
+                ferdigbehandletBy = vedtak.getFerdigbehandletStatus()?.veilederident,
+            )
     }
 }

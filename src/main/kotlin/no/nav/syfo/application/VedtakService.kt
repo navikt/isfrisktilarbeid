@@ -1,9 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.Behandlermelding
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
 import java.util.*
@@ -62,8 +59,14 @@ class VedtakService(
     fun ferdigbehandleVedtak(
         vedtak: Vedtak,
         veilederident: String,
-    ) = vedtak.ferdigbehandle(veilederident).also {
-        vedtakRepository.update(it)
+    ): Vedtak {
+        val vedtakStatus = VedtakStatus(
+            veilederident = veilederident,
+            status = Status.FERDIG_BEHANDLET,
+        )
+        return vedtak.addVedtakstatus(vedtakStatus).also {
+            vedtakRepository.addVedtakStatus(it, vedtakStatus)
+        }
     }
 
     suspend fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
@@ -86,7 +89,7 @@ class VedtakService(
                 pdf = pdf,
             ).map {
                 val journalfortVedtak = vedtak.journalfor(journalpostId = it)
-                vedtakRepository.update(journalfortVedtak)
+                vedtakRepository.setJournalpostId(journalfortVedtak)
 
                 journalfortVedtak
             }
@@ -98,21 +101,20 @@ class VedtakService(
         return unpublishedVedtakVarsler.map { vedtak ->
             val result = vedtakProducer.sendVedtakVarsel(vedtak)
             result.map {
-                val publishedVedtakVarsel = vedtak.publishVarsel()
-                vedtakRepository.update(publishedVedtakVarsel)
-                publishedVedtakVarsel
+                vedtakRepository.setVedtakVarselPublished(it)
+                it
             }
         }
     }
 
-    fun publishUnpublishedVedtak(): List<Result<Vedtak>> {
-        val unpublished = vedtakRepository.getUnpublishedVedtak()
+    fun publishUnpublishedVedtakStatus(): List<Result<Vedtak>> {
+        val unpublished = vedtakRepository.getUnpublishedVedtakStatus()
         return unpublished.map { vedtak ->
+            // TODO: Also publish ferdigbehandlet vedtak
             val producerResult = vedtakProducer.sendFattetVedtak(vedtak)
             producerResult.map {
-                val publishedVedtak = it.setPublished()
-                vedtakRepository.update(publishedVedtak)
-                publishedVedtak
+                vedtakRepository.setVedtakStatusPublished(vedtak.getFattetStatus())
+                it
             }
         }
     }

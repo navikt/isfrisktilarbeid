@@ -6,6 +6,7 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.generator.generateBehandlermelding
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -35,25 +36,25 @@ class VedtakRepositorySpek : Spek({
                     behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
-                val pVedtak = database.getVedtak(createdVedtak.uuid)
+                val persistedVedtak = vedtakRepository.getVedtak(createdVedtak.uuid)
                 val pBehandlermelding = database.getBehandlerMelding(createdBehandlermelding.uuid)
 
-                vedtak.uuid shouldBeEqualTo pVedtak?.uuid
-                vedtak.personident shouldBeEqualTo pVedtak?.personident
-                vedtak.veilederident shouldBeEqualTo pVedtak?.veilederident
-                vedtak.begrunnelse shouldBeEqualTo pVedtak?.begrunnelse
-                vedtak.document shouldBeEqualTo pVedtak?.document
-                vedtak.fom shouldBeEqualTo pVedtak?.fom
-                vedtak.tom shouldBeEqualTo pVedtak?.tom
-                vedtak.journalpostId shouldBeEqualTo pVedtak?.journalpostId
+                vedtak.uuid shouldBeEqualTo persistedVedtak.uuid
+                vedtak.personident shouldBeEqualTo persistedVedtak.personident
+                vedtak.getFattetStatus().veilederident shouldBeEqualTo persistedVedtak.getFattetStatus().veilederident
+                vedtak.getFerdigbehandletStatus() shouldBe null
+                vedtak.begrunnelse shouldBeEqualTo persistedVedtak.begrunnelse
+                vedtak.document shouldBeEqualTo persistedVedtak.document
+                vedtak.fom shouldBeEqualTo persistedVedtak.fom
+                vedtak.tom shouldBeEqualTo persistedVedtak.tom
+                vedtak.journalpostId shouldBeEqualTo persistedVedtak.journalpostId
 
                 behandlerMelding.uuid shouldBeEqualTo pBehandlermelding?.uuid
                 behandlerMelding.behandlerRef shouldBeEqualTo pBehandlermelding?.behandlerRef
                 behandlerMelding.document shouldBeEqualTo pBehandlermelding?.document
                 behandlerMelding.journalpostId shouldBeEqualTo pBehandlermelding?.journalpostId
                 behandlerMelding.publishedAt shouldBeEqualTo pBehandlermelding?.publishedAt
-
-                pBehandlermelding?.vedtakId shouldBeEqualTo pVedtak?.id
+                pBehandlermelding?.vedtakId shouldBeEqualTo database.getVedtak(createdVedtak.uuid)!!.id
             }
         }
     }

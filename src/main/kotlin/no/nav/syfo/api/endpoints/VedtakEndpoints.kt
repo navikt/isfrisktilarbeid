@@ -80,7 +80,7 @@ fun Route.registerVedtakEndpoints(
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
             val navIdent = call.getNAVIdent()
             val vedtak = vedtakService.getVedtak(personident).firstOrNull { it.uuid == vedtakUUID }
-            if (vedtak == null || vedtak.ferdigbehandletAt != null) {
+            if (vedtak == null || vedtak.isFerdigbehandlet()) {
                 call.respond(HttpStatusCode.BadRequest, "Finner ikke åpent vedtak med uuid=$vedtakUUID")
             } else {
                 val ferdigbehandletVedtak = vedtakService.ferdigbehandleVedtak(

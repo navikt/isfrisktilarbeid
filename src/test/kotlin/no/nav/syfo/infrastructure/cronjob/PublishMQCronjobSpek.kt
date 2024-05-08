@@ -9,7 +9,7 @@ import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.database.dropData
-import no.nav.syfo.infrastructure.database.getVedtak
+import no.nav.syfo.infrastructure.database.getPublishedInfotrygdAt
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
@@ -30,9 +30,10 @@ class PublishMQCronjobSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database
             val mqSenderMock = mockk<InfotrygdMQSender>(relaxed = true)
+            val vedtakRepository = VedtakRepository(database)
             val vedtakService = VedtakService(
                 pdfService = PdfService(externalMockEnvironment.pdfgenClient, externalMockEnvironment.pdlClient),
-                vedtakRepository = VedtakRepository(database),
+                vedtakRepository = vedtakRepository,
                 journalforingService = mockk<JournalforingService>(relaxed = true),
                 infotrygdService = InfotrygdService(externalMockEnvironment.pdlClient, mqSenderMock),
                 vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
@@ -63,15 +64,13 @@ class PublishMQCronjobSpek : Spek({
                             behandlerDocument = generateDocumentComponent("En melding til behandler"),
                         )
                     }
-                    val lagretVedtakBefore = database.getVedtak(vedtak.uuid)
-                    lagretVedtakBefore!!.publishedInfotrygdAt shouldBe null
+                    database.getPublishedInfotrygdAt(vedtak.uuid) shouldBe null
 
                     runBlocking {
                         publishMQCronjob.run()
                     }
 
-                    val lagretVedtakAfter = database.getVedtak(vedtak.uuid)
-                    lagretVedtakAfter!!.publishedInfotrygdAt shouldNotBe null
+                    database.getPublishedInfotrygdAt(vedtak.uuid) shouldNotBe null
 
                     val payloadSlot = slot<String>()
                     verify(exactly = 1) { mqSenderMock.sendToMQ(capture(payloadSlot)) }
