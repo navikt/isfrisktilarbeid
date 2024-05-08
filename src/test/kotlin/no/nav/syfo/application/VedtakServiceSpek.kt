@@ -84,7 +84,7 @@ class VedtakServiceSpek : Spek({
 
         describe("ferdigbehandler vedtak") {
             it("successfully ferdigbehandler a vedtak") {
-                val (createdVedtak,) = vedtakRepository.createVedtak(
+                val (createdVedtak, _) = vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
                     behandlermelding = behandlermelding,
