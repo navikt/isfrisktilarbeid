@@ -66,9 +66,6 @@ object VedtakEndpointsSpek : Spek({
                 begrunnelse = begrunnelse,
                 fom = vedtakFom,
                 tom = vedtakTom,
-                behandlerRef = UUID.randomUUID(),
-                behandlerNavn = "Beate Behandler",
-                behandlerDocument = generateDocumentComponent("Til orientering", header = "Informasjon om vedtak"),
             )
             val vedtakRepository = VedtakRepository(database)
             val vedtakService = VedtakService(
