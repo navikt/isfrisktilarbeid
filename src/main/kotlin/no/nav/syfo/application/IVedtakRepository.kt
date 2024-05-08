@@ -27,7 +27,7 @@ interface IVedtakRepository {
 
     fun setVedtakVarselPublished(vedtak: Vedtak)
 
-    fun getUnpublishedVedtakStatus(): List<Vedtak>
+    fun getUnpublishedVedtakStatus(): List<Pair<Vedtak, VedtakStatus>>
 
     fun addVedtakStatus(vedtak: Vedtak, vedtakStatus: VedtakStatus)
 

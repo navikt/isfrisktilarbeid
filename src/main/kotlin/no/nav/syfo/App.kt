@@ -81,9 +81,9 @@ fun main() {
                 kafkaAivenProducerConfig<KafkaEsyfovarselHendelseSerializer>(kafkaEnvironment = environment.kafka)
             )
         ),
-        vedtakFattetProducer = VedtakFattetProducer(
+        vedtakStatusProducer = VedtakStatusProducer(
             producer = KafkaProducer(
-                kafkaAivenProducerConfig<VedtakFattetRecordSerializer>(kafkaEnvironment = environment.kafka)
+                kafkaAivenProducerConfig<VedtakStatusRecordSerializer>(kafkaEnvironment = environment.kafka)
             )
         ),
     )

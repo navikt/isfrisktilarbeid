@@ -10,7 +10,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-data class VedtakFattetRecord(
+data class VedtakStatusRecord(
     val uuid: UUID,
     val personident: String,
     val veilederident: String,
@@ -18,9 +18,11 @@ data class VedtakFattetRecord(
     val begrunnelse: String,
     val fom: LocalDate,
     val tom: LocalDate,
+    val ferdigbehandletAt: OffsetDateTime?,
+    val ferdigbehandletBy: String?,
 )
 
-class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFattetRecord>) {
+class VedtakStatusProducer(private val producer: KafkaProducer<String, VedtakStatusRecord>) {
 
     fun send(vedtak: Vedtak): Result<Vedtak> =
         try {
@@ -28,7 +30,7 @@ class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFat
                 ProducerRecord(
                     TOPIC,
                     UUID.randomUUID().toString(),
-                    VedtakFattetRecord(
+                    VedtakStatusRecord(
                         uuid = vedtak.uuid,
                         personident = vedtak.personident.value,
                         veilederident = vedtak.getFattetStatus().veilederident,
@@ -36,6 +38,8 @@ class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFat
                         begrunnelse = vedtak.begrunnelse,
                         fom = vedtak.fom,
                         tom = vedtak.tom,
+                        ferdigbehandletAt = vedtak.getFerdigbehandletStatus()?.createdAt,
+                        ferdigbehandletBy = vedtak.getFerdigbehandletStatus()?.veilederident,
                     )
                 )
             ).get()
@@ -46,13 +50,13 @@ class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFat
         }
 
     companion object {
-        private const val TOPIC = "teamsykefravr.isfrisktilarbeid-vedtak-fattet"
-        private val log = LoggerFactory.getLogger(VedtakFattetProducer::class.java)
+        private const val TOPIC = "teamsykefravr.isfrisktilarbeid-vedtak-status"
+        private val log = LoggerFactory.getLogger(VedtakStatusProducer::class.java)
     }
 }
 
-class VedtakFattetRecordSerializer : Serializer<VedtakFattetRecord> {
+class VedtakStatusRecordSerializer : Serializer<VedtakStatusRecord> {
     private val mapper = configuredJacksonMapper()
-    override fun serialize(topic: String?, data: VedtakFattetRecord?): ByteArray =
+    override fun serialize(topic: String?, data: VedtakStatusRecord?): ByteArray =
         mapper.writeValueAsBytes(data)
 }
