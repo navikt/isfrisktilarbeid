@@ -295,7 +295,7 @@ class VedtakServiceSpek : Spek({
                     behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 ).first
 
-                val (success, failed) = vedtakService.publishUnpublishedVedtak().partition { it.isSuccess }
+                val (success, failed) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 1
 
@@ -303,7 +303,7 @@ class VedtakServiceSpek : Spek({
                 publishedVedtak.uuid.shouldBeEqualTo(unpublishedVedtak.uuid)
                 // publishedVedtak.publishedAt.shouldNotBeNull()
 
-                vedtakRepository.getUnpublishedVedtak().shouldBeEmpty()
+                vedtakRepository.getUnpublishedVedtakStatus().shouldBeEmpty()
 
                 val producerRecordSlot = slot<ProducerRecord<String, VedtakFattetRecord>>()
                 verify(exactly = 1) { mockVedtakFattetKafkaProducer.send(capture(producerRecordSlot)) }
@@ -317,7 +317,7 @@ class VedtakServiceSpek : Spek({
             }
 
             it("publishes nothing when no unpublished varsel") {
-                val (success, failed) = vedtakService.publishUnpublishedVedtak().partition { it.isSuccess }
+                val (success, failed) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 0
 
@@ -334,13 +334,13 @@ class VedtakServiceSpek : Spek({
 
                 every { mockVedtakFattetKafkaProducer.send(any()) } throws Exception("Error producing to kafka")
 
-                val (success, failed) = vedtakService.publishUnpublishedVedtak().partition { it.isSuccess }
+                val (success, failed) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 1
                 success.size shouldBeEqualTo 0
 
                 verify(exactly = 1) { mockVedtakFattetKafkaProducer.send(any()) }
 
-                vedtakRepository.getUnpublishedVedtak().shouldNotBeEmpty()
+                vedtakRepository.getUnpublishedVedtakStatus().shouldNotBeEmpty()
             }
         }
     }

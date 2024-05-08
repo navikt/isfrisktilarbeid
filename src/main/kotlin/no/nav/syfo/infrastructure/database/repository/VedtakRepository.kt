@@ -152,7 +152,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             connection.commit()
         }
 
-    override fun getUnpublishedVedtak(): List<Vedtak> =
+    override fun getUnpublishedVedtakStatus(): List<Vedtak> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_UNPUBLISHED_VEDTAK_STATUS).use {
                 it.executeQuery().toList { toPVedtak() }

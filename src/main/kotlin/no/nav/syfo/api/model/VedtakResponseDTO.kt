@@ -28,7 +28,7 @@ data class VedtakResponseDTO private constructor(
                 fom = vedtak.fom,
                 tom = vedtak.tom,
                 document = vedtak.document,
-                veilederident = vedtak.getFattetStatus()?.veilederident ?: "",
+                veilederident = vedtak.getFattetStatus().veilederident,
                 ferdigbehandletAt = vedtak.getFerdigbehandletStatus()?.createdAt?.toLocalDateTime(),
                 ferdigbehandletBy = vedtak.getFerdigbehandletStatus()?.veilederident,
             )
