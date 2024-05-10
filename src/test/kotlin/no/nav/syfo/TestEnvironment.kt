@@ -61,6 +61,7 @@ fun testEnvironment() = Environment(
         serviceuserPassword = "servicepw",
     ),
     electorPath = "electorPath",
+    testPersonMapping = mapOf(),
 )
 
 fun testAppState() = ApplicationState(

@@ -43,6 +43,12 @@ data class Environment(
             serviceuserUsername = getEnvVar("SERVICEUSER_USERNAME"),
             serviceuserPassword = getEnvVar("SERVICEUSER_PASSWORD"),
         ),
+    val testPersonMapping: Map<String, String> = mapOf(
+        Pair("02437210880", getEnvVar("TEST_PERSON_1")),
+        Pair("25828796960", getEnvVar("TEST_PERSON_2")),
+        Pair("25439314829", getEnvVar("TEST_PERSON_3")),
+        Pair("03927396644", getEnvVar("TEST_PERSON_4")),
+    ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val clients: ClientsEnvironment =
         ClientsEnvironment(

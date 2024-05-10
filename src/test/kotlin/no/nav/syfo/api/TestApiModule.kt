@@ -37,6 +37,7 @@ fun Application.testApiModule(
         infotrygdService = InfotrygdService(
             pdlClient = externalMockEnvironment.pdlClient,
             mqSender = mockk<InfotrygdMQSender>(relaxed = true),
+            testPersonMapping = externalMockEnvironment.environment.testPersonMapping,
         ),
         vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
     )

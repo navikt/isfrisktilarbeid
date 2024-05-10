@@ -26,6 +26,7 @@ class InfotrygdServiceSpek : Spek({
     val infotrygdService = InfotrygdService(
         pdlClient = externalMockEnvironment.pdlClient,
         mqSender = mqSender,
+        testPersonMapping = externalMockEnvironment.environment.testPersonMapping,
     )
     val fixedTime = OffsetDateTime.of(
         LocalDateTime.of(2024, Month.MARCH, 1, 12, 30, 23),

@@ -68,6 +68,7 @@ spec:
           - "NAVident"
   envFrom:
     - secret: isfrisktilarbeid-serviceuser
+    - secret: isfrisktilarbeid-test-mapping
   kafka:
     pool: nav-dev
   observability:

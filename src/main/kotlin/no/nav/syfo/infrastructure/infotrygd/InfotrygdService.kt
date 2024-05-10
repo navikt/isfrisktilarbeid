@@ -13,11 +13,16 @@ import java.time.format.DateTimeFormatter
 class InfotrygdService(
     val pdlClient: PdlClient,
     val mqSender: InfotrygdMQSender,
+    val testPersonMapping: Map<String, String>,
 ) {
 
     suspend fun sendMessageToInfotrygd(
         vedtak: Vedtak,
     ) {
+        val personident = if (testPersonMapping.containsKey(vedtak.personident.value)) {
+            testPersonMapping[vedtak.personident.value]
+        } else vedtak.personident.value
+
         val infotrygdMessage = StringBuilder()
         // Format definert her: https://confluence.adeo.no/display/INFOTRYGD/IT30_MA+-+Meldinger+mellom+INFOTRYGD+OG+ARENA
         infotrygdMessage.append("K278M810")
@@ -31,7 +36,7 @@ class InfotrygdService(
             hentBostedskommune(vedtak)
                 ?: throw RuntimeException("Cannot send to Infotrygd: bostedskommune missing for vedtak ${vedtak.uuid}")
         )
-        infotrygdMessage.append(vedtak.personident.value)
+        infotrygdMessage.append(personident)
         infotrygdMessage.append("".padEnd(4))
         infotrygdMessage.append("O".padEnd(2))
         infotrygdMessage.append("K278M83000001")

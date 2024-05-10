@@ -74,6 +74,7 @@ fun main() {
     val infotrygdService = InfotrygdService(
         pdlClient = pdlClient,
         mqSender = InfotrygdMQSender(environment.mq),
+        testPersonMapping = environment.testPersonMapping,
     )
     val behandlermeldingProducer = BehandlermeldingProducer(
         producer = KafkaProducer(
