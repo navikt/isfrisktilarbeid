@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.JournalpostId
+import no.nav.syfo.domain.Status
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
@@ -287,21 +288,18 @@ class VedtakServiceSpek : Spek({
                 verify(exactly = 1) { mockVedtakStatusKafkaProducer.send(capture(producerRecordSlot)) }
 
                 val record = producerRecordSlot.captured.value()
-                record.uuid shouldBeEqualTo unpublishedVedtak.uuid
-                record.personident shouldBeEqualTo unpublishedVedtak.personident.value
-                record.veilederident shouldBeEqualTo unpublishedVedtak.getFattetStatus().veilederident
-                record.fom shouldBeEqualTo unpublishedVedtak.fom
-                record.tom shouldBeEqualTo unpublishedVedtak.tom
-                record.ferdigbehandletAt shouldBe null
-                record.ferdigbehandletBy shouldBe null
+                record.uuid shouldBeEqualTo publishedVedtak.uuid
+                record.personident shouldBeEqualTo publishedVedtak.personident.value
+                record.fom shouldBeEqualTo publishedVedtak.fom
+                record.tom shouldBeEqualTo publishedVedtak.tom
+                record.status shouldBe Status.FATTET
+                record.statusBy shouldBeEqualTo publishedVedtak.getFattetStatus().veilederident
             }
             it("publishes unpublished ferdigbehandlet vedtak to kafka") {
                 val unpublishedVedtak = vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
-                ).first
+                )
                 val (success, _) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
                 val publishedVedtak = success.first().getOrThrow()
                 database.getVedtakStatusPublishedAt(publishedVedtak.getFattetStatus().uuid) shouldNotBe null
@@ -325,10 +323,11 @@ class VedtakServiceSpek : Spek({
                 verify(exactly = 1) { mockVedtakStatusKafkaProducer.send(capture(producerRecordSlot)) }
 
                 val record = producerRecordSlot.captured.value()
-                record.uuid shouldBeEqualTo unpublishedVedtak.uuid
-                record.personident shouldBeEqualTo unpublishedVedtak.personident.value
-                record.ferdigbehandletAt shouldNotBe null
-                record.ferdigbehandletBy shouldBeEqualTo UserConstants.VEILEDER_IDENT
+                record.uuid shouldBeEqualTo publishedFerdigbehandletVedtak.uuid
+                record.personident shouldBeEqualTo publishedFerdigbehandletVedtak.personident.value
+                record.status shouldBe Status.FERDIG_BEHANDLET
+                record.statusBy shouldBeEqualTo publishedFerdigbehandletVedtak.getFerdigbehandletStatus()!!.veilederident
+                record.statusAt shouldNotBe null
             }
 
             it("publishes nothing when no unpublished varsel") {

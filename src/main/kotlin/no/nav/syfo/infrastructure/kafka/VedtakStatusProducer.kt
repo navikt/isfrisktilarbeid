@@ -1,6 +1,8 @@
 package no.nav.syfo.infrastructure.kafka
 
+import no.nav.syfo.domain.Status
 import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.domain.VedtakStatus
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -13,18 +15,20 @@ import java.util.*
 data class VedtakStatusRecord(
     val uuid: UUID,
     val personident: String,
-    val veilederident: String,
-    val createdAt: OffsetDateTime,
     val begrunnelse: String,
     val fom: LocalDate,
     val tom: LocalDate,
-    val ferdigbehandletAt: OffsetDateTime?,
-    val ferdigbehandletBy: String?,
+    val status: Status,
+    val statusAt: OffsetDateTime,
+    val statusBy: String,
 )
 
 class VedtakStatusProducer(private val producer: KafkaProducer<String, VedtakStatusRecord>) {
 
-    fun send(vedtak: Vedtak): Result<Vedtak> =
+    fun send(
+        vedtak: Vedtak,
+        vedtakStatus: VedtakStatus,
+    ): Result<Vedtak> =
         try {
             producer.send(
                 ProducerRecord(
@@ -33,13 +37,12 @@ class VedtakStatusProducer(private val producer: KafkaProducer<String, VedtakSta
                     VedtakStatusRecord(
                         uuid = vedtak.uuid,
                         personident = vedtak.personident.value,
-                        veilederident = vedtak.getFattetStatus().veilederident,
-                        createdAt = vedtak.createdAt,
                         begrunnelse = vedtak.begrunnelse,
                         fom = vedtak.fom,
                         tom = vedtak.tom,
-                        ferdigbehandletAt = vedtak.getFerdigbehandletStatus()?.createdAt,
-                        ferdigbehandletBy = vedtak.getFerdigbehandletStatus()?.veilederident,
+                        status = vedtakStatus.status,
+                        statusAt = vedtakStatus.createdAt,
+                        statusBy = vedtakStatus.veilederident,
                     )
                 )
             ).get()
