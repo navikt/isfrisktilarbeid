@@ -66,9 +66,6 @@ fun Route.registerVedtakEndpoints(
                     fom = requestDTO.fom,
                     tom = requestDTO.tom,
                     callId = callId,
-                    behandlerRef = requestDTO.behandlerRef,
-                    behandlerNavn = requestDTO.behandlerNavn,
-                    behandlerDocument = requestDTO.behandlerDocument,
                 )
 
                 call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = newVedtak))

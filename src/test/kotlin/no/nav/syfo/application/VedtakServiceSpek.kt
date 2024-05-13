@@ -6,7 +6,6 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.Vedtak
-import no.nav.syfo.generator.generateBehandlermelding
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtakVarselPublishedAt
@@ -32,8 +31,6 @@ import org.spekframework.spek2.style.specification.describe
 import java.util.concurrent.Future
 
 val vedtak = generateVedtak()
-val behandlermelding = generateBehandlermelding(behandlerRef = UserConstants.BEHANDLER_REF)
-val otherBehandlermelding = generateBehandlermelding(behandlerRef = UserConstants.BEHANDLER_REF)
 val journalpostId = JournalpostId("123")
 
 class VedtakServiceSpek : Spek({
@@ -84,11 +81,9 @@ class VedtakServiceSpek : Spek({
 
         describe("ferdigbehandler vedtak") {
             it("successfully ferdigbehandler a vedtak") {
-                val (createdVedtak, _) = vedtakRepository.createVedtak(
+                val createdVedtak = vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val persistedVedtak = vedtakRepository.getVedtak(createdVedtak.uuid)
@@ -107,8 +102,6 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -135,8 +128,6 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
                 val journalfortVedtak = vedtak.journalfor(mockedJournalpostId)
                 vedtakRepository.setJournalpostId(journalfortVedtak)
@@ -151,8 +142,6 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -168,8 +157,6 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -185,14 +172,10 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = otherBehandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
@@ -209,9 +192,7 @@ class VedtakServiceSpek : Spek({
                 val unpublishedVedtakVarsel = vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
-                ).first
+                )
                 vedtakRepository.setJournalpostId(unpublishedVedtakVarsel.copy(journalpostId = journalpostId))
                 return unpublishedVedtakVarsel
             }
@@ -250,8 +231,6 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 val (success, failed) = vedtakService.publishVedtakVarsel().partition { it.isSuccess }
@@ -291,9 +270,7 @@ class VedtakServiceSpek : Spek({
                 val unpublishedVedtak = vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
-                ).first
+                )
 
                 val (success, failed) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
@@ -328,8 +305,6 @@ class VedtakServiceSpek : Spek({
                 vedtakRepository.createVedtak(
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
-                    behandlermelding = behandlermelding,
-                    behandlermeldingPdf = UserConstants.PDF_BEHANDLER_MELDING,
                 )
 
                 every { mockVedtakFattetKafkaProducer.send(any()) } throws Exception("Error producing to kafka")

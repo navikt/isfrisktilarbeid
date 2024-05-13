@@ -1,6 +1,5 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.Behandlermelding
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.domain.VedtakStatus
@@ -10,9 +9,7 @@ interface IVedtakRepository {
     fun createVedtak(
         vedtak: Vedtak,
         vedtakPdf: ByteArray,
-        behandlermelding: Behandlermelding,
-        behandlermeldingPdf: ByteArray,
-    ): Pair<Vedtak, Behandlermelding>
+    ): Vedtak
 
     fun getVedtak(personident: Personident): List<Vedtak>
 
