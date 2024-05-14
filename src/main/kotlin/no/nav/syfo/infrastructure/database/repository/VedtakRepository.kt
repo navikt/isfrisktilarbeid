@@ -328,7 +328,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
         private const val GET_UNPUBLISHED_VEDTAK_STATUS =
             """
-                SELECT v.* FROM VEDTAK v INNER JOIN VEDTAK_STATUS s ON (v.id = s.vedtak_id) WHERE s.published_at IS NULL ORDER BY s.created_at ASC
+                SELECT DISTINCT v.* FROM VEDTAK v INNER JOIN VEDTAK_STATUS s ON (v.id = s.vedtak_id) WHERE s.published_at IS NULL ORDER BY v.created_at ASC
             """
 
         private const val SET_PUBLISHED_VEDTAK_STATUS =
