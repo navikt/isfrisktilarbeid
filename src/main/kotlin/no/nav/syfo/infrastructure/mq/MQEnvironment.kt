@@ -6,6 +6,7 @@ data class MQEnvironment(
     val mqPort: Int,
     val mqChannelName: String,
     val mqQueueName: String,
+    val mqQueueNameKvittering: String,
     val mqApplicationName: String = "isfrisktilarbeid",
     val serviceuserUsername: String,
     val serviceuserPassword: String,

@@ -94,6 +94,30 @@ fun TestDatabase.getVedtakVarselPublishedAt(
         }
     }
 
+fun TestDatabase.getVedtakInfotrygdKvittering(
+    vedtakUuid: UUID,
+): Boolean? =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryGetVedtakInfotrygdKvittering).use {
+            it.setString(1, vedtakUuid.toString())
+            it.executeQuery()
+                .toList { getBoolean("infotrygd_ok") }
+                .singleOrNull()
+        }
+    }
+
+fun TestDatabase.getVedtakInfotrygdFeilmelding(
+    vedtakUuid: UUID,
+): String? =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryGetVedtakInfotrygdFeilmelding).use {
+            it.setString(1, vedtakUuid.toString())
+            it.executeQuery()
+                .toList { getString("infotrygd_feilmelding") }
+                .singleOrNull()
+        }
+    }
+
 fun TestDatabase.getVedtakStatusPublishedAt(
     vedtakStatusUuid: UUID,
 ): OffsetDateTime? =
@@ -119,6 +143,16 @@ private const val queryGetPublishedInfotrygdAt =
 private const val queryGetVedtakVarselPublishedAt =
     """
         SELECT varsel_published_at FROM vedtak WHERE uuid = ?
+    """
+
+private const val queryGetVedtakInfotrygdKvittering =
+    """
+        SELECT infotrygd_ok FROM vedtak WHERE uuid = ?
+    """
+
+private const val queryGetVedtakInfotrygdFeilmelding =
+    """
+        SELECT infotrygd_feilmelding FROM vedtak WHERE uuid = ?
     """
 
 private const val queryGetVedtakStatusPublishedAt =

@@ -7,6 +7,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.BehandlermeldingService
+import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.behandler.DialogmeldingBehandlerClient
@@ -25,11 +26,15 @@ import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.*
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaEsyfovarselHendelseSerializer
+import no.nav.syfo.infrastructure.mq.InfotrygdKvitteringMQConsumer
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
+import no.nav.syfo.infrastructure.mq.connectionFactory
+import no.nav.syfo.infrastructure.mq.consumerForQueue
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
+import javax.jms.Session
 
 const val applicationPort = 8080
 
@@ -93,6 +98,7 @@ fun main() {
         dialogmeldingBehandlerClient = dialogmeldingBehandlerClient,
     )
 
+    lateinit var vedtakRepository: IVedtakRepository
     lateinit var vedtakService: VedtakService
 
     val applicationEngineEnvironment =
@@ -106,7 +112,7 @@ fun main() {
                 databaseModule(
                     databaseEnvironment = environment.database,
                 )
-                val vedtakRepository = VedtakRepository(database = applicationDatabase)
+                vedtakRepository = VedtakRepository(database = applicationDatabase)
                 vedtakService = VedtakService(
                     pdfService = pdfService,
                     vedtakRepository = vedtakRepository,
@@ -141,6 +147,25 @@ fun main() {
             vedtakService = vedtakService,
             behandlermeldingService = behandlermeldingService,
         )
+        if (!environment.mq.mqHostname.startsWith("mpls02")) {
+            launchBackgroundTask(
+                applicationState = applicationState,
+            ) {
+                connectionFactory(environment.mq).createConnection(
+                    environment.mq.serviceuserUsername,
+                    environment.mq.serviceuserPassword,
+                ).use { mqConnection ->
+                    mqConnection.start()
+                    val session = mqConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
+                    val blockingApplicationRunner = InfotrygdKvitteringMQConsumer(
+                        applicationState = applicationState,
+                        inputconsumer = session.consumerForQueue(environment.mq.mqQueueNameKvittering),
+                        vedtakRepository = vedtakRepository,
+                    )
+                    blockingApplicationRunner.run()
+                }
+            }
+        }
     }
 
     val server = embeddedServer(

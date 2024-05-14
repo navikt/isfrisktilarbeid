@@ -170,6 +170,20 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             connection.commit()
         }
 
+    override fun setInfotrygdKvitteringReceived(vedtak: Vedtak, ok: Boolean, feilmelding: String?) =
+        database.connection.use { connection ->
+            connection.prepareStatement(SET_INFOTRYGD_KVITTERING).use {
+                it.setBoolean(1, ok)
+                it.setString(2, feilmelding)
+                it.setString(3, vedtak.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+            connection.commit()
+        }
+
     private fun Connection.createPdf(pdf: ByteArray): PPdf =
         prepareStatement(CREATE_PDF).use {
             it.setString(1, UUID.randomUUID().toString())
@@ -334,6 +348,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         private const val SET_PUBLISHED_VEDTAK_STATUS =
             """
                 UPDATE VEDTAK_STATUS SET published_at=now() WHERE uuid=?
+            """
+
+        private const val SET_INFOTRYGD_KVITTERING =
+            """
+                UPDATE VEDTAK SET infotrygd_ok=?, infotrygd_feilmelding=?, updated_at=now() WHERE uuid=?
             """
     }
 }

@@ -56,6 +56,7 @@ fun testEnvironment() = Environment(
         mqPort = 1414,
         mqChannelName = "mqChannelName",
         mqQueueName = "mqQueueName",
+        mqQueueNameKvittering = "mqQueueNameKvittering",
         serviceuserUsername = "serviceuser",
         serviceuserPassword = "servicepw",
     ),

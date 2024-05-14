@@ -87,6 +87,8 @@ spec:
       value: "Q1_ISFRISKTILARBEID"
     - name: MQ_QUEUE_NAME
       value: "QA.Q1_278.IT00_N2_MLD_FRA_ARENA"
+    - name: MQ_QUEUE_NAME_KVITTERING
+      value: "QA.Q1_ISFRISKTILARBEID.IT00_N2_KVITT_TIL_MODIA"
     - name: ISTILGANGSKONTROLL_CLIENT_ID
       value: "dev-gcp.teamsykefravr.istilgangskontroll"
     - name: ISTILGANGSKONTROLL_URL

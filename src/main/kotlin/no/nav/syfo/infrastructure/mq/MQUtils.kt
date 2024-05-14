@@ -4,6 +4,8 @@ import com.ibm.mq.constants.CMQC.MQENC_NATIVE
 import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.jms.JmsFactoryFactory
 import com.ibm.msg.client.wmq.common.CommonConstants
+import javax.jms.MessageConsumer
+import javax.jms.Session
 
 private const val UTF_8_WITH_PUA = 1208
 
@@ -22,3 +24,5 @@ fun connectionFactory(env: MQEnvironment): javax.jms.ConnectionFactory =
         setStringProperty(CommonConstants.USERID, env.serviceuserUsername)
         setStringProperty(CommonConstants.PASSWORD, env.serviceuserPassword)
     }
+
+fun Session.consumerForQueue(queueName: String): MessageConsumer = createConsumer(createQueue(queueName))

@@ -39,6 +39,7 @@ data class Environment(
             mqPort = getEnvVar("MQGATEWAY_PORT", "1413").toInt(),
             mqChannelName = getEnvVar("MQGATEWAY_CHANNEL_NAME"),
             mqQueueName = getEnvVar("MQ_QUEUE_NAME"),
+            mqQueueNameKvittering = getEnvVar("MQ_QUEUE_NAME_KVITTERING"),
             serviceuserUsername = getEnvVar("SERVICEUSER_USERNAME"),
             serviceuserPassword = getEnvVar("SERVICEUSER_PASSWORD"),
         ),
