@@ -22,7 +22,7 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: .nais/kafka/isfrisktilarbeid-vedtak-fattet.yaml
+          RESOURCE: .nais/kafka/isfrisktilarbeid-vedtak-status.yaml
           VARS: .nais/kafka/dev.json
 
 
@@ -37,5 +37,5 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: prod-gcp
-          RESOURCE: .nais/kafka/isfrisktilarbeid-vedtak-fattet.yaml
+          RESOURCE: .nais/kafka/isfrisktilarbeid-vedtak-status.yaml
           VARS: .nais/kafka/prod.json
