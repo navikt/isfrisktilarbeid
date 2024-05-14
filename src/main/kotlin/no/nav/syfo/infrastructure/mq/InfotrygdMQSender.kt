@@ -35,11 +35,11 @@ class InfotrygdMQSender(
             val destination = context.createQueue("queue:///${env.mqQueueName}")
             (destination as MQDestination).targetClient = CommonConstants.WMQ_TARGET_DEST_MQ
             (destination as MQDestination).messageBodyStyle = CommonConstants.WMQ_MESSAGE_BODY_MQ
-
-            context.createProducer().send(destination, payload)
+            val message = context.createTextMessage(payload)
+            context.createProducer().send(destination, message)
+            log.info("Sent message to MQ, msgId: ${message.jmsMessageID}, payload: $payload")
         }
         Metrics.COUNT_MQ_PRODUCER_MESSAGE_SENT.increment()
-        log.info("Sent message to MQ: $payload")
     }
 }
 
