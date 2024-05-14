@@ -48,11 +48,11 @@ class InfotrygdKvitteringSpek : Spek({
             )
             val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
             val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(mockEsyfoVarselKafkaProducer)
-            val mockVedtakFattetKafkaProducer = mockk<KafkaProducer<String, VedtakFattetRecord>>()
-            val vedtakFattetProducer = VedtakFattetProducer(mockVedtakFattetKafkaProducer)
+            val mockVedtakStatusKafkaProducer = mockk<KafkaProducer<String, VedtakStatusRecord>>()
+            val vedtakStatusProducer = VedtakStatusProducer(mockVedtakStatusKafkaProducer)
             val vedtakProducer = VedtakProducer(
                 esyfovarselHendelseProducer = esyfovarselHendelseProducer,
-                vedtakFattetProducer = vedtakFattetProducer,
+                vedtakStatusProducer = vedtakStatusProducer,
             )
 
             val vedtakService = VedtakService(

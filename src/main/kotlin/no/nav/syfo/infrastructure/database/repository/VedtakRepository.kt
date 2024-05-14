@@ -352,7 +352,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
         private const val SET_INFOTRYGD_KVITTERING =
             """
-                UPDATE VEDTAK SET infotrygd_ok=?, infotrygd_feilmelding=? WHERE uuid=?
+                UPDATE VEDTAK SET infotrygd_ok=?, infotrygd_feilmelding=?, updated_at=now() WHERE uuid=?
             """
     }
 }
