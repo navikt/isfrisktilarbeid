@@ -2,11 +2,10 @@ apiVersion: kafka.nais.io/v1
 kind: Topic
 metadata:
   annotations:
-    kafka.nais.io/removeDataWhenResourceIsDeleted: "true"
     dcat.data.nav.no/title: "Vedtak relatert til friskmelding til arbeidsformidling for sykmeldte personer"
     dcat.data.nav.no/description: >-
-      Topic inneholder informasjon om vedtak relatert til friskmelding til arbeidsformidling for sykmeldte personer.
-  name: isfrisktilarbeid-vedtak-fattet
+      Topic inneholder informasjon om status på vedtak relatert til friskmelding til arbeidsformidling for sykmeldte personer.
+  name: isfrisktilarbeid-vedtak-status
   namespace: teamsykefravr
   labels:
     team: teamsykefravr

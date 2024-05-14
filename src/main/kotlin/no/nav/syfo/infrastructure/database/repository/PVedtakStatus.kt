@@ -12,6 +12,7 @@ data class PVedtakStatus(
     val createdAt: OffsetDateTime,
     val veilederident: String,
     val status: String,
+    val publishedAt: OffsetDateTime?,
 ) {
     fun toVedtakStatus() = VedtakStatus.createFromDatabase(
         uuid = uuid,

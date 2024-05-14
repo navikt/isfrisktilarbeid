@@ -1,6 +1,8 @@
 package no.nav.syfo.infrastructure.kafka
 
+import no.nav.syfo.domain.Status
 import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.domain.VedtakStatus
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -10,32 +12,37 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-data class VedtakFattetRecord(
+data class VedtakStatusRecord(
     val uuid: UUID,
     val personident: String,
-    val veilederident: String,
-    val createdAt: OffsetDateTime,
     val begrunnelse: String,
     val fom: LocalDate,
     val tom: LocalDate,
+    val status: Status,
+    val statusAt: OffsetDateTime,
+    val statusBy: String,
 )
 
-class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFattetRecord>) {
+class VedtakStatusProducer(private val producer: KafkaProducer<String, VedtakStatusRecord>) {
 
-    fun send(vedtak: Vedtak): Result<Vedtak> =
+    fun send(
+        vedtak: Vedtak,
+        vedtakStatus: VedtakStatus,
+    ): Result<Vedtak> =
         try {
             producer.send(
                 ProducerRecord(
                     TOPIC,
                     UUID.randomUUID().toString(),
-                    VedtakFattetRecord(
+                    VedtakStatusRecord(
                         uuid = vedtak.uuid,
                         personident = vedtak.personident.value,
-                        veilederident = vedtak.getFattetStatus().veilederident,
-                        createdAt = vedtak.createdAt,
                         begrunnelse = vedtak.begrunnelse,
                         fom = vedtak.fom,
                         tom = vedtak.tom,
+                        status = vedtakStatus.status,
+                        statusAt = vedtakStatus.createdAt,
+                        statusBy = vedtakStatus.veilederident,
                     )
                 )
             ).get()
@@ -46,13 +53,13 @@ class VedtakFattetProducer(private val producer: KafkaProducer<String, VedtakFat
         }
 
     companion object {
-        private const val TOPIC = "teamsykefravr.isfrisktilarbeid-vedtak-fattet"
-        private val log = LoggerFactory.getLogger(VedtakFattetProducer::class.java)
+        private const val TOPIC = "teamsykefravr.isfrisktilarbeid-vedtak-status"
+        private val log = LoggerFactory.getLogger(VedtakStatusProducer::class.java)
     }
 }
 
-class VedtakFattetRecordSerializer : Serializer<VedtakFattetRecord> {
+class VedtakStatusRecordSerializer : Serializer<VedtakStatusRecord> {
     private val mapper = configuredJacksonMapper()
-    override fun serialize(topic: String?, data: VedtakFattetRecord?): ByteArray =
+    override fun serialize(topic: String?, data: VedtakStatusRecord?): ByteArray =
         mapper.writeValueAsBytes(data)
 }

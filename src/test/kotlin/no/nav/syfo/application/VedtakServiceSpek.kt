@@ -5,14 +5,16 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.JournalpostId
+import no.nav.syfo.domain.Status
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
+import no.nav.syfo.infrastructure.database.getVedtakStatusPublishedAt
 import no.nav.syfo.infrastructure.database.getVedtakVarselPublishedAt
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.kafka.VedtakFattetProducer
-import no.nav.syfo.infrastructure.kafka.VedtakFattetRecord
+import no.nav.syfo.infrastructure.kafka.VedtakStatusProducer
+import no.nav.syfo.infrastructure.kafka.VedtakStatusRecord
 import no.nav.syfo.infrastructure.kafka.VedtakProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
@@ -48,11 +50,11 @@ class VedtakServiceSpek : Spek({
 
         val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
         val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(mockEsyfoVarselKafkaProducer)
-        val mockVedtakFattetKafkaProducer = mockk<KafkaProducer<String, VedtakFattetRecord>>()
-        val vedtakFattetProducer = VedtakFattetProducer(mockVedtakFattetKafkaProducer)
+        val mockVedtakStatusKafkaProducer = mockk<KafkaProducer<String, VedtakStatusRecord>>()
+        val vedtakStatusProducer = VedtakStatusProducer(mockVedtakStatusKafkaProducer)
         val vedtakProducer = VedtakProducer(
             esyfovarselHendelseProducer = esyfovarselHendelseProducer,
-            vedtakFattetProducer = vedtakFattetProducer,
+            vedtakStatusProducer = vedtakStatusProducer,
         )
 
         val vedtakService = VedtakService(
@@ -72,7 +74,7 @@ class VedtakServiceSpek : Spek({
         beforeEachTest {
             clearAllMocks()
             coEvery { mockEsyfoVarselKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
-            coEvery { mockVedtakFattetKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+            coEvery { mockVedtakStatusKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
         }
 
         afterEachTest {
@@ -264,7 +266,7 @@ class VedtakServiceSpek : Spek({
             }
         }
 
-        describe("Publish unpublished vedtak") {
+        describe("Publish unpublished vedtakstatus") {
 
             it("publishes unpublished vedtak to kafka") {
                 val unpublishedVedtak = vedtakRepository.createVedtak(
@@ -278,19 +280,54 @@ class VedtakServiceSpek : Spek({
 
                 val publishedVedtak = success.first().getOrThrow()
                 publishedVedtak.uuid.shouldBeEqualTo(unpublishedVedtak.uuid)
-                // publishedVedtak.publishedAt.shouldNotBeNull()
+                database.getVedtakStatusPublishedAt(publishedVedtak.getFattetStatus().uuid) shouldNotBe null
 
                 vedtakRepository.getUnpublishedVedtakStatus().shouldBeEmpty()
 
-                val producerRecordSlot = slot<ProducerRecord<String, VedtakFattetRecord>>()
-                verify(exactly = 1) { mockVedtakFattetKafkaProducer.send(capture(producerRecordSlot)) }
+                val producerRecordSlot = slot<ProducerRecord<String, VedtakStatusRecord>>()
+                verify(exactly = 1) { mockVedtakStatusKafkaProducer.send(capture(producerRecordSlot)) }
 
                 val record = producerRecordSlot.captured.value()
-                record.uuid shouldBeEqualTo unpublishedVedtak.uuid
-                record.personident shouldBeEqualTo unpublishedVedtak.personident.value
-                // record.veilederident shouldBeEqualTo unpublishedVedtak.veilederident
-                record.fom shouldBeEqualTo unpublishedVedtak.fom
-                record.tom shouldBeEqualTo unpublishedVedtak.tom
+                record.uuid shouldBeEqualTo publishedVedtak.uuid
+                record.personident shouldBeEqualTo publishedVedtak.personident.value
+                record.fom shouldBeEqualTo publishedVedtak.fom
+                record.tom shouldBeEqualTo publishedVedtak.tom
+                record.status shouldBe Status.FATTET
+                record.statusBy shouldBeEqualTo publishedVedtak.getFattetStatus().veilederident
+            }
+            it("publishes unpublished ferdigbehandlet vedtak to kafka") {
+                val unpublishedVedtak = vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                )
+                val (success, _) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
+                val publishedVedtak = success.first().getOrThrow()
+                database.getVedtakStatusPublishedAt(publishedVedtak.getFattetStatus().uuid) shouldNotBe null
+
+                vedtakService.ferdigbehandleVedtak(publishedVedtak, UserConstants.VEILEDER_IDENT)
+
+                clearAllMocks()
+                coEvery { mockVedtakStatusKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+
+                val (successFerdigbehandlet, failedFerdigbehandlet) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
+                failedFerdigbehandlet.size shouldBeEqualTo 0
+                successFerdigbehandlet.size shouldBeEqualTo 1
+
+                val publishedFerdigbehandletVedtak = successFerdigbehandlet.first().getOrThrow()
+                publishedFerdigbehandletVedtak.uuid.shouldBeEqualTo(unpublishedVedtak.uuid)
+                database.getVedtakStatusPublishedAt(publishedFerdigbehandletVedtak.getFerdigbehandletStatus()!!.uuid) shouldNotBe null
+
+                vedtakRepository.getUnpublishedVedtakStatus().shouldBeEmpty()
+
+                val producerRecordSlot = slot<ProducerRecord<String, VedtakStatusRecord>>()
+                verify(exactly = 1) { mockVedtakStatusKafkaProducer.send(capture(producerRecordSlot)) }
+
+                val record = producerRecordSlot.captured.value()
+                record.uuid shouldBeEqualTo publishedFerdigbehandletVedtak.uuid
+                record.personident shouldBeEqualTo publishedFerdigbehandletVedtak.personident.value
+                record.status shouldBe Status.FERDIG_BEHANDLET
+                record.statusBy shouldBeEqualTo publishedFerdigbehandletVedtak.getFerdigbehandletStatus()!!.veilederident
+                record.statusAt shouldNotBe null
             }
 
             it("publishes nothing when no unpublished varsel") {
@@ -298,7 +335,7 @@ class VedtakServiceSpek : Spek({
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 0
 
-                verify(exactly = 0) { mockVedtakFattetKafkaProducer.send(any()) }
+                verify(exactly = 0) { mockVedtakStatusKafkaProducer.send(any()) }
             }
 
             it("fails publishing when kafka-producer fails") {
@@ -307,13 +344,13 @@ class VedtakServiceSpek : Spek({
                     vedtakPdf = UserConstants.PDF_VEDTAK,
                 )
 
-                every { mockVedtakFattetKafkaProducer.send(any()) } throws Exception("Error producing to kafka")
+                every { mockVedtakStatusKafkaProducer.send(any()) } throws Exception("Error producing to kafka")
 
                 val (success, failed) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 1
                 success.size shouldBeEqualTo 0
 
-                verify(exactly = 1) { mockVedtakFattetKafkaProducer.send(any()) }
+                verify(exactly = 1) { mockVedtakStatusKafkaProducer.send(any()) }
 
                 vedtakRepository.getUnpublishedVedtakStatus().shouldNotBeEmpty()
             }

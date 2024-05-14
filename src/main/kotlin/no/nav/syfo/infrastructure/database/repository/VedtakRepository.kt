@@ -143,12 +143,18 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             connection.commit()
         }
 
-    override fun getUnpublishedVedtakStatus(): List<Vedtak> =
+    override fun getUnpublishedVedtakStatus(): List<Pair<Vedtak, VedtakStatus>> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_UNPUBLISHED_VEDTAK_STATUS).use {
                 it.executeQuery().toList { toPVedtak() }
-            }.map { pVedtak ->
-                pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
+            }.flatMap { pVedtak ->
+                val pVedtakStatusListe = connection.getVedtakStatus(pVedtak.id)
+                pVedtakStatusListe.filter { it.publishedAt == null }.map { pVedtakStatus ->
+                    Pair(
+                        pVedtak.toVedtak(pVedtakStatusListe),
+                        pVedtakStatus.toVedtakStatus(),
+                    )
+                }
             }
         }
 
@@ -322,7 +328,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
         private const val GET_UNPUBLISHED_VEDTAK_STATUS =
             """
-                SELECT v.* FROM VEDTAK v INNER JOIN VEDTAK_STATUS s ON (v.id = s.vedtak_id) WHERE s.status='FATTET' AND s.published_at IS NULL ORDER BY s.created_at ASC
+                SELECT DISTINCT v.* FROM VEDTAK v INNER JOIN VEDTAK_STATUS s ON (v.id = s.vedtak_id) WHERE s.published_at IS NULL ORDER BY v.created_at ASC
             """
 
         private const val SET_PUBLISHED_VEDTAK_STATUS =
@@ -365,4 +371,5 @@ internal fun ResultSet.toPVedtakStatus(): PVedtakStatus = PVedtakStatus(
     createdAt = getObject("created_at", OffsetDateTime::class.java),
     veilederident = getString("veilederident"),
     status = getString("status"),
+    publishedAt = getObject("published_at", OffsetDateTime::class.java),
 )
