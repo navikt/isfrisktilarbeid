@@ -18,11 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy isfrisktilarbeid-vedtak-fattet topic to dev
+      - name: Deploy isfrisktilarbeid-vedtak-status topic to dev
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: .nais/kafka/isfrisktilarbeid-vedtak-fattet.yaml
+          RESOURCE: .nais/kafka/isfrisktilarbeid-vedtak-status.yaml
           VARS: .nais/kafka/dev.json
 
 
@@ -33,9 +33,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy isfrisktilarbeid-vedtak-fattet topic to prod
+      - name: Deploy isfrisktilarbeid-vedtak-status topic to prod
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: prod-gcp
-          RESOURCE: .nais/kafka/isfrisktilarbeid-vedtak-fattet.yaml
+          RESOURCE: .nais/kafka/isfrisktilarbeid-vedtak-status.yaml
           VARS: .nais/kafka/prod.json
