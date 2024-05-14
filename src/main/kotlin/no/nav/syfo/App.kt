@@ -147,21 +147,23 @@ fun main() {
             vedtakService = vedtakService,
             behandlermeldingService = behandlermeldingService,
         )
-        launchBackgroundTask(
-            applicationState = applicationState,
-        ) {
-            connectionFactory(environment.mq).createConnection(
-                environment.mq.serviceuserUsername,
-                environment.mq.serviceuserPassword,
-            ).use { mqConnection ->
-                mqConnection.start()
-                val session = mqConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
-                val blockingApplicationRunner = InfotrygdKvitteringMQConsumer(
-                    applicationState = applicationState,
-                    inputconsumer = session.consumerForQueue(environment.mq.mqQueueNameKvittering),
-                    vedtakRepository = vedtakRepository,
-                )
-                blockingApplicationRunner.run()
+        if (!environment.mq.mqHostname.startsWith("mpls02")) {
+            launchBackgroundTask(
+                applicationState = applicationState,
+            ) {
+                connectionFactory(environment.mq).createConnection(
+                    environment.mq.serviceuserUsername,
+                    environment.mq.serviceuserPassword,
+                ).use { mqConnection ->
+                    mqConnection.start()
+                    val session = mqConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
+                    val blockingApplicationRunner = InfotrygdKvitteringMQConsumer(
+                        applicationState = applicationState,
+                        inputconsumer = session.consumerForQueue(environment.mq.mqQueueNameKvittering),
+                        vedtakRepository = vedtakRepository,
+                    )
+                    blockingApplicationRunner.run()
+                }
             }
         }
     }
