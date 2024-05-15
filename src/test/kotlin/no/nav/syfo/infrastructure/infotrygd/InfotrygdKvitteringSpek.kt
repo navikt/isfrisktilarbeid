@@ -65,6 +65,7 @@ class InfotrygdKvitteringSpek : Spek({
                 infotrygdService = InfotrygdService(
                     pdlClient = externalMockEnvironment.pdlClient,
                     mqSender = mockk<InfotrygdMQSender>(relaxed = true),
+                    testPersonMapping = mapOf(),
                 ),
                 vedtakProducer = vedtakProducer,
             )
