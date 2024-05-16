@@ -36,7 +36,7 @@ class InfotrygdMQSender(
             (destination as MQDestination).targetClient = CommonConstants.WMQ_TARGET_DEST_MQ
             (destination as MQDestination).messageBodyStyle = CommonConstants.WMQ_MESSAGE_BODY_MQ
             val message = context.createTextMessage(payload)
-            message.setStringProperty("JMS_IBM_MQMD_MsgId", "modiatest")
+            message.jmsCorrelationID = "modiatest"
             context.createProducer().send(destination, message)
             log.info("Sent message to MQ, msgId: ${message.jmsMessageID}, payload: $payload")
         }
