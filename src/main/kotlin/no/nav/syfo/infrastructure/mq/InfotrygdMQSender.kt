@@ -44,9 +44,8 @@ class InfotrygdMQSender(
                 customMessageId[i] = ((i % 8) + 1).toByte()
             }
             message.setObjectProperty(WMQConstants.JMS_IBM_MQMD_MSGID, customMessageId)
+            **/
             message.jmsCorrelationID = "modiatest2"
-
-            */
             context.createProducer().send(destination, message)
             log.info("Sent message to MQ, msgId: ${message.jmsMessageID}, correlationId: ${message.jmsCorrelationID} payload: $payload")
         }
