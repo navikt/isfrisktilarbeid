@@ -37,15 +37,14 @@ class InfotrygdMQSender(
             (destination as MQDestination).messageBodyStyle = CommonConstants.WMQ_MESSAGE_BODY_MQ
             (destination as MQDestination).setBooleanProperty(CommonConstants.WMQ_MQMD_WRITE_ENABLED, true)
             val message = context.createTextMessage(payload)
-           /*
-            val customMessageId = ByteArray(24)
-            for (i in 0..23) {
-                // Hex-string 010203040506070801020304050607080102030405060708
-                customMessageId[i] = ((i % 8) + 1).toByte()
+            val correlationId = ByteArray(24)
+            for (i in 0..15) {
+                correlationId[i] = 0
             }
-            message.setObjectProperty(WMQConstants.JMS_IBM_MQMD_MSGID, customMessageId)
-            **/
-            message.jmsCorrelationID = "modiatest2"
+            for (i in 16..23) {
+                correlationId[i] = ((i % 8) + 1).toByte()
+            }
+            message.jmsCorrelationIDAsBytes = correlationId
             context.createProducer().send(destination, message)
             log.info("Sent message to MQ, msgId: ${message.jmsMessageID}, correlationId: ${message.jmsCorrelationID} payload: $payload")
         }
