@@ -35,8 +35,9 @@ class InfotrygdMQSender(
             val destination = context.createQueue("queue:///${env.mqQueueName}")
             (destination as MQDestination).targetClient = CommonConstants.WMQ_TARGET_DEST_MQ
             (destination as MQDestination).messageBodyStyle = CommonConstants.WMQ_MESSAGE_BODY_MQ
+            (destination as MQDestination).setProperty("WMQ_MQMD_WRITE_ENABLED", "true")
             val message = context.createTextMessage(payload)
-            message.jmsMessageID = "modiatest1"
+            message.setObjectProperty("JMS_IBM_MQMD_MsgId", "modiatest1".toByteArray())
             message.jmsCorrelationID = "modiatest2"
             context.createProducer().send(destination, message)
             log.info("Sent message to MQ, msgId: ${message.jmsMessageID}, correlationId: ${message.jmsCorrelationID} payload: $payload")
