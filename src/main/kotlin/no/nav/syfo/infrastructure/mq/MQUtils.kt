@@ -1,7 +1,5 @@
 package no.nav.syfo.infrastructure.mq
 
-import com.ibm.mq.constants.CMQC.MQENC_NATIVE
-import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.jms.JmsFactoryFactory
 import com.ibm.msg.client.wmq.common.CommonConstants
 import javax.jms.MessageConsumer
@@ -17,9 +15,9 @@ fun connectionFactory(env: MQEnvironment): javax.jms.ConnectionFactory =
         setStringProperty(CommonConstants.WMQ_APPLICATIONNAME, env.mqApplicationName)
         setIntProperty(CommonConstants.WMQ_PORT, env.mqPort)
         setStringProperty(CommonConstants.WMQ_CHANNEL, env.mqChannelName)
-        setIntProperty(CommonConstants.WMQ_CCSID, UTF_8_WITH_PUA)
-        setIntProperty(JmsConstants.JMS_IBM_ENCODING, MQENC_NATIVE)
-        setIntProperty(JmsConstants.JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA)
+        // setIntProperty(CommonConstants.WMQ_CCSID, UTF_8_WITH_PUA)
+        // setIntProperty(JmsConstants.JMS_IBM_ENCODING, MQENC_NATIVE)
+        // setIntProperty(JmsConstants.JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA)
         setBooleanProperty(CommonConstants.USER_AUTHENTICATION_MQCSP, true)
         setStringProperty(CommonConstants.USERID, env.serviceuserUsername)
         setStringProperty(CommonConstants.PASSWORD, env.serviceuserPassword)
