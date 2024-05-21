@@ -43,7 +43,7 @@ class InfotrygdMQSender(
                 correlationId[i] = 0
             }
             for (i in 16..23) {
-                correlationId[i] = ((i % 8) + 1).toByte()
+                correlationId[i] = 'D'.toByte()
             }
             message.jmsCorrelationIDAsBytes = correlationId
             message.jmsReplyTo = kvitteringQueue
