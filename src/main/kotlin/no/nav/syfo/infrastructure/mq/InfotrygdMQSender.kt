@@ -33,6 +33,7 @@ class InfotrygdMQSender(
     ) {
         jmsContext!!.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
             val destination = context.createQueue("queue:///${env.mqQueueName}")
+            val kvitteringQueue = context.createQueue("queue:///${env.mqQueueNameKvittering}")
             (destination as MQDestination).targetClient = CommonConstants.WMQ_TARGET_DEST_MQ
             (destination as MQDestination).messageBodyStyle = CommonConstants.WMQ_MESSAGE_BODY_MQ
             (destination as MQDestination).setBooleanProperty(CommonConstants.WMQ_MQMD_WRITE_ENABLED, true)
@@ -45,6 +46,7 @@ class InfotrygdMQSender(
                 correlationId[i] = ((i % 8) + 1).toByte()
             }
             message.jmsCorrelationIDAsBytes = correlationId
+            message.jmsReplyTo = kvitteringQueue
             context.createProducer().send(destination, message)
             log.info("Sent message to MQ, msgId: ${message.jmsMessageID}, correlationId: ${message.jmsCorrelationID} payload: $payload")
         }
