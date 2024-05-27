@@ -7,6 +7,7 @@ import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.domain.Personident
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.nio.charset.Charset
 import javax.jms.Message
 import javax.jms.MessageConsumer
 
@@ -45,7 +46,7 @@ class InfotrygdKvitteringMQConsumer(
         }
 
         if (inputMessage != null) {
-            val inputMessageText = inputMessage.decodeToString()
+            val inputMessageText = inputMessage.toString(Charsets.US_ASCII)
             log.info("Kvittering fra Infotrygd: $inputMessageText")
             storeKvittering(inputMessageText)
         }
