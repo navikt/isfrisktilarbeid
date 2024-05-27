@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.mq
 
+import com.ibm.jms.JMSBytesMessage
 import kotlinx.coroutines.delay
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.application.IVedtakRepository
@@ -8,7 +9,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.jms.Message
 import javax.jms.MessageConsumer
-import javax.jms.TextMessage
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.infrastructure.mq")
 
@@ -37,7 +37,7 @@ class InfotrygdKvitteringMQConsumer(
 
     fun processKvitteringMessage(message: Message) {
         val inputMessageText = when (message) {
-            is TextMessage -> message.text
+            is JMSBytesMessage -> message.getBody(String::class.java)
             else -> {
                 log.warn("InfotrygdKvitteringMQConsumer message ignored, incoming message needs to be a byte message or text message")
                 null
