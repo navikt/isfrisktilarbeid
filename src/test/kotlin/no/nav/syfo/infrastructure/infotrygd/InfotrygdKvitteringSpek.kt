@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.infotrygd
 
+import com.ibm.jms.JMSBytesMessage
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.ExternalMockEnvironment
@@ -34,7 +35,7 @@ class InfotrygdKvitteringSpek : Spek({
 
             val vedtakRepository = VedtakRepository(database)
             val messageConsumer = mockk<MessageConsumer>(relaxed = true)
-            val incomingMessage = mockk<TextMessage>(relaxed = true)
+            val incomingMessage = mockk<JMSBytesMessage>(relaxed = true)
             val journalforingService = JournalforingService(
                 dokarkivClient = externalMockEnvironment.dokarkivClient,
                 pdlClient = externalMockEnvironment.pdlClient,
@@ -84,7 +85,7 @@ class InfotrygdKvitteringSpek : Spek({
 
                     val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}Jxxxxxxxx"
 
-                    every { incomingMessage.text } returns (kvittering)
+                    every { incomingMessage.getBody(String::class.java) } returns (kvittering)
 
                     infotrygdKvitteringMQConsumer.processKvitteringMessage(incomingMessage)
 
@@ -99,7 +100,7 @@ class InfotrygdKvitteringSpek : Spek({
 
                     val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}NFeilkode"
 
-                    every { incomingMessage.text } returns (kvittering)
+                    every { incomingMessage.getBody(String::class.java) } returns (kvittering)
 
                     infotrygdKvitteringMQConsumer.processKvitteringMessage(incomingMessage)
 
