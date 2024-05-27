@@ -7,7 +7,6 @@ import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.domain.Personident
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.nio.charset.Charset
 import javax.jms.Message
 import javax.jms.MessageConsumer
 
