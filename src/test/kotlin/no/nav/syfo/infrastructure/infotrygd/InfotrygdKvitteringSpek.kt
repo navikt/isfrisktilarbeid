@@ -83,9 +83,9 @@ class InfotrygdKvitteringSpek : Spek({
                         vedtakPdf = UserConstants.PDF_VEDTAK,
                     )
 
-                    val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}Jxxxxxxxx"
+                    val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}Jxxxxxxxx".toByteArray()
 
-                    every { incomingMessage.getBody(String::class.java) } returns (kvittering)
+                    every { incomingMessage.getBody(ByteArray::class.java) } returns (kvittering)
 
                     infotrygdKvitteringMQConsumer.processKvitteringMessage(incomingMessage)
 
@@ -98,9 +98,9 @@ class InfotrygdKvitteringSpek : Spek({
                         vedtakPdf = UserConstants.PDF_VEDTAK,
                     )
 
-                    val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}NFeilkode"
+                    val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}NFeilkode".toByteArray()
 
-                    every { incomingMessage.getBody(String::class.java) } returns (kvittering)
+                    every { incomingMessage.getBody(ByteArray::class.java) } returns (kvittering)
 
                     infotrygdKvitteringMQConsumer.processKvitteringMessage(incomingMessage)
 

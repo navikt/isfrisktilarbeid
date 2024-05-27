@@ -36,15 +36,16 @@ class InfotrygdKvitteringMQConsumer(
     }
 
     fun processKvitteringMessage(message: Message) {
-        val inputMessageText = when (message) {
-            is JMSBytesMessage -> message.getBody(String::class.java)
+        val inputMessage = when (message) {
+            is JMSBytesMessage -> message.getBody(ByteArray::class.java)
             else -> {
-                log.warn("InfotrygdKvitteringMQConsumer message ignored, incoming message needs to be a byte message or text message")
+                log.warn("InfotrygdKvitteringMQConsumer message ignored, incoming message needs to be a bytes message")
                 null
             }
         }
 
-        if (inputMessageText != null) {
+        if (inputMessage != null) {
+            val inputMessageText = inputMessage.decodeToString()
             log.info("Kvittering fra Infotrygd: $inputMessageText")
             storeKvittering(inputMessageText)
         }
