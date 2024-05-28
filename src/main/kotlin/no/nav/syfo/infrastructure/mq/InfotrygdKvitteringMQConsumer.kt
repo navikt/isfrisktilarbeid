@@ -59,7 +59,6 @@ class InfotrygdKvitteringMQConsumer(
             val inputMessageText5 = inputMessage.toString()
             log.info("Kvittering fra Infotrygd (): $inputMessageText5")
 
-
             storeKvittering(inputMessageText4)
         }
         message.acknowledge()
