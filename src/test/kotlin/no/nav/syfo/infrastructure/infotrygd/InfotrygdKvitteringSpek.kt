@@ -12,7 +12,7 @@ import no.nav.syfo.infrastructure.database.getVedtakInfotrygdKvittering
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.mq.EBCDIC
 import no.nav.syfo.infrastructure.mq.InfotrygdKvitteringMQConsumer
-import no.nav.syfo.infrastructure.mq.toCorrelationIdByteArray
+import no.nav.syfo.infrastructure.mq.asBytes
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -47,7 +47,7 @@ class InfotrygdKvitteringSpek : Spek({
                         vedtak = vedtak,
                         vedtakPdf = UserConstants.PDF_VEDTAK,
                     )
-                    val correlationId = vedtakRepository.getVedtakId(vedtak.uuid).toCorrelationIdByteArray()
+                    val correlationId = vedtak.uuid.asBytes()
 
                     val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}Jxxxxxxxx".toByteArray(EBCDIC)
 
@@ -64,7 +64,7 @@ class InfotrygdKvitteringSpek : Spek({
                         vedtak = vedtak,
                         vedtakPdf = UserConstants.PDF_VEDTAK,
                     )
-                    val correlationId = vedtakRepository.getVedtakId(vedtak.uuid).toCorrelationIdByteArray()
+                    val correlationId = vedtak.uuid.asBytes()
 
                     val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}NFeilkode".toByteArray(EBCDIC)
 

@@ -6,7 +6,9 @@ import no.nav.syfo.ApplicationState
 import no.nav.syfo.application.IVedtakRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
+import java.util.UUID
 import javax.jms.Message
 import javax.jms.MessageConsumer
 
@@ -47,7 +49,7 @@ class InfotrygdKvitteringMQConsumer(
 
         if (inputMessageBody != null) {
             val inputMessageText = inputMessageBody.toString(EBCDIC)
-            val correlationId = message.jmsCorrelationIDAsBytes.toString(Charsets.UTF_8).toInt()
+            val correlationId = message.jmsCorrelationIDAsBytes.toUUID()
             log.info("Kvittering fra Infotrygd (correlationId: $correlationId): $inputMessageText")
 
             storeKvittering(
@@ -60,7 +62,7 @@ class InfotrygdKvitteringMQConsumer(
 
     private fun storeKvittering(
         kvittering: String,
-        correlationId: Int,
+        correlationId: UUID,
     ) {
         /*
         https://confluence.adeo.no/display/INFOTRYGD/IT30_MA+-+Meldinger+mellom+INFOTRYGD+OG+ARENA#IT30_MAMeldingermellomINFOTRYGDOGARENA-K278M890%E2%80%93Kvitteringsmelding
@@ -98,5 +100,10 @@ class InfotrygdKvitteringMQConsumer(
         } else {
             log.error("Invalid kvittering received from Infotrygd: $kvittering")
         }
+    }
+
+    private fun ByteArray.toUUID() = ByteBuffer.wrap(this).let {
+        it.getLong() // skip first 8 bytes
+        UUID(it.getLong(), it.getLong())
     }
 }

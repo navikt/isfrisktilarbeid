@@ -18,6 +18,7 @@ import java.time.LocalDateTime
 import java.time.Month
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.UUID
 
 class InfotrygdServiceSpek : Spek({
     val externalMockEnvironment = ExternalMockEnvironment.instance
@@ -45,10 +46,10 @@ class InfotrygdServiceSpek : Spek({
                 createdAt = fixedTime,
             )
             runBlocking {
-                infotrygdService.sendMessageToInfotrygd(vedtak, 1)
+                infotrygdService.sendMessageToInfotrygd(vedtak)
             }
             val payloadSlot = slot<String>()
-            val correlationIdSlot = slot<Int>()
+            val correlationIdSlot = slot<UUID>()
             verify(exactly = 1) {
                 mqSender.sendToMQ(capture(payloadSlot), capture(correlationIdSlot))
             }
@@ -57,7 +58,7 @@ class InfotrygdServiceSpek : Spek({
                 .replace("PPPPPPPPPPP", UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
                 .replace("KKKK", UserConstants.KOMMUNE)
             payload shouldBeEqualTo expectedPayload
-            correlationIdSlot.captured shouldBeEqualTo 1
+            correlationIdSlot.captured shouldBeEqualTo vedtak.uuid
         }
         it("sends message to MQ for person in bydel") {
             val vedtak = generateVedtak().copy(
@@ -67,7 +68,7 @@ class InfotrygdServiceSpek : Spek({
                 createdAt = fixedTime,
             )
             runBlocking {
-                infotrygdService.sendMessageToInfotrygd(vedtak, 1)
+                infotrygdService.sendMessageToInfotrygd(vedtak)
             }
             val payloadSlot = slot<String>()
             verify(exactly = 1) {
@@ -88,7 +89,7 @@ class InfotrygdServiceSpek : Spek({
             )
             val thrown = assertFailsWith<RuntimeException> {
                 runBlocking {
-                    infotrygdService.sendMessageToInfotrygd(vedtak, 1)
+                    infotrygdService.sendMessageToInfotrygd(vedtak)
                 }
             }
             verify(exactly = 0) {

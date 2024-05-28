@@ -17,7 +17,6 @@ class InfotrygdService(
 
     suspend fun sendMessageToInfotrygd(
         vedtak: Vedtak,
-        correlationId: Int,
     ) {
         val infotrygdMessage = StringBuilder()
         // Format definert her: https://confluence.adeo.no/display/INFOTRYGD/IT30_MA+-+Meldinger+mellom+INFOTRYGD+OG+ARENA
@@ -45,7 +44,7 @@ class InfotrygdService(
 
         mqSender.sendToMQ(
             payload = infotrygdMessage.toString(),
-            correlationId = correlationId,
+            correlationId = vedtak.uuid,
         )
     }
 
