@@ -57,7 +57,8 @@ class VedtakService(
         val unpublished = vedtakRepository.getUnpublishedInfotrygd()
         return unpublished.map { vedtak ->
             runCatching {
-                infotrygdService.sendMessageToInfotrygd(vedtak)
+                val correlationId = vedtakRepository.getVedtakId(vedtak.uuid)
+                infotrygdService.sendMessageToInfotrygd(vedtak, correlationId)
                 vedtakRepository.setVedtakPublishedInfotrygd(vedtak)
                 vedtak
             }

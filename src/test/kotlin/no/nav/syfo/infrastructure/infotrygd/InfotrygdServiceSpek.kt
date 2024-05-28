@@ -34,7 +34,7 @@ class InfotrygdServiceSpek : Spek({
 
     beforeEachTest {
         clearAllMocks()
-        justRun { mqSender.sendToMQ(any()) }
+        justRun { mqSender.sendToMQ(any(), any()) }
     }
 
     describe(InfotrygdService::class.java.simpleName) {
@@ -45,17 +45,19 @@ class InfotrygdServiceSpek : Spek({
                 createdAt = fixedTime,
             )
             runBlocking {
-                infotrygdService.sendMessageToInfotrygd(vedtak)
+                infotrygdService.sendMessageToInfotrygd(vedtak, 1)
             }
             val payloadSlot = slot<String>()
+            val correlationIdSlot = slot<Int>()
             verify(exactly = 1) {
-                mqSender.sendToMQ(capture(payloadSlot))
+                mqSender.sendToMQ(capture(payloadSlot), capture(correlationIdSlot))
             }
             val payload = payloadSlot.captured
             val expectedPayload = getFileAsString("src/test/resources/infotrygd.txt")
                 .replace("PPPPPPPPPPP", UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
                 .replace("KKKK", UserConstants.KOMMUNE)
             payload shouldBeEqualTo expectedPayload
+            correlationIdSlot.captured shouldBeEqualTo 1
         }
         it("sends message to MQ for person in bydel") {
             val vedtak = generateVedtak().copy(
@@ -65,11 +67,11 @@ class InfotrygdServiceSpek : Spek({
                 createdAt = fixedTime,
             )
             runBlocking {
-                infotrygdService.sendMessageToInfotrygd(vedtak)
+                infotrygdService.sendMessageToInfotrygd(vedtak, 1)
             }
             val payloadSlot = slot<String>()
             verify(exactly = 1) {
-                mqSender.sendToMQ(capture(payloadSlot))
+                mqSender.sendToMQ(capture(payloadSlot), any())
             }
             val payload = payloadSlot.captured
             val expectedPayload = getFileAsString("src/test/resources/infotrygd.txt")
@@ -86,11 +88,11 @@ class InfotrygdServiceSpek : Spek({
             )
             val thrown = assertFailsWith<RuntimeException> {
                 runBlocking {
-                    infotrygdService.sendMessageToInfotrygd(vedtak)
+                    infotrygdService.sendMessageToInfotrygd(vedtak, 1)
                 }
             }
             verify(exactly = 0) {
-                mqSender.sendToMQ(any())
+                mqSender.sendToMQ(any(), any())
             }
             thrown.message!! shouldStartWith "Cannot send to Infotrygd: bostedskommune missing"
         }

@@ -15,6 +15,10 @@ interface IVedtakRepository {
 
     fun getVedtak(uuid: UUID): Vedtak
 
+    fun getVedtak(id: Int): Vedtak?
+
+    fun getVedtakId(uuid: UUID): Int
+
     fun getUnpublishedInfotrygd(): List<Vedtak>
 
     fun setVedtakPublishedInfotrygd(vedtak: Vedtak)

@@ -30,18 +30,24 @@ class InfotrygdMQSender(
 
     fun sendToMQ(
         payload: String,
+        correlationId: Int,
     ) {
         jmsContext!!.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
             val destination = context.createQueue("queue:///${env.mqQueueName}")
+            val kvitteringQueue = context.createQueue("queue:///${env.mqQueueNameKvittering}")
             (destination as MQDestination).targetClient = CommonConstants.WMQ_TARGET_DEST_MQ
             (destination as MQDestination).messageBodyStyle = CommonConstants.WMQ_MESSAGE_BODY_MQ
             val message = context.createTextMessage(payload)
+            message.jmsCorrelationIDAsBytes = correlationId.toCorrelationIdByteArray()
+            message.jmsReplyTo = kvitteringQueue
             context.createProducer().send(destination, message)
-            log.info("Sent message to MQ, msgId: ${message.jmsMessageID}, payload: $payload")
+            log.info("Sent message to MQ, msgId: ${message.jmsMessageID}, correlationId: ${message.jmsCorrelationID}")
         }
         Metrics.COUNT_MQ_PRODUCER_MESSAGE_SENT.increment()
     }
 }
+
+fun Int.toCorrelationIdByteArray() = toString().padStart(24, '0').toByteArray()
 
 private class Metrics {
     companion object {

@@ -36,6 +36,21 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             }
         }
 
+    override fun getVedtakId(uuid: UUID): Int =
+        database.connection.use { connection ->
+            connection.getPVedtak(uuid).id
+        }
+
+    override fun getVedtak(id: Int): Vedtak? =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_VEDTAK_FOR_ID).use {
+                it.setInt(1, id)
+                it.executeQuery().toList { toPVedtak() }.singleOrNull()
+            }?.let { pVedtak ->
+                pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
+            }
+        }
+
     private fun Connection.getPVedtak(uuid: UUID): PVedtak =
         this.prepareStatement(GET_VEDTAK_FOR_UUID).use {
             it.setString(1, uuid.toString())
@@ -278,6 +293,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         private const val GET_VEDTAK_FOR_UUID =
             """
                 SELECT * FROM VEDTAK WHERE uuid=?
+            """
+
+        private const val GET_VEDTAK_FOR_ID =
+            """
+                SELECT * FROM VEDTAK WHERE id=?
             """
 
         private const val GET_UNPUBLISHED_INFOTRYGD =
