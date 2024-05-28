@@ -7,6 +7,7 @@ import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.domain.Personident
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.nio.charset.Charset
 import javax.jms.Message
 import javax.jms.MessageConsumer
 
@@ -45,9 +46,21 @@ class InfotrygdKvitteringMQConsumer(
         }
 
         if (inputMessage != null) {
-            val inputMessageText = inputMessage.toString(Charsets.US_ASCII)
-            log.info("Kvittering fra Infotrygd: $inputMessageText")
-            storeKvittering(inputMessageText)
+            val inputMessageText0 = inputMessage.toString(Charsets.ISO_8859_1)
+            log.info("Kvittering fra Infotrygd (iso-8859): $inputMessageText0")
+            val inputMessageText1 = inputMessage.toString(Charsets.UTF_8)
+            log.info("Kvittering fra Infotrygd (utf-8): $inputMessageText1")
+            val inputMessageText2 = inputMessage.toString(Charsets.UTF_16)
+            log.info("Kvittering fra Infotrygd (utf-16): $inputMessageText2")
+            val inputMessageText3 = inputMessage.toString(Charset.forName("Cp1047"))
+            log.info("Kvittering fra Infotrygd (Cp1047): $inputMessageText3")
+            val inputMessageText4 = inputMessage.toString(Charsets.US_ASCII)
+            log.info("Kvittering fra Infotrygd (ascii): $inputMessageText4")
+            val inputMessageText5 = inputMessage.toString()
+            log.info("Kvittering fra Infotrygd (): $inputMessageText5")
+
+
+            storeKvittering(inputMessageText4)
         }
         message.acknowledge()
     }
