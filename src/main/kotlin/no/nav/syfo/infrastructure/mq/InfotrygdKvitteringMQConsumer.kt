@@ -12,7 +12,7 @@ import javax.jms.Message
 import javax.jms.MessageConsumer
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.infrastructure.mq")
-private val EBCDIC = Charset.forName("Cp1047") // encoding som brukes av Infotrygd (z/OS)
+val EBCDIC = Charset.forName("Cp1047") // encoding som brukes av Infotrygd (z/OS)
 
 class InfotrygdKvitteringMQConsumer(
     val applicationState: ApplicationState,

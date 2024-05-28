@@ -16,6 +16,7 @@ import no.nav.syfo.infrastructure.kafka.*
 import no.nav.syfo.infrastructure.kafka.VedtakProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
+import no.nav.syfo.infrastructure.mq.EBCDIC
 import no.nav.syfo.infrastructure.mq.InfotrygdKvitteringMQConsumer
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
@@ -83,7 +84,7 @@ class InfotrygdKvitteringSpek : Spek({
                         vedtakPdf = UserConstants.PDF_VEDTAK,
                     )
 
-                    val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}Jxxxxxxxx".toByteArray()
+                    val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}Jxxxxxxxx".toByteArray(EBCDIC)
 
                     every { incomingMessage.getBody(ByteArray::class.java) } returns (kvittering)
 
@@ -98,7 +99,7 @@ class InfotrygdKvitteringSpek : Spek({
                         vedtakPdf = UserConstants.PDF_VEDTAK,
                     )
 
-                    val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}NFeilkode".toByteArray()
+                    val kvittering = "xxxxxxxxxxxxxxxxxxxMODIA1111113052024150000${UserConstants.ARBEIDSTAKER_PERSONIDENT.value}NFeilkode".toByteArray(EBCDIC)
 
                     every { incomingMessage.getBody(ByteArray::class.java) } returns (kvittering)
 
