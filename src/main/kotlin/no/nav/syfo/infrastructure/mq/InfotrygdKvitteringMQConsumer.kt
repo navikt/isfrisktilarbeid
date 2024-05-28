@@ -12,11 +12,13 @@ import javax.jms.Message
 import javax.jms.MessageConsumer
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.infrastructure.mq")
+private val EBCDIC = Charset.forName("Cp1047") // encoding som brukes av Infotrygd (z/OS)
 
 class InfotrygdKvitteringMQConsumer(
     val applicationState: ApplicationState,
     val inputconsumer: MessageConsumer,
     val vedtakRepository: IVedtakRepository,
+    val testKvitteringPersonMapping: Map<String, String> = emptyMap(),
 ) {
 
     suspend fun run() {
@@ -37,7 +39,7 @@ class InfotrygdKvitteringMQConsumer(
     }
 
     fun processKvitteringMessage(message: Message) {
-        val inputMessage = when (message) {
+        val inputMessageBody = when (message) {
             is JMSBytesMessage -> message.getBody(ByteArray::class.java)
             else -> {
                 log.warn("InfotrygdKvitteringMQConsumer message ignored, incoming message needs to be a bytes message")
@@ -45,26 +47,20 @@ class InfotrygdKvitteringMQConsumer(
             }
         }
 
-        if (inputMessage != null) {
-            val inputMessageText0 = inputMessage.toString(Charsets.ISO_8859_1)
-            log.info("Kvittering fra Infotrygd (iso-8859): $inputMessageText0")
-            val inputMessageText1 = inputMessage.toString(Charsets.UTF_8)
-            log.info("Kvittering fra Infotrygd (utf-8): $inputMessageText1")
-            val inputMessageText2 = inputMessage.toString(Charsets.UTF_16)
-            log.info("Kvittering fra Infotrygd (utf-16): $inputMessageText2")
-            val inputMessageText3 = inputMessage.toString(Charset.forName("Cp1047"))
-            log.info("Kvittering fra Infotrygd (Cp1047): $inputMessageText3")
-            val inputMessageText4 = inputMessage.toString(Charsets.US_ASCII)
-            log.info("Kvittering fra Infotrygd (ascii): $inputMessageText4")
-            val inputMessageText5 = inputMessage.toString()
-            log.info("Kvittering fra Infotrygd (): $inputMessageText5")
+        if (inputMessageBody != null) {
+            val inputMessageText = inputMessageBody.toString(EBCDIC)
+            val correlationId = message.jmsCorrelationID
+            log.info("Kvittering fra Infotrygd ($correlationId): $inputMessageText")
 
-            storeKvittering(inputMessageText4)
+            storeKvittering(
+                kvittering = inputMessageText,
+                correlationId = correlationId,
+            )
         }
         message.acknowledge()
     }
 
-    private fun storeKvittering(kvittering: String) {
+    private fun storeKvittering(kvittering: String, correlationId: String) {
         /*
         https://confluence.adeo.no/display/INFOTRYGD/IT30_MA+-+Meldinger+mellom+INFOTRYGD+OG+ARENA#IT30_MAMeldingermellomINFOTRYGDOGARENA-K278M890%E2%80%93Kvitteringsmelding
 
@@ -88,7 +84,8 @@ class InfotrygdKvitteringMQConsumer(
             if (!ok) {
                 feilmelding = kvittering.substring(55)
             }
-            val vedtak = vedtakRepository.getVedtak(Personident(personident)).firstOrNull()
+            val mappedPersonident = testKvitteringPersonMapping[personident] ?: personident
+            val vedtak = vedtakRepository.getVedtak(Personident(mappedPersonident)).firstOrNull()
             if (vedtak == null) {
                 log.warn("Kvittering received from Infotrygd, but no vedtak found: $kvittering")
             } else {

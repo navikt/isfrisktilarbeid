@@ -49,6 +49,12 @@ data class Environment(
         Pair("25439314829", getEnvVar("TEST_PERSON_3")),
         Pair("03927396644", getEnvVar("TEST_PERSON_4")),
     ),
+    val testKvitteringPersonMapping: Map<String, String> = mapOf(
+        Pair(getEnvVar("TEST_PERSON_1"), "02437210880"),
+        Pair(getEnvVar("TEST_PERSON_2"), "25828796960"),
+        Pair(getEnvVar("TEST_PERSON_3"), "25439314829"),
+        Pair(getEnvVar("TEST_PERSON_4"), "03927396644"),
+    ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val clients: ClientsEnvironment =
         ClientsEnvironment(

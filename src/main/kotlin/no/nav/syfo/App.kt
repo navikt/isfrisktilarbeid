@@ -162,6 +162,7 @@ fun main() {
                         applicationState = applicationState,
                         inputconsumer = session.consumerForQueue(environment.mq.mqQueueNameKvittering),
                         vedtakRepository = vedtakRepository,
+                        testKvitteringPersonMapping = environment.testKvitteringPersonMapping,
                     )
                     blockingApplicationRunner.run()
                 }
