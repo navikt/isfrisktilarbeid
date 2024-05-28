@@ -62,6 +62,7 @@ fun testEnvironment() = Environment(
     ),
     electorPath = "electorPath",
     testPersonMapping = mapOf(),
+    testKvitteringPersonMapping = mapOf(),
 )
 
 fun testAppState() = ApplicationState(
