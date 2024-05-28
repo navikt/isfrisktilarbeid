@@ -50,7 +50,7 @@ class InfotrygdKvitteringMQConsumer(
         if (inputMessageBody != null) {
             val inputMessageText = inputMessageBody.toString(EBCDIC)
             val correlationId = message.jmsCorrelationIDAsBytes.toUUID()
-            log.info("Kvittering fra Infotrygd (correlationId: $correlationId): $inputMessageText")
+            log.info("Kvittering mottatt fra Infotrygd med correlationId: $correlationId")
 
             storeKvittering(
                 kvittering = inputMessageText,
@@ -89,7 +89,7 @@ class InfotrygdKvitteringMQConsumer(
                 feilmelding = kvittering.substring(55)
             }
             if (vedtak == null || vedtak.personident.value != personident) {
-                log.warn("Kvittering received from Infotrygd, but no vedtak found for correlationId $correlationId: $kvittering")
+                log.error("Kvittering received from Infotrygd, but no vedtak found for correlationId $correlationId")
             } else {
                 vedtakRepository.setInfotrygdKvitteringReceived(
                     vedtak = vedtak,
