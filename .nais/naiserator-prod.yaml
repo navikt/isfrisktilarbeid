@@ -45,7 +45,7 @@ spec:
       external:
         - host: "mpls02.adeo.no"
           ports:
-            - port: 1413
+            - port: 1414
         - host: "login.microsoftonline.com"
         - host: "pdl-api.prod-fss-pub.nais.io"
         - host: "dokarkiv.prod-fss-pub.nais.io"
