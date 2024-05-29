@@ -18,6 +18,7 @@ import java.time.LocalDateTime
 import java.time.Month
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.UUID
 
 class InfotrygdServiceSpek : Spek({
     val externalMockEnvironment = ExternalMockEnvironment.instance
@@ -34,7 +35,7 @@ class InfotrygdServiceSpek : Spek({
 
     beforeEachTest {
         clearAllMocks()
-        justRun { mqSender.sendToMQ(any()) }
+        justRun { mqSender.sendToMQ(any(), any()) }
     }
 
     describe(InfotrygdService::class.java.simpleName) {
@@ -48,14 +49,16 @@ class InfotrygdServiceSpek : Spek({
                 infotrygdService.sendMessageToInfotrygd(vedtak)
             }
             val payloadSlot = slot<String>()
+            val correlationIdSlot = slot<UUID>()
             verify(exactly = 1) {
-                mqSender.sendToMQ(capture(payloadSlot))
+                mqSender.sendToMQ(capture(payloadSlot), capture(correlationIdSlot))
             }
             val payload = payloadSlot.captured
             val expectedPayload = getFileAsString("src/test/resources/infotrygd.txt")
                 .replace("PPPPPPPPPPP", UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
                 .replace("KKKK", UserConstants.KOMMUNE)
             payload shouldBeEqualTo expectedPayload
+            correlationIdSlot.captured shouldBeEqualTo vedtak.uuid
         }
         it("sends message to MQ for person in bydel") {
             val vedtak = generateVedtak().copy(
@@ -69,7 +72,7 @@ class InfotrygdServiceSpek : Spek({
             }
             val payloadSlot = slot<String>()
             verify(exactly = 1) {
-                mqSender.sendToMQ(capture(payloadSlot))
+                mqSender.sendToMQ(capture(payloadSlot), any())
             }
             val payload = payloadSlot.captured
             val expectedPayload = getFileAsString("src/test/resources/infotrygd.txt")
@@ -90,7 +93,7 @@ class InfotrygdServiceSpek : Spek({
                 }
             }
             verify(exactly = 0) {
-                mqSender.sendToMQ(any())
+                mqSender.sendToMQ(any(), any())
             }
             thrown.message!! shouldStartWith "Cannot send to Infotrygd: bostedskommune missing"
         }

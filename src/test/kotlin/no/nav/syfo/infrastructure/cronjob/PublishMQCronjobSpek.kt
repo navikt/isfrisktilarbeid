@@ -42,7 +42,7 @@ class PublishMQCronjobSpek : Spek({
             beforeEachTest {
                 database.dropData()
                 clearAllMocks()
-                justRun { mqSenderMock.sendToMQ(any()) }
+                justRun { mqSenderMock.sendToMQ(any(), any()) }
             }
 
             describe("Cronjob sender lagrede vedtak") {
@@ -69,14 +69,14 @@ class PublishMQCronjobSpek : Spek({
                     database.getPublishedInfotrygdAt(vedtak.uuid) shouldNotBe null
 
                     val payloadSlot = slot<String>()
-                    verify(exactly = 1) { mqSenderMock.sendToMQ(capture(payloadSlot)) }
+                    verify(exactly = 1) { mqSenderMock.sendToMQ(capture(payloadSlot), any()) }
 
                     // vedtak should not be sent again when already published
                     clearMocks(mqSenderMock)
                     runBlocking {
                         publishMQCronjob.run()
                     }
-                    verify(exactly = 0) { mqSenderMock.sendToMQ(any()) }
+                    verify(exactly = 0) { mqSenderMock.sendToMQ(any(), any()) }
                 }
             }
         }

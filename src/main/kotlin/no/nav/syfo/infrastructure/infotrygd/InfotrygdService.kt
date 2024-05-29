@@ -44,6 +44,7 @@ class InfotrygdService(
 
         mqSender.sendToMQ(
             payload = infotrygdMessage.toString(),
+            correlationId = vedtak.uuid,
         )
     }
 
