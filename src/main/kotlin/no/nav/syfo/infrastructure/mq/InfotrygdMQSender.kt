@@ -17,10 +17,7 @@ class InfotrygdMQSender(
     val env: MQEnvironment,
 ) {
 
-    private val jmsContext: JMSContext? = if (env.mqHostname.startsWith("mpls02"))
-        null
-    else
-        connectionFactory(env).createContext()
+    private val jmsContext: JMSContext = connectionFactory(env).createContext()
 
     protected fun finalize() {
         try {
@@ -34,7 +31,7 @@ class InfotrygdMQSender(
         payload: String,
         correlationId: UUID,
     ) {
-        jmsContext!!.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
+        jmsContext.createContext(JMSContext.AUTO_ACKNOWLEDGE).use { context ->
             val destination = context.createQueue("queue:///${env.mqQueueName}")
             val kvitteringQueue = context.createQueue("queue:///${env.mqQueueNameKvittering}")
             (destination as MQDestination).targetClient = CommonConstants.WMQ_TARGET_DEST_MQ
