@@ -61,6 +61,8 @@ fun testEnvironment() = Environment(
         serviceuserPassword = "servicepw",
     ),
     electorPath = "electorPath",
+    testPersonMapping = mapOf(),
+    testKvitteringPersonMapping = mapOf(),
 )
 
 fun testAppState() = ApplicationState(
