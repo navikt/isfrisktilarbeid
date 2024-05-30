@@ -19,6 +19,7 @@ class InfotrygdKvitteringMQConsumer(
     val applicationState: ApplicationState,
     val inputconsumer: MessageConsumer,
     val vedtakRepository: IVedtakRepository,
+    val testKvitteringPersonMapping: Map<String, String> = emptyMap(),
 ) {
 
     suspend fun run() {
@@ -82,13 +83,14 @@ class InfotrygdKvitteringMQConsumer(
         val vedtak = vedtakRepository.getVedtak(correlationId)
         if (kvittering.length >= 55) {
             val personident = kvittering.substring(43, 54)
+            val mappedPersonident = testKvitteringPersonMapping[personident] ?: personident
             val feilkode = kvittering[54]
             val ok = feilkode == 'J'
             var feilmelding: String? = null
             if (!ok) {
                 feilmelding = kvittering.substring(55)
             }
-            if (vedtak == null || vedtak.personident.value != personident) {
+            if (vedtak == null || vedtak.personident.value != mappedPersonident) {
                 log.error("Kvittering received from Infotrygd, but no vedtak found for correlationId $correlationId")
             } else {
                 vedtakRepository.setInfotrygdKvitteringReceived(
