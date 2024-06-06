@@ -11,6 +11,8 @@ import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollPlugin
+import no.nav.syfo.infrastructure.metric.COUNT_FATT_VEDTAK_FAILURE
+import no.nav.syfo.infrastructure.metric.COUNT_FATT_VEDTAK_SUCCESS
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getNAVIdent
 import no.nav.syfo.util.getPersonident
@@ -57,6 +59,7 @@ fun Route.registerVedtakEndpoints(
 
             if (vedtakService.getVedtak(personident).any { !it.isFerdigbehandlet() }) {
                 call.respond(HttpStatusCode.Conflict, "Finnes allerede et åpent vedtak for personen")
+                COUNT_FATT_VEDTAK_FAILURE.increment()
             } else {
                 val newVedtak = vedtakService.createVedtak(
                     personident = personident,
@@ -69,6 +72,7 @@ fun Route.registerVedtakEndpoints(
                 )
 
                 call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = newVedtak))
+                COUNT_FATT_VEDTAK_SUCCESS.increment()
             }
         }
         put(ferdigbehandlingPath) {
