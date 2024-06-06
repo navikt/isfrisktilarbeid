@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.kafka
 import no.nav.syfo.domain.Status
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.domain.VedtakStatus
+import no.nav.syfo.domain.asProducerRecordKey
 import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -33,7 +34,7 @@ class VedtakStatusProducer(private val producer: KafkaProducer<String, VedtakSta
             producer.send(
                 ProducerRecord(
                     TOPIC,
-                    UUID.randomUUID().toString(),
+                    vedtak.personident.asProducerRecordKey(),
                     VedtakStatusRecord(
                         uuid = vedtak.uuid,
                         personident = vedtak.personident.value,
