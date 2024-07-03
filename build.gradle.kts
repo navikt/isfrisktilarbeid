@@ -8,12 +8,12 @@ object Version {
     const val HIKARI = "5.1.0"
     const val POSTGRES = "42.7.2"
     const val POSTGRES_EMBEDDED = "2.0.6"
-    const val LOGBACK = "1.4.14"
+    const val LOGBACK = "1.5.6"
     const val LOGSTASH_ENCODER = "7.4"
-    const val MICROMETER_REGISTRY = "1.12.2"
+    const val MICROMETER_REGISTRY = "1.12.7"
     const val JACKSON_DATATYPE = "2.16.1"
     const val KAFKA = "3.7.0"
-    const val KTOR = "2.3.8"
+    const val KTOR = "2.3.12"
     const val MQ = "9.3.5.0"
     const val SPEK = "2.0.19"
     const val MOCKK = "1.13.9"
@@ -22,7 +22,7 @@ object Version {
 }
 
 plugins {
-    kotlin("jvm") version "1.9.24"
+    kotlin("jvm") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
@@ -82,7 +82,7 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 tasks {
