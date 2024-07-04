@@ -11,21 +11,9 @@ import java.nio.ByteBuffer
 import java.util.UUID
 import javax.jms.JMSContext
 
-private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.infrastructure.mq")
-
-class InfotrygdMQSender(
-    val env: MQEnvironment,
-) {
+class InfotrygdMQSender(private val env: MQEnvironment) {
 
     private val jmsContext: JMSContext = connectionFactory(env).createContext()
-
-    protected fun finalize() {
-        try {
-            jmsContext!!.close()
-        } catch (exc: Exception) {
-            log.warn("Got exception when closing MQ-connection", exc)
-        }
-    }
 
     fun sendToMQ(
         payload: String,
@@ -43,6 +31,10 @@ class InfotrygdMQSender(
             log.info("Sent message to MQ, msgId: ${message.jmsMessageID}, correlationId: ${message.jmsCorrelationID}")
         }
         Metrics.COUNT_MQ_PRODUCER_MESSAGE_SENT.increment()
+    }
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(InfotrygdMQSender::class.java)
     }
 }
 
