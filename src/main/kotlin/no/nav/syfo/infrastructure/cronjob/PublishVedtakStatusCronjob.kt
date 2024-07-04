@@ -2,7 +2,7 @@ package no.nav.syfo.infrastructure.cronjob
 
 import no.nav.syfo.application.VedtakService
 
-class PublishVedtakCronjob(
+class PublishVedtakStatusCronjob(
     private val vedtakService: VedtakService,
 ) : Cronjob {
     override val initialDelayMinutes: Long = 3
