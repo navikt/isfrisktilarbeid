@@ -47,6 +47,7 @@ class VedtakStatusProducer(private val producer: KafkaProducer<String, VedtakSta
                     )
                 )
             ).get()
+            log.info("Published vedtak with uuid ${vedtak.uuid} and status ${vedtakStatus.status} to topic")
             Result.success(vedtak)
         } catch (e: Exception) {
             log.error("Exception was thrown when attempting to publish fattet vedtak: ${e.message}")

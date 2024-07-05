@@ -39,8 +39,8 @@ fun launchCronjobs(
         PublishBehandlermeldingCronjob(behandlermeldingService = behandlermeldingService)
     cronjobs.add(publishBehandlermeldingCronjob)
 
-    val publishVedtakCronjob = PublishVedtakCronjob(vedtakService)
-    cronjobs.add(publishVedtakCronjob)
+    val publishVedtakStatusCronjob = PublishVedtakStatusCronjob(vedtakService)
+    cronjobs.add(publishVedtakStatusCronjob)
 
     cronjobs.forEach {
         launchBackgroundTask(
