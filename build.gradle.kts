@@ -3,24 +3,24 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val FLYWAY = "10.15.2"
+val FLYWAY = "10.17.0"
 val HIKARI = "5.1.0"
 val POSTGRES = "42.7.3"
 val POSTGRES_EMBEDDED = "2.0.7"
 val LOGBACK = "1.5.6"
 val LOGSTASH_ENCODER = "7.4"
-val MICROMETER_REGISTRY = "1.12.7"
+val MICROMETER_REGISTRY = "1.13.2"
 val JACKSON_DATATYPE = "2.17.2"
 val KAFKA = "3.7.0"
 val KTOR = "2.3.12"
-val MQ = "9.3.5.1"
+val MQ = "9.4.0.0"
 val SPEK = "2.0.19"
 val MOCKK = "1.13.12"
 val NIMBUS_JOSE_JWT = "9.40"
 val KLUENT = "1.73"
 
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.0.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
