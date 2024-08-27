@@ -28,7 +28,7 @@ class Database(
             maximumPoolSize = config.poolSize
             minimumIdle = 1
             isAutoCommit = false
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            transactionIsolation = "TRANSACTION_READ_COMMITTED"
             metricsTrackerFactory = PrometheusMetricsTrackerFactory()
             validate()
         }
