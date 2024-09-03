@@ -53,7 +53,7 @@ data class Environment(
         Pair(getEnvVar("TEST_PERSON_1"), "02437210880"),
         Pair(getEnvVar("TEST_PERSON_2"), "25828796960"),
         Pair(getEnvVar("TEST_PERSON_3"), "25439314829"),
-        Pair(getEnvVar("TEST_PERSON_4"), "03927396644"),
+        Pair(getEnvVar("TEST_PERSON_4"), "28048706403"),
     ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val clients: ClientsEnvironment =
