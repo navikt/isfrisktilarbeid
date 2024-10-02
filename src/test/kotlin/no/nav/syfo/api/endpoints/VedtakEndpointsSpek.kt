@@ -14,6 +14,7 @@ import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
+import no.nav.syfo.domain.InfotrygdStatus
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
@@ -132,6 +133,7 @@ object VedtakEndpointsSpek : Spek({
                             vedtakResponse[0].tom shouldBeEqualTo vedtakTom
                             vedtakResponse[0].personident shouldBeEqualTo personident.value
                             vedtakResponse[0].veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
+                            vedtakResponse[0].infotrygdStatus shouldBeEqualTo InfotrygdStatus.IKKE_SENDT.name
 
                             val vedtakPdf = database.getVedtakPdf(vedtakUuid = vedtakResponse[0].uuid)?.pdf!!
                             vedtakPdf.size shouldBeEqualTo PDF_VEDTAK.size

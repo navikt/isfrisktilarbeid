@@ -58,3 +58,11 @@ fun <T> ResultSet.toList(mapper: ResultSet.() -> T) = mutableListOf<T>().apply {
         add(mapper())
     }
 }
+
+fun ResultSet.getNullableBoolean(columnLabel: String): Boolean? {
+    val boolean = this.getBoolean(columnLabel)
+    if (this.wasNull()) {
+        return null
+    }
+    return boolean
+}

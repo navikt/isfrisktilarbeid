@@ -7,6 +7,7 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
+import no.nav.syfo.domain.InfotrygdStatus
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getPublishedInfotrygdAt
@@ -16,6 +17,7 @@ import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.shouldBe
+import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -60,6 +62,8 @@ class PublishMQCronjobSpek : Spek({
                             callId = "callId",
                         )
                     }
+
+                    vedtak.infotrygdStatus shouldBeEqualTo InfotrygdStatus.IKKE_SENDT
                     database.getPublishedInfotrygdAt(vedtak.uuid) shouldBe null
 
                     runBlocking {
@@ -77,6 +81,9 @@ class PublishMQCronjobSpek : Spek({
                         publishMQCronjob.run()
                     }
                     verify(exactly = 0) { mqSenderMock.sendToMQ(any(), any()) }
+
+                    val publishedVedtak = vedtakService.getVedtak(personident = UserConstants.ARBEIDSTAKER_PERSONIDENT).first()
+                    publishedVedtak.infotrygdStatus shouldBeEqualTo InfotrygdStatus.KVITTERING_MANGLER
                 }
             }
         }
