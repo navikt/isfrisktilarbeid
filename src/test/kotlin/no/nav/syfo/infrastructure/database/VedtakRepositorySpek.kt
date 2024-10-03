@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.database
 import io.ktor.server.testing.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.domain.InfotrygdStatus
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import org.amshove.kluent.shouldBe
@@ -43,6 +44,7 @@ class VedtakRepositorySpek : Spek({
                 vedtak.fom shouldBeEqualTo persistedVedtak.fom
                 vedtak.tom shouldBeEqualTo persistedVedtak.tom
                 vedtak.journalpostId shouldBeEqualTo persistedVedtak.journalpostId
+                vedtak.infotrygdStatus shouldBeEqualTo InfotrygdStatus.IKKE_SENDT
             }
         }
     }

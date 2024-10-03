@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.getNullableBoolean
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
 import no.nav.syfo.util.nowUTC
@@ -381,6 +382,7 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     pdfId = getInt("pdf_id"),
     publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
     varselPublishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),
+    infotrygdOk = getNullableBoolean("infotrygd_ok"),
 )
 
 internal fun ResultSet.toPVedtakStatus(): PVedtakStatus = PVedtakStatus(

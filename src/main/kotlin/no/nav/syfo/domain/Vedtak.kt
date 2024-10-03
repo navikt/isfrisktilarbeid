@@ -15,6 +15,7 @@ data class Vedtak private constructor(
     val tom: LocalDate,
     val journalpostId: JournalpostId?,
     val statusListe: List<VedtakStatus>,
+    val infotrygdStatus: InfotrygdStatus,
 ) {
     constructor(
         personident: Personident,
@@ -38,6 +39,7 @@ data class Vedtak private constructor(
                 status = Status.FATTET,
             )
         ),
+        infotrygdStatus = InfotrygdStatus.IKKE_SENDT,
     )
 
     fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
@@ -66,6 +68,7 @@ data class Vedtak private constructor(
             tom: LocalDate,
             journalpostId: JournalpostId?,
             vedtakStatus: List<VedtakStatus>,
+            infotrygdStatus: InfotrygdStatus,
         ) = Vedtak(
             uuid = uuid,
             personident = personident,
@@ -76,6 +79,7 @@ data class Vedtak private constructor(
             tom = tom,
             journalpostId = journalpostId,
             statusListe = vedtakStatus,
+            infotrygdStatus = infotrygdStatus,
         )
     }
 }

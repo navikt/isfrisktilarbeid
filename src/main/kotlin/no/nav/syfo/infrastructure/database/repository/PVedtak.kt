@@ -1,9 +1,6 @@
 package no.nav.syfo.infrastructure.database.repository
 
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.JournalpostId
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Vedtak
+import no.nav.syfo.domain.*
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -22,6 +19,7 @@ data class PVedtak(
     val pdfId: Int,
     val publishedInfotrygdAt: OffsetDateTime?,
     val varselPublishedAt: OffsetDateTime?,
+    val infotrygdOk: Boolean?,
 ) {
     fun toVedtak(statusListe: List<PVedtakStatus>): Vedtak = Vedtak.createFromDatabase(
         uuid = uuid,
@@ -35,5 +33,6 @@ data class PVedtak(
         vedtakStatus = statusListe.map {
             it.toVedtakStatus()
         },
+        infotrygdStatus = InfotrygdStatus.create(publishedInfotrygdAt, infotrygdOk),
     )
 }

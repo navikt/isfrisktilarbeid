@@ -17,6 +17,7 @@ data class VedtakResponseDTO private constructor(
     val document: List<DocumentComponent>,
     val ferdigbehandletAt: LocalDateTime?,
     val ferdigbehandletBy: String?,
+    val infotrygdStatus: String,
 ) {
     companion object {
         fun createFromVedtak(vedtak: Vedtak): VedtakResponseDTO =
@@ -31,6 +32,7 @@ data class VedtakResponseDTO private constructor(
                 veilederident = vedtak.getFattetStatus().veilederident,
                 ferdigbehandletAt = vedtak.getFerdigbehandletStatus()?.createdAt?.toLocalDateTime(),
                 ferdigbehandletBy = vedtak.getFerdigbehandletStatus()?.veilederident,
+                infotrygdStatus = vedtak.infotrygdStatus.name,
             )
     }
 }

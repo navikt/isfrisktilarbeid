@@ -94,18 +94,6 @@ fun TestDatabase.getVedtakVarselPublishedAt(
         }
     }
 
-fun TestDatabase.getVedtakInfotrygdKvittering(
-    vedtakUuid: UUID,
-): Boolean? =
-    this.connection.use { connection ->
-        connection.prepareStatement(queryGetVedtakInfotrygdKvittering).use {
-            it.setString(1, vedtakUuid.toString())
-            it.executeQuery()
-                .toList { getBoolean("infotrygd_ok") }
-                .singleOrNull()
-        }
-    }
-
 fun TestDatabase.getVedtakInfotrygdFeilmelding(
     vedtakUuid: UUID,
 ): String? =
