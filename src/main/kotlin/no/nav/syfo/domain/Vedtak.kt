@@ -44,6 +44,8 @@ data class Vedtak private constructor(
 
     fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
 
+    fun sendTilInfotrygd(): Vedtak = this.copy(infotrygdStatus = InfotrygdStatus.KVITTERING_MANGLER)
+
     fun addVedtakstatus(vedtakStatus: VedtakStatus): Vedtak = this.copy(
         statusListe = this.statusListe.toMutableList().also {
             it.add(vedtakStatus)
@@ -51,6 +53,8 @@ data class Vedtak private constructor(
     )
 
     fun isFerdigbehandlet(): Boolean = statusListe.any { it.status == Status.FERDIG_BEHANDLET }
+
+    fun isSendtTilInfotrygd(): Boolean = infotrygdStatus !== InfotrygdStatus.IKKE_SENDT
 
     fun getFattetStatus(): VedtakStatus = statusListe.first { it.status == Status.FATTET }
 

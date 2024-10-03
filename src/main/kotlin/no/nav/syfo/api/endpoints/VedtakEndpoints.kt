@@ -20,6 +20,7 @@ const val vedtakUUIDParam = "vedtakUUID"
 const val apiBasePath = "/api/internad/v1/frisktilarbeid"
 const val vedtakPath = "/vedtak"
 const val ferdigbehandlingPath = "/vedtak/{$vedtakUUIDParam}/ferdigbehandling"
+const val sendInfotrygdPath = "/vedtak/{$vedtakUUIDParam}/send-infotrygd"
 
 private const val API_ACTION = "access vedtak for person"
 
@@ -85,6 +86,19 @@ fun Route.registerVedtakEndpoints(
                     veilederident = navIdent,
                 )
                 call.respond(HttpStatusCode.OK, VedtakResponseDTO.createFromVedtak(vedtak = ferdigbehandletVedtak))
+            }
+        }
+        put(sendInfotrygdPath) {
+            val vedtakUUID = UUID.fromString(this.call.parameters[vedtakUUIDParam])
+            val personident = call.getPersonident()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+            val vedtak = vedtakService.getVedtak(personident).firstOrNull { it.uuid == vedtakUUID } ?: throw IllegalArgumentException("Fant ikke vedtak med uuid=$vedtakUUID")
+
+            if (vedtak.isSendtTilInfotrygd()) {
+                call.respond(HttpStatusCode.BadRequest, "Vedtak med uuid=$vedtakUUID er allerede sendt til Infotrygd")
+            } else {
+                val sendtVedtak = vedtakService.sendVedtakToInfotrygd(vedtak = vedtak)
+                call.respond(HttpStatusCode.OK, VedtakResponseDTO.createFromVedtak(vedtak = sendtVedtak))
             }
         }
     }

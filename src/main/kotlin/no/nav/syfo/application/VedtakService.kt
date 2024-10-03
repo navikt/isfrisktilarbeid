@@ -53,15 +53,19 @@ class VedtakService(
         }
     }
 
-    suspend fun sendVedtakToInfotrygd(): List<Result<Vedtak>> {
+    suspend fun sendUnpublishedVedtakToInfotrygd(): List<Result<Vedtak>> {
         val unpublished = vedtakRepository.getUnpublishedInfotrygd()
         return unpublished.map { vedtak ->
             runCatching {
-                infotrygdService.sendMessageToInfotrygd(vedtak)
-                vedtakRepository.setVedtakPublishedInfotrygd(vedtak)
-                vedtak
+                sendVedtakToInfotrygd(vedtak)
             }
         }
+    }
+
+    internal suspend fun sendVedtakToInfotrygd(vedtak: Vedtak): Vedtak {
+        infotrygdService.sendMessageToInfotrygd(vedtak)
+        vedtakRepository.setVedtakPublishedInfotrygd(vedtak)
+        return vedtak.sendTilInfotrygd()
     }
 
     suspend fun journalforVedtak(): List<Result<Vedtak>> {

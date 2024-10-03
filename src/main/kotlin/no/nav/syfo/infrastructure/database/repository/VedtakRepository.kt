@@ -283,7 +283,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
         private const val GET_UNPUBLISHED_INFOTRYGD =
             """
-                SELECT * FROM VEDTAK WHERE published_infotrygd_at IS NULL
+                SELECT * FROM VEDTAK WHERE published_infotrygd_at IS NULL AND created_at < now() - interval '10 minutes'
             """
 
         private const val SET_PUBLISHED_INFOTRYGD =

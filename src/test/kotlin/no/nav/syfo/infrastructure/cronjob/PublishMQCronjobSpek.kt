@@ -12,6 +12,7 @@ import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getPublishedInfotrygdAt
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
+import no.nav.syfo.infrastructure.database.setVedtakCreatedAt
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
@@ -22,6 +23,7 @@ import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 class PublishMQCronjobSpek : Spek({
 
@@ -48,9 +50,26 @@ class PublishMQCronjobSpek : Spek({
             }
 
             describe("Cronjob sender lagrede vedtak") {
-                it("Sender lagret vedtak") {
-                    val fom = LocalDate.now()
-                    val tom = LocalDate.now().plusDays(30)
+                val fom = LocalDate.now()
+                val tom = LocalDate.now().plusDays(30)
+
+                it("Sender ikke vedtak lagret nå") {
+                    runBlocking {
+                        vedtakService.createVedtak(
+                            personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                            veilederident = UserConstants.VEILEDER_IDENT,
+                            begrunnelse = "begrunnelse",
+                            document = generateDocumentComponent("begrunnelse"),
+                            fom = fom,
+                            tom = tom,
+                            callId = "callId",
+                        )
+                        publishMQCronjob.run()
+                    }
+
+                    verify(exactly = 0) { mqSenderMock.sendToMQ(any(), any()) }
+                }
+                it("Sender vedtak lagret for 10 minutter siden") {
                     val vedtak = runBlocking {
                         vedtakService.createVedtak(
                             personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
@@ -62,8 +81,9 @@ class PublishMQCronjobSpek : Spek({
                             callId = "callId",
                         )
                     }
+                    database.setVedtakCreatedAt(OffsetDateTime.now().minusMinutes(10), vedtak.uuid)
 
-                    vedtak.infotrygdStatus shouldBeEqualTo InfotrygdStatus.IKKE_SENDT
+                    vedtak.isSendtTilInfotrygd() shouldBeEqualTo false
                     database.getPublishedInfotrygdAt(vedtak.uuid) shouldBe null
 
                     runBlocking {
@@ -83,6 +103,7 @@ class PublishMQCronjobSpek : Spek({
                     verify(exactly = 0) { mqSenderMock.sendToMQ(any(), any()) }
 
                     val publishedVedtak = vedtakService.getVedtak(personident = UserConstants.ARBEIDSTAKER_PERSONIDENT).first()
+                    publishedVedtak.isSendtTilInfotrygd() shouldBeEqualTo true
                     publishedVedtak.infotrygdStatus shouldBeEqualTo InfotrygdStatus.KVITTERING_MANGLER
                 }
             }

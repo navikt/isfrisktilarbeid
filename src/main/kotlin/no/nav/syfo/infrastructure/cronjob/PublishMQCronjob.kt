@@ -8,5 +8,5 @@ class PublishMQCronjob(
     override val initialDelayMinutes: Long = 2
     override val intervalDelayMinutes: Long = 1
 
-    override suspend fun run() = vedtakService.sendVedtakToInfotrygd()
+    override suspend fun run() = vedtakService.sendUnpublishedVedtakToInfotrygd()
 }

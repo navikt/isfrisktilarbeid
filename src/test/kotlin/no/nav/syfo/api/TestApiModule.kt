@@ -14,6 +14,7 @@ import no.nav.syfo.infrastructure.pdf.PdfService
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
+    infotrygdMQSender: InfotrygdMQSender,
 ) {
     val database = externalMockEnvironment.database
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
@@ -36,7 +37,7 @@ fun Application.testApiModule(
         journalforingService = journalforingService,
         infotrygdService = InfotrygdService(
             pdlClient = externalMockEnvironment.pdlClient,
-            mqSender = mockk<InfotrygdMQSender>(relaxed = true),
+            mqSender = infotrygdMQSender,
         ),
         vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
     )
