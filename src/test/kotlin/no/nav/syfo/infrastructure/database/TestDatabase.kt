@@ -118,6 +118,23 @@ fun TestDatabase.getVedtakStatusPublishedAt(
         }
     }
 
+fun TestDatabase.setVedtakCreatedAt(createdAt: OffsetDateTime, uuid: UUID) {
+    this.connection.use { connection ->
+        connection.prepareStatement(
+            """
+            UPDATE vedtak
+            SET created_at = ?
+            WHERE uuid = ?
+            """
+        ).use {
+            it.setObject(1, createdAt)
+            it.setString(2, uuid.toString())
+            it.execute()
+        }
+        connection.commit()
+    }
+}
+
 private const val queryGetVedtak =
     """
         SELECT * FROM vedtak WHERE uuid = ?
