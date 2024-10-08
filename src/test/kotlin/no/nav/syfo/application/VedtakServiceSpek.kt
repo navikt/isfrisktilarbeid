@@ -4,6 +4,7 @@ import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.domain.InfotrygdStatus
 import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.Status
 import no.nav.syfo.domain.Vedtak
@@ -51,6 +52,7 @@ class VedtakServiceSpek : Spek({
         val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
         val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(mockEsyfoVarselKafkaProducer)
         val mockVedtakStatusKafkaProducer = mockk<KafkaProducer<String, VedtakStatusRecord>>()
+        val infotrygdMQSender = mockk<InfotrygdMQSender>(relaxed = true)
         val vedtakStatusProducer = VedtakStatusProducer(mockVedtakStatusKafkaProducer)
         val vedtakProducer = VedtakProducer(
             esyfovarselHendelseProducer = esyfovarselHendelseProducer,
@@ -66,7 +68,7 @@ class VedtakServiceSpek : Spek({
             journalforingService = journalforingService,
             infotrygdService = InfotrygdService(
                 pdlClient = externalMockEnvironment.pdlClient,
-                mqSender = mockk<InfotrygdMQSender>(relaxed = true),
+                mqSender = infotrygdMQSender,
             ),
             vedtakProducer = vedtakProducer,
         )
@@ -353,6 +355,38 @@ class VedtakServiceSpek : Spek({
                 verify(exactly = 1) { mockVedtakStatusKafkaProducer.send(any()) }
 
                 vedtakRepository.getUnpublishedVedtakStatus().shouldNotBeEmpty()
+            }
+        }
+
+        describe("sendVedtakToInfotrygd") {
+            it("sends vedtak to infotrygd, updates vedtak and returns result with updated vedtak") {
+                vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                )
+                justRun { infotrygdMQSender.sendToMQ(any(), any()) }
+
+                val result = runBlocking { vedtakService.sendVedtakToInfotrygd(vedtak = vedtak) }
+
+                verify(exactly = 1) { infotrygdMQSender.sendToMQ(any(), any()) }
+                result.isSuccess.shouldBeTrue()
+                val publishedVedtak = result.getOrThrow()
+                publishedVedtak.infotrygdStatus shouldBeEqualTo InfotrygdStatus.KVITTERING_MANGLER
+
+                val persistedVedtak = vedtakRepository.getVedtak(publishedVedtak.uuid)
+                persistedVedtak.infotrygdStatus shouldBeEqualTo InfotrygdStatus.KVITTERING_MANGLER
+            }
+            it("returns failure when sending vedtak to infotrygd fails") {
+                vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                )
+                every { infotrygdMQSender.sendToMQ(any(), any()) } throws Exception("Error sending to infotrygd")
+
+                val result = runBlocking { vedtakService.sendVedtakToInfotrygd(vedtak = vedtak) }
+
+                verify(exactly = 1) { infotrygdMQSender.sendToMQ(any(), any()) }
+                result.isFailure.shouldBeTrue()
             }
         }
     }

@@ -66,7 +66,7 @@ class VedtakService(
     internal suspend fun sendVedtakToInfotrygd(vedtak: Vedtak): Result<Vedtak> = runCatching {
         infotrygdService.sendMessageToInfotrygd(vedtak)
         vedtakRepository.setVedtakPublishedInfotrygd(vedtak)
-        vedtak
+        vedtak.sendTilInfotrygd()
     }
 
     suspend fun journalforVedtak(): List<Result<Vedtak>> {
