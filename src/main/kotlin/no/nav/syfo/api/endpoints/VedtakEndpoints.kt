@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.delay
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.application.VedtakService
@@ -45,6 +46,7 @@ fun Route.registerVedtakEndpoints(
         }
 
         post(vedtakPath) {
+            val log = call.application.log
             val requestDTO = call.receive<VedtakRequestDTO>()
             if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
                 throw IllegalArgumentException("Vedtak can't have an empty begrunnelse or document")
@@ -67,8 +69,13 @@ fun Route.registerVedtakEndpoints(
                     tom = requestDTO.tom,
                     callId = callId,
                 )
+                vedtakService.sendVedtakToInfotrygd(vedtak = newVedtak)
+                delay(1000) // Wait for infotrygd kvittering to be consumed
 
-                call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = newVedtak))
+                val vedtak = vedtakService.getVedtak(uuid = newVedtak.uuid)
+                log.info("Created vedtak with infotrygd status: ${vedtak.infotrygdStatus}")
+
+                call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = vedtak))
             }
         }
         put(ferdigbehandlingPath) {
