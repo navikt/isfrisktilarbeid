@@ -61,10 +61,6 @@ data class Environment(
                 baseUrl = getEnvVar("DOKARKIV_URL"),
                 clientId = getEnvVar("DOKARKIV_CLIENT_ID"),
             ),
-            isdialogmelding = ClientEnvironment(
-                baseUrl = getEnvVar("ISDIALOGMELDING_URL"),
-                clientId = getEnvVar("ISDIALOGMELDING_CLIENT_ID"),
-            ),
         ),
 )
 

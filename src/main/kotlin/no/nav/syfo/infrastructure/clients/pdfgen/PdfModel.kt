@@ -34,15 +34,6 @@ sealed class PdfModel private constructor(
         documentComponents = documentComponents,
     )
 
-    class BehandlermeldingPdfModel(
-        mottakerNavn: String,
-        documentComponents: List<DocumentComponent>,
-    ) : PdfModel(
-        mottakerFodselsnummer = null,
-        mottakerNavn = mottakerNavn,
-        documentComponents = documentComponents,
-    )
-
     companion object {
         private val formatter = DateTimeFormatter.ofPattern("dd. MMMM yyyy", Locale("no", "NO"))
     }

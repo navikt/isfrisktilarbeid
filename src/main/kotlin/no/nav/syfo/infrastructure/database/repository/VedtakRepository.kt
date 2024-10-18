@@ -217,18 +217,6 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             it.executeQuery().toList { toPVedtakStatus() }.single()
         }
 
-    private fun Connection.createBehandlermelding(behandlerMelding: Behandlermelding, vedtakId: Int, pdfId: Int) =
-        prepareStatement(CREATE_BEHANDLER_MELDING).use {
-            it.setString(1, behandlerMelding.uuid.toString())
-            it.setObject(2, behandlerMelding.createdAt)
-            it.setObject(3, behandlerMelding.createdAt)
-            it.setString(4, behandlerMelding.behandlerRef.toString())
-            it.setObject(5, mapper.writeValueAsString(behandlerMelding.document))
-            it.setInt(6, vedtakId)
-            it.setInt(7, pdfId)
-            it.executeQuery().toList { toPBehandlerMelding() }.single()
-        }
-
     companion object {
         private const val CREATE_PDF =
             """
@@ -305,21 +293,6 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                  FROM vedtak v
                  INNER JOIN pdf p ON v.pdf_id = p.id
                  WHERE v.journalpost_id IS NULL
-            """
-
-        private const val CREATE_BEHANDLER_MELDING =
-            """
-                INSERT INTO BEHANDLER_MELDING (
-                    id,
-                    uuid,
-                    created_at,
-                    updated_at,
-                    behandler_ref,
-                    document,
-                    vedtak_id,
-                    pdf_id
-                ) values (DEFAULT, ?, ?, ?, ?, ?::jsonb, ?, ?)
-                RETURNING *
             """
 
         private const val GET_UNPUBLISHED_VEDTAK_VARSLER =

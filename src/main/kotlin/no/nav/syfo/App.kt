@@ -6,11 +6,9 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
-import no.nav.syfo.application.BehandlermeldingService
 import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
-import no.nav.syfo.infrastructure.clients.behandler.DialogmeldingBehandlerClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
@@ -19,7 +17,6 @@ import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
-import no.nav.syfo.infrastructure.database.repository.BehandlermeldingRepository
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
@@ -65,20 +62,11 @@ fun main() {
             azureAdClient = azureAdClient,
             clientEnvironment = environment.clients.istilgangskontroll
         )
-    val dialogmeldingBehandlerClient = DialogmeldingBehandlerClient(
-        azureAdClient = azureAdClient,
-        clientEnvironment = environment.clients.isdialogmelding
-    )
 
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
     val infotrygdService = InfotrygdService(
         pdlClient = pdlClient,
         mqSender = InfotrygdMQSender(environment.mq),
-    )
-    val behandlermeldingProducer = BehandlermeldingProducer(
-        producer = KafkaProducer(
-            kafkaAivenProducerConfig<BehandlermeldingRecordSerializer>(kafkaEnvironment = environment.kafka)
-        )
     )
     val vedtakProducer = VedtakProducer(
         esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
@@ -95,7 +83,6 @@ fun main() {
     val journalforingService = JournalforingService(
         dokarkivClient = dokarkivClient,
         pdlClient = pdlClient,
-        dialogmeldingBehandlerClient = dialogmeldingBehandlerClient,
     )
 
     lateinit var vedtakRepository: IVedtakRepository
@@ -135,17 +122,10 @@ fun main() {
         applicationState.ready = true
         logger.info("Application is ready, running Java VM ${Runtime.version()}")
 
-        val behandlermeldingService = BehandlermeldingService(
-            behandlermeldingRepository = BehandlermeldingRepository(database = applicationDatabase),
-            behandlermeldingProducer = behandlermeldingProducer,
-            journalforingService = journalforingService,
-        )
-
         launchCronjobs(
             applicationState = applicationState,
             environment = environment,
             vedtakService = vedtakService,
-            behandlermeldingService = behandlermeldingService,
         )
         launchBackgroundTask(
             applicationState = applicationState,
