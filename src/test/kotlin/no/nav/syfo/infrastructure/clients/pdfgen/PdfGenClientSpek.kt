@@ -27,19 +27,5 @@ class PdfGenClientSpek : Spek({
 
             pdf shouldBeEqualTo UserConstants.PDF_VEDTAK
         }
-
-        it("returns bytearray of pdf for melding til behandler") {
-            val pdf = runBlocking {
-                pdfGenClient.createBehandlerPdf(
-                    callId = "",
-                    payload = PdfModel.BehandlermeldingPdfModel(
-                        mottakerNavn = UserConstants.PERSON_FULLNAME_DASH,
-                        documentComponents = generateDocumentComponent("Litt fritekst"),
-                    )
-                )
-            }
-
-            pdf shouldBeEqualTo UserConstants.PDF_BEHANDLER_MELDING
-        }
     }
 })

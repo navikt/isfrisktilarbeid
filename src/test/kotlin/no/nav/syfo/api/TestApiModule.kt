@@ -29,7 +29,6 @@ fun Application.testApiModule(
     val journalforingService = JournalforingService(
         dokarkivClient = externalMockEnvironment.dokarkivClient,
         pdlClient = externalMockEnvironment.pdlClient,
-        dialogmeldingBehandlerClient = externalMockEnvironment.dialogmeldingBehandlerClient,
     )
     val vedtakService = VedtakService(
         vedtakRepository = VedtakRepository(database = database),
