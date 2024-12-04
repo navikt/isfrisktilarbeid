@@ -10,7 +10,7 @@ val LOGSTASH_ENCODER = "7.4"
 val MICROMETER_REGISTRY = "1.12.7"
 val JACKSON_DATATYPE = "2.17.2"
 val KAFKA = "3.7.0"
-val KTOR = "2.3.12"
+val KTOR = "3.0.1"
 val MQ = "9.4.0.0"
 val SPEK = "2.0.19"
 val MOCKK = "1.13.12"
@@ -68,7 +68,7 @@ dependencies {
     implementation("com.ibm.mq:com.ibm.mq.allclient:$MQ")
 
     // Tests
-    testImplementation("io.ktor:ktor-server-tests:$KTOR")
+    testImplementation("io.ktor:ktor-server-test-host:$KTOR")
     testImplementation("io.mockk:mockk:$MOCKK")
     testImplementation("io.ktor:ktor-client-mock:$KTOR")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$NIMBUS_JOSE_JWT")

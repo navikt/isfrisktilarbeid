@@ -89,71 +89,70 @@ fun main() {
     lateinit var vedtakService: VedtakService
 
     val applicationEngineEnvironment =
-        applicationEngineEnvironment {
+        applicationEnvironment {
             log = logger
             config = HoconApplicationConfig(ConfigFactory.load())
+        }
+    val server = embeddedServer(
+        factory = Netty,
+        environment = applicationEngineEnvironment,
+        configure = {
             connector {
                 port = applicationPort
             }
-            module {
-                databaseModule(
-                    databaseEnvironment = environment.database,
-                )
-                vedtakRepository = VedtakRepository(database = applicationDatabase)
-                vedtakService = VedtakService(
-                    pdfService = pdfService,
-                    vedtakRepository = vedtakRepository,
-                    infotrygdService = infotrygdService,
-                    journalforingService = journalforingService,
-                    vedtakProducer = vedtakProducer,
-                )
-                apiModule(
+            connectionGroupSize = 8
+            workerGroupSize = 8
+            callGroupSize = 16
+        },
+        module = {
+            databaseModule(
+                databaseEnvironment = environment.database,
+            )
+            vedtakRepository = VedtakRepository(database = applicationDatabase)
+            vedtakService = VedtakService(
+                pdfService = pdfService,
+                vedtakRepository = vedtakRepository,
+                infotrygdService = infotrygdService,
+                journalforingService = journalforingService,
+                vedtakProducer = vedtakProducer,
+            )
+            apiModule(
+                applicationState = applicationState,
+                environment = environment,
+                wellKnownInternalAzureAD = wellKnownInternalAzureAD,
+                database = applicationDatabase,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                vedtakService = vedtakService,
+            )
+            monitor.subscribe(ApplicationStarted) {
+                applicationState.ready = true
+                logger.info("Application is ready, running Java VM ${Runtime.version()}")
+
+                launchCronjobs(
                     applicationState = applicationState,
                     environment = environment,
-                    wellKnownInternalAzureAD = wellKnownInternalAzureAD,
-                    database = applicationDatabase,
-                    veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                     vedtakService = vedtakService,
                 )
-            }
-        }
-
-    applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
-        applicationState.ready = true
-        logger.info("Application is ready, running Java VM ${Runtime.version()}")
-
-        launchCronjobs(
-            applicationState = applicationState,
-            environment = environment,
-            vedtakService = vedtakService,
-        )
-        launchBackgroundTask(
-            applicationState = applicationState,
-        ) {
-            connectionFactory(environment.mq).createConnection(
-                environment.mq.serviceuserUsername,
-                environment.mq.serviceuserPassword,
-            ).use { mqConnection ->
-                mqConnection.start()
-                val session = mqConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
-                val blockingApplicationRunner = InfotrygdKvitteringMQConsumer(
+                launchBackgroundTask(
                     applicationState = applicationState,
-                    inputconsumer = session.consumerForQueue(environment.mq.mqQueueNameKvittering),
-                    vedtakRepository = vedtakRepository,
-                )
-                blockingApplicationRunner.run()
+                ) {
+                    connectionFactory(environment.mq).createConnection(
+                        environment.mq.serviceuserUsername,
+                        environment.mq.serviceuserPassword,
+                    ).use { mqConnection ->
+                        mqConnection.start()
+                        val session = mqConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
+                        val blockingApplicationRunner = InfotrygdKvitteringMQConsumer(
+                            applicationState = applicationState,
+                            inputconsumer = session.consumerForQueue(environment.mq.mqQueueNameKvittering),
+                            vedtakRepository = vedtakRepository,
+                        )
+                        blockingApplicationRunner.run()
+                    }
+                }
             }
         }
-    }
-
-    val server = embeddedServer(
-        factory = Netty,
-        environment = applicationEngineEnvironment
-    ) {
-        connectionGroupSize = 8
-        workerGroupSize = 8
-        callGroupSize = 16
-    }
+    )
 
     Runtime.getRuntime().addShutdownHook(
         Thread { server.stop(10, 10, TimeUnit.SECONDS) }
