@@ -10,6 +10,8 @@ import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
 
+const val INFOTRYGD_BOSTED_UTLAND = "2101"
+
 class InfotrygdService(
     val pdlClient: PdlClient,
     val mqSender: InfotrygdMQSender,
@@ -60,8 +62,10 @@ class InfotrygdService(
                     geografiskTilknytning.kommune
                 } else if (geografiskTilknytning.type == GeografiskTilknytningType.BYDEL) {
                     geografiskTilknytning.bydel?.substring(0, 4)
+                } else if (geografiskTilknytning.type == GeografiskTilknytningType.UTLAND) {
+                    INFOTRYGD_BOSTED_UTLAND
                 } else {
-                    logger.error("Geografisk tilknytning er UTLAND/UDEFINERT for vedtak ${vedtak.uuid}")
+                    logger.error("Geografisk tilknytning er UDEFINERT for vedtak ${vedtak.uuid}")
                     null
                 }
             }

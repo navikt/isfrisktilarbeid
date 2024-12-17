@@ -80,6 +80,26 @@ class InfotrygdServiceSpek : Spek({
                 .replace("KKKK", UserConstants.KOMMUNE_FOR_BYDEL)
             payload shouldBeEqualTo expectedPayload
         }
+        it("sends message to MQ for person in UTLAND") {
+            val vedtak = generateVedtak().copy(
+                personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_UTLAND,
+                fom = fixedTime.toLocalDate(),
+                tom = fixedTime.toLocalDate().plusDays(30),
+                createdAt = fixedTime,
+            )
+            runBlocking {
+                infotrygdService.sendMessageToInfotrygd(vedtak)
+            }
+            val payloadSlot = slot<String>()
+            verify(exactly = 1) {
+                mqSender.sendToMQ(capture(payloadSlot), any())
+            }
+            val payload = payloadSlot.captured
+            val expectedPayload = getFileAsString("src/test/resources/infotrygd.txt")
+                .replace("PPPPPPPPPPP", UserConstants.ARBEIDSTAKER_PERSONIDENT_UTLAND.value)
+                .replace("KKKK", INFOTRYGD_BOSTED_UTLAND)
+            payload shouldBeEqualTo expectedPayload
+        }
         it("send message to MQ fails for kode 6") {
             val vedtak = generateVedtak().copy(
                 personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_GRADERT,
