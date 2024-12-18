@@ -45,7 +45,8 @@ class VedtakServiceSpek : Spek({
 
         val journalforingService = JournalforingService(
             dokarkivClient = externalMockEnvironment.dokarkivClient,
-            pdlClient = externalMockEnvironment.pdlClient
+            pdlClient = externalMockEnvironment.pdlClient,
+            isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
         )
 
         val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()

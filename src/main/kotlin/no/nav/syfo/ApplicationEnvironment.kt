@@ -44,6 +44,7 @@ data class Environment(
             serviceuserPassword = getEnvVar("SERVICEUSER_PASSWORD"),
         ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
+    val isJournalforingRetryEnabled: Boolean = getEnvVar("JOURNALFORING_RETRY_ENABLED").toBoolean(),
     val clients: ClientsEnvironment =
         ClientsEnvironment(
             istilgangskontroll = ClientEnvironment(

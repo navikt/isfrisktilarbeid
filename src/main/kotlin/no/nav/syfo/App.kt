@@ -83,6 +83,7 @@ fun main() {
     val journalforingService = JournalforingService(
         dokarkivClient = dokarkivClient,
         pdlClient = pdlClient,
+        isJournalforingRetryEnabled = environment.isJournalforingRetryEnabled,
     )
 
     lateinit var vedtakRepository: IVedtakRepository
