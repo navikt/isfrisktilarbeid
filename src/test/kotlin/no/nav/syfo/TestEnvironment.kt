@@ -57,6 +57,7 @@ fun testEnvironment() = Environment(
         serviceuserPassword = "servicepw",
     ),
     electorPath = "electorPath",
+    isJournalforingRetryEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

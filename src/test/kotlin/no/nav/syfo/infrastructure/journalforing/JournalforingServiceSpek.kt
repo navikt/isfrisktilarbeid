@@ -25,6 +25,7 @@ class JournalforingServiceSpek : Spek({
         val journalforingService = JournalforingService(
             dokarkivClient = dokarkivMock,
             pdlClient = externalMockEnvironment.pdlClient,
+            isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
         )
 
         beforeEachTest {

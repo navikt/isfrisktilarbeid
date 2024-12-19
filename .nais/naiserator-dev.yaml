@@ -77,6 +77,8 @@ spec:
   env:
     - name: KTOR_ENV
       value: "production"
+    - name: JOURNALFORING_RETRY_ENABLED
+      value: "false"
     - name: MQGATEWAY_NAME
       value: "MQLS02"
     - name: MQGATEWAY_HOSTNAME
