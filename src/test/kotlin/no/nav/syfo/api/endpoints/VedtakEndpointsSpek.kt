@@ -244,6 +244,48 @@ object VedtakEndpointsSpek : Spek({
                 }
             }
 
+            it("Error when tom-date is back in time") {
+                testApplication {
+                    val client = setupApiAndClient()
+                    val vedtakRequestDTOInvalidTom = VedtakRequestDTO(
+                        document = vedtakDocument,
+                        begrunnelse = begrunnelse,
+                        fom = LocalDate.now().minusDays(90),
+                        tom = LocalDate.now().minusDays(10),
+                    )
+
+                    val response = client.post(urlVedtak) {
+                        contentType(ContentType.Application.Json)
+                        bearerAuth(validToken)
+                        header(NAV_PERSONIDENT_HEADER, personident.value)
+                        setBody(vedtakRequestDTOInvalidTom)
+                    }
+
+                    response.status shouldBeEqualTo HttpStatusCode.BadRequest
+                }
+            }
+
+            it("Error when tom-date is before fom-date") {
+                testApplication {
+                    val client = setupApiAndClient()
+                    val vedtakRequestDTOInvalidTom = VedtakRequestDTO(
+                        document = vedtakDocument,
+                        begrunnelse = begrunnelse,
+                        fom = LocalDate.now().plusDays(10),
+                        tom = LocalDate.now().plusDays(1),
+                    )
+
+                    val response = client.post(urlVedtak) {
+                        contentType(ContentType.Application.Json)
+                        bearerAuth(validToken)
+                        header(NAV_PERSONIDENT_HEADER, personident.value)
+                        setBody(vedtakRequestDTOInvalidTom)
+                    }
+
+                    response.status shouldBeEqualTo HttpStatusCode.BadRequest
+                }
+            }
+
             it("Creates vedtak and publish to infotrygd success") {
                 testApplication {
                     val client = setupApiAndClient()

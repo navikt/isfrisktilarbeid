@@ -15,6 +15,7 @@ import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontro
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getNAVIdent
 import no.nav.syfo.util.getPersonident
+import java.time.LocalDate
 import java.util.UUID
 
 const val vedtakUUIDParam = "vedtakUUID"
@@ -50,6 +51,9 @@ fun Route.registerVedtakEndpoints(
             val requestDTO = call.receive<VedtakRequestDTO>()
             if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
                 throw IllegalArgumentException("Vedtak can't have an empty begrunnelse or document")
+            }
+            if (requestDTO.tom.isBefore(LocalDate.now()) || requestDTO.tom.isBefore(requestDTO.fom)) {
+                throw IllegalArgumentException("Tildato i vedtak kan ikke være tilbake i tid eller før fradato.")
             }
 
             val personident = call.getPersonident()
