@@ -244,7 +244,7 @@ object VedtakEndpointsSpek : Spek({
                 }
             }
 
-            it("Error when tom-date is back in time") {
+            it("Creates vedtak back in time") {
                 testApplication {
                     val client = setupApiAndClient()
                     val vedtakRequestDTOInvalidTom = VedtakRequestDTO(
@@ -261,7 +261,7 @@ object VedtakEndpointsSpek : Spek({
                         setBody(vedtakRequestDTOInvalidTom)
                     }
 
-                    response.status shouldBeEqualTo HttpStatusCode.BadRequest
+                    response.status shouldBeEqualTo HttpStatusCode.Created
                 }
             }
 
