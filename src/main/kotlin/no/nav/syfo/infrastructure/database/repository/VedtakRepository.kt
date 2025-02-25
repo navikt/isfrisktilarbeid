@@ -185,6 +185,20 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             connection.commit()
         }
 
+    override fun updatePersonident(nyPersonident: Personident, vedtak: List<Vedtak>) = database.connection.use { connection ->
+        connection.prepareStatement(UPDATE_PERSONIDENT).use {
+            vedtak.forEach { vedtak ->
+                it.setString(1, nyPersonident.value)
+                it.setString(2, vedtak.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+        }
+        connection.commit()
+    }
+
     private fun Connection.createPdf(pdf: ByteArray): PPdf =
         prepareStatement(CREATE_PDF).use {
             it.setString(1, UUID.randomUUID().toString())
@@ -327,6 +341,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         private const val SET_INFOTRYGD_KVITTERING =
             """
                 UPDATE VEDTAK SET infotrygd_ok=?, infotrygd_feilmelding=?, updated_at=now() WHERE uuid=?
+            """
+
+        private const val UPDATE_PERSONIDENT =
+            """
+                UPDATE VEDTAK SET personident=? WHERE uuid=?
             """
     }
 }

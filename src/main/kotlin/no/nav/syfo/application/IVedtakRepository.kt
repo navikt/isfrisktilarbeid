@@ -34,4 +34,6 @@ interface IVedtakRepository {
     fun setVedtakStatusPublished(vedtakStatus: VedtakStatus)
 
     fun setInfotrygdKvitteringReceived(vedtak: Vedtak, ok: Boolean, feilmelding: String?)
+
+    fun updatePersonident(nyPersonident: Personident, vedtak: List<Vedtak>)
 }

@@ -23,6 +23,9 @@ import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.*
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaEsyfovarselHendelseSerializer
+import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumer
+import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
+import no.nav.syfo.infrastructure.kafka.identhendelse.launchIdenthendelseConsumer
 import no.nav.syfo.infrastructure.mq.InfotrygdKvitteringMQConsumer
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.mq.connectionFactory
@@ -151,6 +154,15 @@ fun main() {
                         blockingApplicationRunner.run()
                     }
                 }
+                launchIdenthendelseConsumer(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
+                    identhendelseConsumer = IdenthendelseConsumer(
+                        identhendelseService = IdenthendelseService(
+                            vedtakRepository = vedtakRepository,
+                        )
+                    )
+                )
             }
         }
     )
