@@ -22,6 +22,7 @@ import no.nav.syfo.api.endpoints.podEndpoints
 import no.nav.syfo.api.endpoints.registerVedtakEndpoints
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
+import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.ForbiddenAccessVeilederException
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
@@ -40,6 +41,7 @@ fun Application.apiModule(
     database: DatabaseInterface,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     vedtakService: VedtakService,
+    arbeidssokeroppslagClient: ArbeidssokeroppslagClient,
 ) {
     installMetrics()
     installCallId()
@@ -63,6 +65,7 @@ fun Application.apiModule(
             registerVedtakEndpoints(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 vedtakService = vedtakService,
+                arbeidssokeroppslagClient = arbeidssokeroppslagClient,
             )
         }
     }

@@ -285,7 +285,20 @@ object VedtakEndpointsSpek : Spek({
                     response.status shouldBeEqualTo HttpStatusCode.BadRequest
                 }
             }
+            it("Error when person is not arbeidssoker") {
+                testApplication {
+                    val client = setupApiAndClient()
 
+                    val response = client.post(urlVedtak) {
+                        contentType(ContentType.Application.Json)
+                        bearerAuth(validToken)
+                        header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT_UTLAND.value)
+                        setBody(vedtakRequestDTO)
+                    }
+
+                    response.status shouldBeEqualTo HttpStatusCode.BadRequest
+                }
+            }
             it("Creates vedtak and publish to infotrygd success") {
                 testApplication {
                     val client = setupApiAndClient()

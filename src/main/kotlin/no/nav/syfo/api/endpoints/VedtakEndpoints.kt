@@ -10,8 +10,10 @@ import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollPlugin
+import no.nav.syfo.util.getBearerHeader
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getNAVIdent
 import no.nav.syfo.util.getPersonident
@@ -27,6 +29,7 @@ private const val API_ACTION = "access vedtak for person"
 fun Route.registerVedtakEndpoints(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     vedtakService: VedtakService,
+    arbeidssokeroppslagClient: ArbeidssokeroppslagClient,
 ) {
     route(apiBasePath) {
         install(VeilederTilgangskontrollPlugin) {
@@ -57,12 +60,17 @@ fun Route.registerVedtakEndpoints(
 
             val personident = call.getPersonident()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+            val token = call.getBearerHeader() ?: throw IllegalArgumentException("Failed to $API_ACTION: No bearer token supplied in request header")
             val navIdent = call.getNAVIdent()
             val callId = call.getCallId()
 
             if (vedtakService.getVedtak(personident).any { !it.isFerdigbehandlet() }) {
                 call.respond(HttpStatusCode.Conflict, "Finnes allerede et åpent vedtak for personen")
             } else {
+                if (!arbeidssokeroppslagClient.isArbeidssoker(callId, personident, token)) {
+                    throw IllegalArgumentException("Person er ikke registrert som arbeidssøker")
+                }
+
                 val newVedtak = vedtakService.createVedtak(
                     personident = personident,
                     veilederident = navIdent,
