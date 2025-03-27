@@ -68,7 +68,7 @@ fun Route.registerVedtakEndpoints(
                 call.respond(HttpStatusCode.Conflict, "Finnes allerede et åpent vedtak for personen")
             } else {
                 if (!arbeidssokeroppslagClient.isArbeidssoker(callId, personident, token)) {
-                    throw IllegalArgumentException("Person er ikke registrert som arbeidssøker")
+                    call.respond(HttpStatusCode.BadRequest, "Personen er ikke registrert som arbeidssøker")
                 }
 
                 val newVedtak = vedtakService.createVedtak(
