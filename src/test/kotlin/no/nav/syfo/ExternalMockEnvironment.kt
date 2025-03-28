@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
@@ -41,6 +42,11 @@ class ExternalMockEnvironment private constructor() {
     val dokarkivClient = DokarkivClient(
         azureAdClient = azureAdClient,
         dokarkivEnvironment = environment.clients.dokarkiv,
+        httpClient = mockHttpClient,
+    )
+    val arbeidssokeroppslagClient = ArbeidssokeroppslagClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.arbeidssokeroppslag,
         httpClient = mockHttpClient,
     )
     val vedtakRepository = VedtakRepository(database = database)

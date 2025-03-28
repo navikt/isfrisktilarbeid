@@ -48,6 +48,10 @@ fun testEnvironment() = Environment(
             baseUrl = "dokarkivUrl",
             clientId = "dokarkivClientId",
         ),
+        arbeidssokeroppslag = ClientEnvironment(
+            baseUrl = "arbeidssokeroppslagUrl",
+            clientId = "arbeidssokeroppslagClientId",
+        )
     ),
     mq = MQEnvironment(
         mqQueueManager = "mqQueueManager",

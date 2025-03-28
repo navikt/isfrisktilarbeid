@@ -9,6 +9,7 @@ import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
@@ -59,6 +60,10 @@ fun main() {
     )
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.clients.ispdfgen.baseUrl,
+    )
+    val arbeidssokeroppslagClient = ArbeidssokeroppslagClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.arbeidssokeroppslag,
     )
     val veilederTilgangskontrollClient =
         VeilederTilgangskontrollClient(
@@ -127,6 +132,7 @@ fun main() {
                 database = applicationDatabase,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 vedtakService = vedtakService,
+                arbeidssokeroppslagClient = arbeidssokeroppslagClient,
             )
             monitor.subscribe(ApplicationStarted) {
                 applicationState.ready = true

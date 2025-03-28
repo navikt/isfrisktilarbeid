@@ -5,6 +5,7 @@ import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
+import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
@@ -31,6 +32,11 @@ fun Application.testApiModule(
         pdlClient = externalMockEnvironment.pdlClient,
         isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
     )
+    val arbeidssokeroppslagClient = ArbeidssokeroppslagClient(
+        azureAdClient = externalMockEnvironment.azureAdClient,
+        clientEnvironment = externalMockEnvironment.environment.clients.arbeidssokeroppslag,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    )
     val vedtakService = VedtakService(
         vedtakRepository = VedtakRepository(database = database),
         pdfService = pdfService,
@@ -49,5 +55,6 @@ fun Application.testApiModule(
         database = database,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
         vedtakService = vedtakService,
+        arbeidssokeroppslagClient = arbeidssokeroppslagClient,
     )
 }
