@@ -67,6 +67,7 @@ fun Route.registerVedtakEndpoints(
             if (vedtakService.getVedtak(personident).any { !it.isFerdigbehandlet() }) {
                 call.respond(HttpStatusCode.Conflict, "Finnes allerede et åpent vedtak for personen")
             } else if (!arbeidssokeroppslagClient.isArbeidssoker(callId, personident, token)) {
+                log.warn("Forsøker å opprette vedtak for person som ikke er registrert som arbeidssøker")
                 call.respond(HttpStatusCode.BadRequest, "Personen er ikke registrert som arbeidssøker")
             } else {
                 val newVedtak = vedtakService.createVedtak(

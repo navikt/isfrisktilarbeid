@@ -44,6 +44,7 @@ class ArbeidssokeroppslagClient(
             }
             val arbeidssokerperioder = response.body<List<ArbeidssokerperiodeResponse>>()
             val nyeste = arbeidssokerperioder.firstOrNull()
+            log.info("Arbeidssokeroppslag response: {}", StructuredArguments.keyValue("arbeidssokerperioder", arbeidssokerperioder))
             nyeste != null && nyeste.startet.tidspunkt.isBefore(Instant.now()) && (nyeste.avsluttet == null || nyeste.avsluttet.tidspunkt.isAfter(Instant.now()))
         } catch (e: ResponseException) {
             if (e.response.status != HttpStatusCode.Forbidden) {
