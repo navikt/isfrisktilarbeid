@@ -9,6 +9,7 @@ import kotlinx.coroutines.delay
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.application.VedtakService
+import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
@@ -17,6 +18,7 @@ import no.nav.syfo.util.getBearerHeader
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getNAVIdent
 import no.nav.syfo.util.getPersonident
+import java.time.LocalDate
 import java.util.UUID
 
 const val vedtakUUIDParam = "vedtakUUID"
@@ -64,8 +66,12 @@ fun Route.registerVedtakEndpoints(
             val navIdent = call.getNAVIdent()
             val callId = call.getCallId()
 
-            if (vedtakService.getVedtak(personident).any { !it.isFerdigbehandlet() }) {
+            val existingVedtak = vedtakService.getVedtak(personident)
+            val currentVedtak = existingVedtak.firstOrNull()
+            if (existingVedtak.any { !it.isFerdigbehandlet() }) {
                 call.respond(HttpStatusCode.Conflict, "Finnes allerede et åpent vedtak for personen")
+            } else if (currentVedtak != null && !currentVedtak.tom.isBefore(requestDTO.fom)) {
+                call.respond(HttpStatusCode.Conflict, "Vedtaksperioden overlapper med et tidligere vedtak")
             } else if (!arbeidssokeroppslagClient.isArbeidssoker(callId, personident, token)) {
                 log.warn("Forsøker å opprette vedtak for person som ikke er registrert som arbeidssøker")
                 call.respond(HttpStatusCode.BadRequest, "Personen er ikke registrert som arbeidssøker")
@@ -105,4 +111,8 @@ fun Route.registerVedtakEndpoints(
             }
         }
     }
+}
+
+private fun notDisjoint(vedtak: Vedtak, fom: LocalDate, tom: LocalDate): Boolean {
+    return !vedtak.tom.isBefore(fom)
 }
