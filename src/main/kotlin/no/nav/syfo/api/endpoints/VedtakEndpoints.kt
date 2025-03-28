@@ -112,7 +112,3 @@ fun Route.registerVedtakEndpoints(
         }
     }
 }
-
-private fun notDisjoint(vedtak: Vedtak, fom: LocalDate, tom: LocalDate): Boolean {
-    return !vedtak.tom.isBefore(fom)
-}
