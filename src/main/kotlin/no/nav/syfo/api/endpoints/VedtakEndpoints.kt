@@ -68,7 +68,8 @@ fun Route.registerVedtakEndpoints(
             val currentVedtak = existingVedtak.firstOrNull()
             if (existingVedtak.any { !it.isFerdigbehandlet() }) {
                 call.respond(HttpStatusCode.Conflict, "Finnes allerede et åpent vedtak for personen")
-            } else if (currentVedtak != null && !currentVedtak.tom.isBefore(requestDTO.fom)) {
+            } else if (currentVedtak != null && currentVedtak.tom.isAfter(requestDTO.fom)) {
+                log.warn("Forsøker å opprette vedtak som overlapper med et tidligere vedtak")
                 call.respond(HttpStatusCode.Conflict, "Vedtaksperioden overlapper med et tidligere vedtak")
             } else if (!arbeidssokeroppslagClient.isArbeidssoker(callId, personident, token)) {
                 log.warn("Forsøker å opprette vedtak for person som ikke er registrert som arbeidssøker")
