@@ -274,18 +274,28 @@ object VedtakEndpointsSpek : Spek({
                         fom = LocalDate.now().plusDays(10),
                         tom = LocalDate.now().plusDays(1),
                     )
-
                     val response = client.post(urlVedtak) {
                         contentType(ContentType.Application.Json)
                         bearerAuth(validToken)
                         header(NAV_PERSONIDENT_HEADER, personident.value)
                         setBody(vedtakRequestDTOInvalidTom)
                     }
-
                     response.status shouldBeEqualTo HttpStatusCode.BadRequest
                 }
             }
+            it("Error when person is not arbeidssoker") {
+                testApplication {
+                    val client = setupApiAndClient()
 
+                    val response = client.post(urlVedtak) {
+                        contentType(ContentType.Application.Json)
+                        bearerAuth(validToken)
+                        header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT_UTLAND.value)
+                        setBody(vedtakRequestDTO)
+                    }
+                    response.status shouldBeEqualTo HttpStatusCode.BadRequest
+                }
+            }
             it("Creates vedtak and publish to infotrygd success") {
                 testApplication {
                     val client = setupApiAndClient()
