@@ -22,7 +22,7 @@ import java.util.UUID
 const val vedtakUUIDParam = "vedtakUUID"
 const val apiBasePath = "/api/internad/v1/frisktilarbeid"
 const val vedtakPath = "/vedtak"
-const val arbeidssokerPath = "/arbeidssoker"
+const val validerPath = "/valider"
 const val ferdigbehandlingPath = "/vedtak/{$vedtakUUIDParam}/ferdigbehandling"
 
 private const val API_ACTION = "access vedtak for person"
@@ -38,14 +38,14 @@ fun Route.registerVedtakEndpoints(
             this.veilederTilgangskontrollClient = veilederTilgangskontrollClient
         }
 
-        get(arbeidssokerPath) {
+        get(validerPath) {
             val personident = call.getPersonident()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
             val token = call.getBearerHeader() ?: throw IllegalArgumentException("Failed to $API_ACTION: No bearer token supplied in request header")
             val callId = call.getCallId()
-
             val isArbeidssoker = arbeidssokeroppslagClient.isArbeidssoker(callId, personident, token)
-            call.respond(if (isArbeidssoker) HttpStatusCode.OK else HttpStatusCode.NoContent)
+
+            call.respond(HttpStatusCode.OK, ValiderResponseDTO(isArbeidssoker))
         }
 
         get(vedtakPath) {
