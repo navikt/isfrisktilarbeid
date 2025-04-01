@@ -274,14 +274,12 @@ object VedtakEndpointsSpek : Spek({
                         fom = LocalDate.now().plusDays(10),
                         tom = LocalDate.now().plusDays(1),
                     )
-
                     val response = client.post(urlVedtak) {
                         contentType(ContentType.Application.Json)
                         bearerAuth(validToken)
                         header(NAV_PERSONIDENT_HEADER, personident.value)
                         setBody(vedtakRequestDTOInvalidTom)
                     }
-
                     response.status shouldBeEqualTo HttpStatusCode.BadRequest
                 }
             }
@@ -295,7 +293,6 @@ object VedtakEndpointsSpek : Spek({
                         header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT_UTLAND.value)
                         setBody(vedtakRequestDTO)
                     }
-
                     response.status shouldBeEqualTo HttpStatusCode.BadRequest
                 }
             }
@@ -424,6 +421,48 @@ object VedtakEndpointsSpek : Spek({
                     }
 
                     response.status shouldBeEqualTo HttpStatusCode.Conflict
+                }
+            }
+            it("Returns status Conflict when overlapping vedtak exists") {
+                val vedtak = createVedtak(vedtakRequestDTO)
+                vedtakService.ferdigbehandleVedtak(vedtak, UserConstants.VEILEDER_IDENT)
+
+                val newRequest = vedtakRequestDTO.copy(
+                    fom = vedtakRequestDTO.fom.plusDays(1),
+                    tom = vedtakRequestDTO.tom.plusDays(1),
+                )
+
+                testApplication {
+                    val client = setupApiAndClient()
+                    val response = client.post(urlVedtak) {
+                        contentType(ContentType.Application.Json)
+                        bearerAuth(validToken)
+                        header(NAV_PERSONIDENT_HEADER, personident.value)
+                        setBody(newRequest)
+                    }
+
+                    response.status shouldBeEqualTo HttpStatusCode.Conflict
+                }
+            }
+            it("Does not return status Conflict when non-overlapping vedtak exists") {
+                val vedtak = createVedtak(vedtakRequestDTO)
+                vedtakService.ferdigbehandleVedtak(vedtak, UserConstants.VEILEDER_IDENT)
+
+                val newRequest = vedtakRequestDTO.copy(
+                    fom = vedtakRequestDTO.tom.plusDays(1),
+                    tom = vedtakRequestDTO.tom.plusDays(10),
+                )
+
+                testApplication {
+                    val client = setupApiAndClient()
+                    val response = client.post(urlVedtak) {
+                        contentType(ContentType.Application.Json)
+                        bearerAuth(validToken)
+                        header(NAV_PERSONIDENT_HEADER, personident.value)
+                        setBody(newRequest)
+                    }
+
+                    response.status shouldBeEqualTo HttpStatusCode.Created
                 }
             }
         }
