@@ -8,6 +8,7 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.delay
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
+import no.nav.syfo.api.model.ValiderResponseDTO
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
