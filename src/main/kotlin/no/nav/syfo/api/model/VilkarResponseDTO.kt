@@ -1,5 +1,5 @@
 package no.nav.syfo.api.model
 
-data class ValiderResponseDTO(
+data class VilkarResponseDTO(
     val isArbeidssoker: Boolean,
 )

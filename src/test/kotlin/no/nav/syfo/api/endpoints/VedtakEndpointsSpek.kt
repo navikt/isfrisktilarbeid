@@ -15,6 +15,7 @@ import no.nav.syfo.UserConstants.PDF_VEDTAK
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
+import no.nav.syfo.api.model.VilkarResponseDTO
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.domain.InfotrygdStatus
@@ -38,6 +39,7 @@ import java.util.*
 object VedtakEndpointsSpek : Spek({
 
     val urlVedtak = "$apiBasePath/$vedtakPath"
+    val urlVilkar = "$apiBasePath/$vilkarPath"
 
     describe("VedtakEndpoints") {
         val externalMockEnvironment = ExternalMockEnvironment.instance
@@ -208,6 +210,39 @@ object VedtakEndpointsSpek : Spek({
                     val vedtakResponse = response.body<List<VedtakResponseDTO>>()
                     vedtakResponse.size shouldBeEqualTo 2
                     vedtakResponse[0].createdAt shouldBeAfter vedtakResponse[1].createdAt
+                }
+            }
+        }
+
+        describe("Vilkar") {
+            it("Vilkar when person is not arbeidssoker") {
+                testApplication {
+                    val client = setupApiAndClient()
+
+                    val response = client.get(urlVilkar) {
+                        contentType(ContentType.Application.Json)
+                        bearerAuth(validToken)
+                        header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT_UTLAND.value)
+                        setBody(vedtakRequestDTO)
+                    }
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+                    val vilkarResponse = response.body<VilkarResponseDTO>()
+                    vilkarResponse.isArbeidssoker shouldBeEqualTo false
+                }
+            }
+            it("Vilkar when person is arbeidssoker") {
+                testApplication {
+                    val client = setupApiAndClient()
+
+                    val response = client.get(urlVilkar) {
+                        contentType(ContentType.Application.Json)
+                        bearerAuth(validToken)
+                        header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                        setBody(vedtakRequestDTO)
+                    }
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+                    val vilkarResponse = response.body<VilkarResponseDTO>()
+                    vilkarResponse.isArbeidssoker shouldBeEqualTo true
                 }
             }
         }
