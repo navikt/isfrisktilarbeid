@@ -8,6 +8,7 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.delay
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
+import no.nav.syfo.api.model.VilkarResponseDTO
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
@@ -22,6 +23,7 @@ import java.util.UUID
 const val vedtakUUIDParam = "vedtakUUID"
 const val apiBasePath = "/api/internad/v1/frisktilarbeid"
 const val vedtakPath = "/vedtak"
+const val vilkarPath = "/vedtak-vilkar"
 const val ferdigbehandlingPath = "/vedtak/{$vedtakUUIDParam}/ferdigbehandling"
 
 private const val API_ACTION = "access vedtak for person"
@@ -35,6 +37,16 @@ fun Route.registerVedtakEndpoints(
         install(VeilederTilgangskontrollPlugin) {
             this.action = API_ACTION
             this.veilederTilgangskontrollClient = veilederTilgangskontrollClient
+        }
+
+        get(vilkarPath) {
+            val personident = call.getPersonident()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+            val token = call.getBearerHeader() ?: throw IllegalArgumentException("Failed to $API_ACTION: No bearer token supplied in request header")
+            val callId = call.getCallId()
+            val isArbeidssoker = arbeidssokeroppslagClient.isArbeidssoker(callId, personident, token)
+
+            call.respond(HttpStatusCode.OK, VilkarResponseDTO(isArbeidssoker))
         }
 
         get(vedtakPath) {
