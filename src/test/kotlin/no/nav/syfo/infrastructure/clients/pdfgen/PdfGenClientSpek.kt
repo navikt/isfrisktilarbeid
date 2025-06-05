@@ -30,15 +30,28 @@ class PdfGenClientSpek : Spek({
             pdf shouldBeEqualTo UserConstants.PDF_VEDTAK
         }
 
-        it("Ingen ledende 0 i datoSendt") {
-            val pdf = PdfModel.VedtakPdfModel(
-                mottakerFodselsnummer = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                mottakerNavn = UserConstants.PERSON_FULLNAME_DASH,
-                documentComponents = generateDocumentComponent("Litt fritekst"),
-                datoSendt = LocalDate.of(2025, Month.JUNE, 4)
-            )
+        describe("Riktig format på datoSendt") {
+            it("Ingen ledende 0") {
+                val pdf = PdfModel.VedtakPdfModel(
+                    mottakerFodselsnummer = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                    mottakerNavn = UserConstants.PERSON_FULLNAME_DASH,
+                    documentComponents = generateDocumentComponent("Litt fritekst"),
+                    datoSendt = LocalDate.of(2025, Month.JUNE, 4)
+                )
 
-            pdf.datoSendt shouldBeEqualTo "4. juni 2025"
+                pdf.datoSendt shouldBeEqualTo "4. juni 2025"
+            }
+
+            it("Dato med to sifre formateres med to sifre") {
+                val pdf = PdfModel.VedtakPdfModel(
+                    mottakerFodselsnummer = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                    mottakerNavn = UserConstants.PERSON_FULLNAME_DASH,
+                    documentComponents = generateDocumentComponent("Litt fritekst"),
+                    datoSendt = LocalDate.of(2025, Month.JUNE, 14)
+                )
+
+                pdf.datoSendt shouldBeEqualTo "14. juni 2025"
+            }
         }
     }
 })
