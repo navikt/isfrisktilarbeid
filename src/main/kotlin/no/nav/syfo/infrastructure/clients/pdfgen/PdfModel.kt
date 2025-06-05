@@ -16,11 +16,12 @@ sealed class PdfModel private constructor(
     private constructor(
         mottakerFodselsnummer: String?,
         mottakerNavn: String,
-        documentComponents: List<DocumentComponent>
+        documentComponents: List<DocumentComponent>,
+        datoSendt: LocalDate
     ) : this(
         mottakerFodselsnummer = mottakerFodselsnummer,
         mottakerNavn = mottakerNavn,
-        datoSendt = LocalDate.now().format(formatter),
+        datoSendt = datoSendt.format(formatter),
         documentComponents = documentComponents.sanitizeForPdfGen()
     )
 
@@ -28,13 +29,15 @@ sealed class PdfModel private constructor(
         mottakerFodselsnummer: Personident,
         mottakerNavn: String,
         documentComponents: List<DocumentComponent>,
+        datoSendt: LocalDate = LocalDate.now(),
     ) : PdfModel(
         mottakerFodselsnummer = mottakerFodselsnummer.value,
         mottakerNavn = mottakerNavn,
         documentComponents = documentComponents,
+        datoSendt = datoSendt,
     )
 
     companion object {
-        private val formatter = DateTimeFormatter.ofPattern("dd. MMMM yyyy", Locale("no", "NO"))
+        private val formatter = DateTimeFormatter.ofPattern("d. MMMM yyyy", Locale("no", "NO"))
     }
 }

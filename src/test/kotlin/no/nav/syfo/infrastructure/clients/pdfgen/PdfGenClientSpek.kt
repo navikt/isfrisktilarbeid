@@ -7,6 +7,8 @@ import no.nav.syfo.generator.generateDocumentComponent
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
+import java.time.Month
 
 class PdfGenClientSpek : Spek({
     val externalMockEnvironment = ExternalMockEnvironment.instance
@@ -26,6 +28,17 @@ class PdfGenClientSpek : Spek({
             }
 
             pdf shouldBeEqualTo UserConstants.PDF_VEDTAK
+        }
+
+        it("Ingen ledende 0 i datoSendt") {
+            val pdf = PdfModel.VedtakPdfModel(
+                mottakerFodselsnummer = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                mottakerNavn = UserConstants.PERSON_FULLNAME_DASH,
+                documentComponents = generateDocumentComponent("Litt fritekst"),
+                datoSendt = LocalDate.of(2025, Month.JUNE, 4)
+            )
+
+            pdf.datoSendt shouldBeEqualTo "4. juni 2025"
         }
     }
 })
