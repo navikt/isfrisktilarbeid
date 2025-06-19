@@ -5,10 +5,13 @@ import no.nav.syfo.domain.OppgaveId
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.clients.oppgave.OppgaveClient
 import no.nav.syfo.infrastructure.clients.oppgave.OppgaveRequest
+import java.time.format.DateTimeFormatter
 
 class OppgaveService(
     val oppgaveClient: OppgaveClient,
 ) : IOppgaveService {
+
+    private val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
     override suspend fun createOppgave(vedtak: Vedtak): Result<OppgaveId> = runCatching {
         val response = oppgaveClient.createOppgave(
@@ -19,7 +22,7 @@ class OppgaveService(
                 behandlingstema = "ab0352",
                 oppgavetype = "VURD_HENV",
                 tildeltEnhetsnr = "4488",
-                beskrivelse = "Innvilget i perioden (${vedtak.fom} - ${vedtak.tom})",
+                beskrivelse = "Innvilget i perioden ${vedtak.fom.format(dateFormatter)} - ${vedtak.tom.format(dateFormatter)}",
                 prioritet = "NORM",
             ),
             correlationId = vedtak.uuid,
