@@ -394,5 +394,30 @@ class VedtakServiceSpek : Spek({
                 result.isFailure.shouldBeTrue()
             }
         }
+
+        describe("createOppgaveForVedtakWithNoOppgave") {
+            it("creates oppgave for vedtak without oppgaveId") {
+                val vedtakUtenOppgave = vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                )
+                vedtakRepository.setJournalpostId(vedtakUtenOppgave.journalfor(journalpostId = journalpostId))
+
+                val result = runBlocking { vedtakService.createOppgaveForVedtakWithNoOppgave() }
+
+                val (success, failed) = result.partition { it.isSuccess }
+                failed.shouldBeEmpty()
+                success.size shouldBeEqualTo 1
+
+                val oppdatertVedtak = vedtakRepository.getVedtak(vedtakUtenOppgave.uuid)
+                oppdatertVedtak.oppgaveId.shouldNotBeNull()
+                oppdatertVedtak.oppgaveAt.shouldNotBeNull()
+            }
+
+            it("returns empty when no vedtak without oppgaveId") {
+                val result = runBlocking { vedtakService.createOppgaveForVedtakWithNoOppgave() }
+                result.shouldBeEmpty()
+            }
+        }
     }
 })
