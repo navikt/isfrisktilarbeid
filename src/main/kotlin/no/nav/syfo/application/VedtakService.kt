@@ -9,6 +9,7 @@ class VedtakService(
     private val pdfService: IPdfService,
     private val vedtakRepository: IVedtakRepository,
     private val journalforingService: IJournalforingService,
+    private val oppgaveService: IOppgaveService,
     private val infotrygdService: InfotrygdService,
     private val vedtakProducer: IVedtakProducer,
 ) {
@@ -84,6 +85,17 @@ class VedtakService(
             }
         }
     }
+
+    suspend fun createOppgaveForVedtakWithNoOppgave(): List<Result<Vedtak>> =
+        vedtakRepository.getNotOppgaveVedtak().map { vedtak ->
+            oppgaveService.createOppgave(
+                vedtak = vedtak,
+            ).map { oppgaveId ->
+                vedtak.oppgave(oppgaveId = oppgaveId).also { updatedVedtak ->
+                    vedtakRepository.setOppgaveId(updatedVedtak)
+                }
+            }
+        }
 
     fun publishVedtakVarsel(): List<Result<Vedtak>> {
         val unpublishedVedtakVarsler = vedtakRepository.getUnpublishedVedtakVarsler()

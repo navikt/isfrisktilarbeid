@@ -24,6 +24,7 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.HendelseType
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
+import no.nav.syfo.infrastructure.oppgave.OppgaveService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -48,6 +49,9 @@ class VedtakServiceSpek : Spek({
             pdlClient = externalMockEnvironment.pdlClient,
             isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
         )
+        val oppgaveService = OppgaveService(
+            oppgaveClient = externalMockEnvironment.oppgaveClient,
+        )
 
         val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
         val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(mockEsyfoVarselKafkaProducer)
@@ -66,6 +70,7 @@ class VedtakServiceSpek : Spek({
                 pdlClient = externalMockEnvironment.pdlClient,
             ),
             journalforingService = journalforingService,
+            oppgaveService = oppgaveService,
             infotrygdService = InfotrygdService(
                 pdlClient = externalMockEnvironment.pdlClient,
                 mqSender = infotrygdMQSender,
