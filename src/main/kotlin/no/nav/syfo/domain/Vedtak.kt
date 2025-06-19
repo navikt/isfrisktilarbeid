@@ -48,7 +48,7 @@ data class Vedtak private constructor(
 
     fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
 
-    fun oppgave(oppgaveId: OppgaveId): Vedtak = this.copy(oppgaveId = oppgaveId, oppgaveAt = OffsetDateTime.now())
+    fun oppgave(oppgaveId: OppgaveId): Vedtak = this.copy(oppgaveId = oppgaveId, oppgaveAt = nowUTC())
 
     fun sendTilInfotrygd(): Vedtak = this.copy(infotrygdStatus = InfotrygdStatus.KVITTERING_MANGLER)
 
