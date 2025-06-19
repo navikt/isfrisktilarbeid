@@ -102,12 +102,36 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             }
         }
 
+    override fun getNotOppgaveVedtak(): List<Vedtak> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_NOT_OPPGAVE_VEDTAK).use {
+                it.executeQuery().toList { toPVedtak() }
+            }.map { pVedtak ->
+                pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
+            }
+        }
+
     override fun setJournalpostId(vedtak: Vedtak) =
         database.connection.use { connection ->
             connection.prepareStatement(SET_JOURNALPOST_ID).use {
                 it.setString(1, vedtak.journalpostId?.value)
                 it.setObject(2, nowUTC())
                 it.setString(3, vedtak.uuid.toString())
+                val updated = it.executeUpdate()
+                if (updated != 1) {
+                    throw SQLException("Expected a single row to be updated, got update count $updated")
+                }
+            }
+            connection.commit()
+        }
+
+    override fun setOppgaveId(vedtak: Vedtak) =
+        database.connection.use { connection ->
+            connection.prepareStatement(SET_OPPGAVE_ID).use {
+                it.setString(1, vedtak.oppgaveId?.value)
+                it.setObject(2, vedtak.oppgaveAt)
+                it.setObject(3, nowUTC())
+                it.setString(4, vedtak.uuid.toString())
                 val updated = it.executeUpdate()
                 if (updated != 1) {
                     throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -301,12 +325,28 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 WHERE uuid = ?
             """
 
+        private const val SET_OPPGAVE_ID =
+            """
+                UPDATE VEDTAK SET 
+                    oppgave_id = ?,
+                    oppgave_at = ?,
+                    updated_at = ? 
+                WHERE uuid = ?
+            """
+
         private const val GET_NOT_JOURNALFORTE_VEDTAK =
             """
                  SELECT v.*, p.pdf
                  FROM vedtak v
                  INNER JOIN pdf p ON v.pdf_id = p.id
                  WHERE v.journalpost_id IS NULL
+            """
+
+        private const val GET_NOT_OPPGAVE_VEDTAK =
+            """
+                 SELECT v.*
+                 FROM vedtak v
+                 WHERE v.journalpost_id IS NOT NULL AND v.journalpost_id != '0' AND v.oppgave_id IS NULL
             """
 
         private const val GET_UNPUBLISHED_VEDTAK_VARSLER =
@@ -371,6 +411,8 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
         object : TypeReference<List<DocumentComponent>>() {}
     ),
     journalpostId = getString("journalpost_id"),
+    oppgaveId = getString("oppgave_id"),
+    oppgaveAt = getObject("oppgave_at", OffsetDateTime::class.java),
     pdfId = getInt("pdf_id"),
     publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
     varselPublishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),
