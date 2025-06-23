@@ -15,7 +15,7 @@ import no.nav.syfo.infrastructure.database.setVedtakCreatedAt
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
-import no.nav.syfo.infrastructure.oppgave.OppgaveService
+import no.nav.syfo.infrastructure.gosysoppgave.GosysOppgaveService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
@@ -36,7 +36,7 @@ class PublishMQCronjobSpek : Spek({
             pdfService = PdfService(externalMockEnvironment.pdfgenClient, externalMockEnvironment.pdlClient),
             vedtakRepository = vedtakRepository,
             journalforingService = mockk<JournalforingService>(relaxed = true),
-            oppgaveService = mockk<OppgaveService>(relaxed = true),
+            oppgaveService = mockk<GosysOppgaveService>(relaxed = true),
             infotrygdService = InfotrygdService(externalMockEnvironment.pdlClient, mqSenderMock),
             vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
         )

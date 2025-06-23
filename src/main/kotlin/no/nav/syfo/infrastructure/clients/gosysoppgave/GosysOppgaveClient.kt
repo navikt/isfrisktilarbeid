@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.clients.oppgave
+package no.nav.syfo.infrastructure.clients.gosysoppgave
 
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -14,7 +14,7 @@ import no.nav.syfo.infrastructure.clients.httpClientDefault
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
-class OppgaveClient(
+class GosysOppgaveClient(
     private val azureAdClient: AzureAdClient,
     private val environment: ClientEnvironment,
     private val httpClient: HttpClient = httpClientDefault(),
@@ -58,6 +58,6 @@ class OppgaveClient(
 
     companion object {
         private const val OPPGAVE_PATH = "/api/v1/oppgaver"
-        private val log = LoggerFactory.getLogger(OppgaveClient::class.java)
+        private val log = LoggerFactory.getLogger(GosysOppgaveClient::class.java)
     }
 }

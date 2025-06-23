@@ -102,9 +102,9 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             }
         }
 
-    override fun getNotOppgaveVedtak(): List<Vedtak> =
+    override fun getVedtakUtenGosysOppgave(): List<Vedtak> =
         database.connection.use { connection ->
-            connection.prepareStatement(GET_NOT_OPPGAVE_VEDTAK).use {
+            connection.prepareStatement(GET_VEDTAK_UTEN_OPPGAVE).use {
                 it.executeQuery().toList { toPVedtak() }
             }.map { pVedtak ->
                 pVedtak.toVedtak(connection.getVedtakStatus(pVedtak.id))
@@ -125,11 +125,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             connection.commit()
         }
 
-    override fun setOppgaveId(vedtak: Vedtak) =
+    override fun setGosysOppgaveId(vedtak: Vedtak) =
         database.connection.use { connection ->
-            connection.prepareStatement(SET_OPPGAVE_ID).use {
-                it.setString(1, vedtak.oppgaveId?.value)
-                it.setObject(2, vedtak.oppgaveAt)
+            connection.prepareStatement(SET_GOSYS_OPPGAVE_ID).use {
+                it.setString(1, vedtak.gosysOppgaveId?.value)
+                it.setObject(2, vedtak.gosysOppgaveAt)
                 it.setObject(3, nowUTC())
                 it.setString(4, vedtak.uuid.toString())
                 val updated = it.executeUpdate()
@@ -325,11 +325,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                 WHERE uuid = ?
             """
 
-        private const val SET_OPPGAVE_ID =
+        private const val SET_GOSYS_OPPGAVE_ID =
             """
                 UPDATE VEDTAK SET 
-                    oppgave_id = ?,
-                    oppgave_at = ?,
+                    gosys_oppgave_id = ?,
+                    gosys_oppgave_at = ?,
                     updated_at = ? 
                 WHERE uuid = ?
             """
@@ -342,11 +342,11 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                  WHERE v.journalpost_id IS NULL
             """
 
-        private const val GET_NOT_OPPGAVE_VEDTAK =
+        private const val GET_VEDTAK_UTEN_OPPGAVE =
             """
-                 SELECT v.*
-                 FROM vedtak v
-                 WHERE v.journalpost_id IS NOT NULL AND v.journalpost_id != '0' AND v.oppgave_id IS NULL
+                 SELECT *
+                 FROM vedtak
+                 WHERE journalpost_id IS NOT NULL AND journalpost_id != '0' AND gosys_oppgave_id IS NULL
             """
 
         private const val GET_UNPUBLISHED_VEDTAK_VARSLER =
@@ -411,8 +411,8 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
         object : TypeReference<List<DocumentComponent>>() {}
     ),
     journalpostId = getString("journalpost_id"),
-    oppgaveId = getString("oppgave_id"),
-    oppgaveAt = getObject("oppgave_at", OffsetDateTime::class.java),
+    gosysOppgaveId = getString("gosys_oppgave_id"),
+    gosysOppgaveAt = getObject("gosys_oppgave_at", OffsetDateTime::class.java),
     pdfId = getInt("pdf_id"),
     publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
     varselPublishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),

@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.clients.oppgave
+package no.nav.syfo.infrastructure.clients.gosysoppgave
 
 import java.time.LocalDate
 

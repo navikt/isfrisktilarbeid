@@ -16,8 +16,8 @@ data class Vedtak private constructor(
     val journalpostId: JournalpostId?,
     val statusListe: List<VedtakStatus>,
     val infotrygdStatus: InfotrygdStatus,
-    val oppgaveId: OppgaveId?,
-    val oppgaveAt: OffsetDateTime?,
+    val gosysOppgaveId: GosysOppgaveId?,
+    val gosysOppgaveAt: OffsetDateTime?,
 ) {
     constructor(
         personident: Personident,
@@ -42,13 +42,13 @@ data class Vedtak private constructor(
             )
         ),
         infotrygdStatus = InfotrygdStatus.IKKE_SENDT,
-        oppgaveId = null,
-        oppgaveAt = null,
+        gosysOppgaveId = null,
+        gosysOppgaveAt = null,
     )
 
     fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
 
-    fun oppgave(oppgaveId: OppgaveId): Vedtak = this.copy(oppgaveId = oppgaveId, oppgaveAt = nowUTC())
+    fun setGosysOppgaveId(gosysOppgaveId: GosysOppgaveId): Vedtak = this.copy(gosysOppgaveId = gosysOppgaveId, gosysOppgaveAt = nowUTC())
 
     fun sendTilInfotrygd(): Vedtak = this.copy(infotrygdStatus = InfotrygdStatus.KVITTERING_MANGLER)
 
@@ -75,8 +75,8 @@ data class Vedtak private constructor(
             fom: LocalDate,
             tom: LocalDate,
             journalpostId: JournalpostId?,
-            oppgaveId: OppgaveId?,
-            oppgaveAt: OffsetDateTime?,
+            gosysOppgaveId: GosysOppgaveId?,
+            gosysOppgaveAt: OffsetDateTime?,
             vedtakStatus: List<VedtakStatus>,
             infotrygdStatus: InfotrygdStatus,
         ) = Vedtak(
@@ -88,8 +88,8 @@ data class Vedtak private constructor(
             fom = fom,
             tom = tom,
             journalpostId = journalpostId,
-            oppgaveId = oppgaveId,
-            oppgaveAt = oppgaveAt,
+            gosysOppgaveId = gosysOppgaveId,
+            gosysOppgaveAt = gosysOppgaveAt,
             statusListe = vedtakStatus,
             infotrygdStatus = infotrygdStatus,
         )

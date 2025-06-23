@@ -24,7 +24,7 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.HendelseType
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
-import no.nav.syfo.infrastructure.oppgave.OppgaveService
+import no.nav.syfo.infrastructure.gosysoppgave.GosysOppgaveService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -49,8 +49,8 @@ class VedtakServiceSpek : Spek({
             pdlClient = externalMockEnvironment.pdlClient,
             isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
         )
-        val oppgaveService = OppgaveService(
-            oppgaveClient = externalMockEnvironment.oppgaveClient,
+        val gosysOppgaveService = GosysOppgaveService(
+            gosysOppgaveClient = externalMockEnvironment.gosysOppgaveClient,
         )
 
         val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
@@ -70,7 +70,7 @@ class VedtakServiceSpek : Spek({
                 pdlClient = externalMockEnvironment.pdlClient,
             ),
             journalforingService = journalforingService,
-            oppgaveService = oppgaveService,
+            oppgaveService = gosysOppgaveService,
             infotrygdService = InfotrygdService(
                 pdlClient = externalMockEnvironment.pdlClient,
                 mqSender = infotrygdMQSender,
@@ -403,19 +403,19 @@ class VedtakServiceSpek : Spek({
                 )
                 vedtakRepository.setJournalpostId(vedtakUtenOppgave.journalfor(journalpostId = journalpostId))
 
-                val result = runBlocking { vedtakService.createOppgaveForVedtakWithNoOppgave() }
+                val result = runBlocking { vedtakService.createGosysOppgaveForVedtakUtenOppgave() }
 
                 val (success, failed) = result.partition { it.isSuccess }
                 failed.shouldBeEmpty()
                 success.size shouldBeEqualTo 1
 
                 val oppdatertVedtak = vedtakRepository.getVedtak(vedtakUtenOppgave.uuid)
-                oppdatertVedtak.oppgaveId.shouldNotBeNull()
-                oppdatertVedtak.oppgaveAt.shouldNotBeNull()
+                oppdatertVedtak.gosysOppgaveId.shouldNotBeNull()
+                oppdatertVedtak.gosysOppgaveAt.shouldNotBeNull()
             }
 
             it("returns empty when no vedtak without oppgaveId") {
-                val result = runBlocking { vedtakService.createOppgaveForVedtakWithNoOppgave() }
+                val result = runBlocking { vedtakService.createGosysOppgaveForVedtakUtenOppgave() }
                 result.shouldBeEmpty()
             }
         }

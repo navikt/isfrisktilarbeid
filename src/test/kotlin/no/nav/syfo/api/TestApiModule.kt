@@ -11,7 +11,7 @@ import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
-import no.nav.syfo.infrastructure.oppgave.OppgaveService
+import no.nav.syfo.infrastructure.gosysoppgave.GosysOppgaveService
 import no.nav.syfo.infrastructure.pdf.PdfService
 
 fun Application.testApiModule(
@@ -33,8 +33,8 @@ fun Application.testApiModule(
         pdlClient = externalMockEnvironment.pdlClient,
         isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
     )
-    val oppgaveService = OppgaveService(
-        oppgaveClient = externalMockEnvironment.oppgaveClient
+    val gosysOppgaveService = GosysOppgaveService(
+        gosysOppgaveClient = externalMockEnvironment.gosysOppgaveClient
     )
     val arbeidssokeroppslagClient = ArbeidssokeroppslagClient(
         azureAdClient = externalMockEnvironment.azureAdClient,
@@ -45,7 +45,7 @@ fun Application.testApiModule(
         vedtakRepository = VedtakRepository(database = database),
         pdfService = pdfService,
         journalforingService = journalforingService,
-        oppgaveService = oppgaveService,
+        oppgaveService = gosysOppgaveService,
         infotrygdService = InfotrygdService(
             pdlClient = externalMockEnvironment.pdlClient,
             mqSender = infotrygdMQSender,

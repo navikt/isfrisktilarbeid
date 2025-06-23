@@ -86,13 +86,13 @@ class VedtakService(
         }
     }
 
-    suspend fun createOppgaveForVedtakWithNoOppgave(): List<Result<Vedtak>> =
-        vedtakRepository.getNotOppgaveVedtak().map { vedtak ->
-            oppgaveService.createOppgave(
+    suspend fun createGosysOppgaveForVedtakUtenOppgave(): List<Result<Vedtak>> =
+        vedtakRepository.getVedtakUtenGosysOppgave().map { vedtak ->
+            oppgaveService.createGosysOppgave(
                 vedtak = vedtak,
-            ).map { oppgaveId ->
-                vedtak.oppgave(oppgaveId = oppgaveId).also { updatedVedtak ->
-                    vedtakRepository.setOppgaveId(updatedVedtak)
+            ).map { gosysOppgaveId ->
+                vedtak.setGosysOppgaveId(gosysOppgaveId = gosysOppgaveId).also { updatedVedtak ->
+                    vedtakRepository.setGosysOppgaveId(updatedVedtak)
                 }
             }
         }
