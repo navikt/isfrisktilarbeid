@@ -32,7 +32,7 @@ import no.nav.syfo.infrastructure.mq.InfotrygdKvitteringMQConsumer
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.mq.connectionFactory
 import no.nav.syfo.infrastructure.mq.consumerForQueue
-import no.nav.syfo.infrastructure.gosysoppgave.GosysOppgaveService
+import no.nav.syfo.infrastructure.gosysoppgave.GosysGosysOppgaveService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
@@ -101,7 +101,7 @@ fun main() {
         isJournalforingRetryEnabled = environment.isJournalforingRetryEnabled,
     )
 
-    val gosysOppgaveService = GosysOppgaveService(
+    val gosysOppgaveService = GosysGosysOppgaveService(
         gosysOppgaveClient = gosysOppgaveClient,
     )
 
@@ -134,7 +134,7 @@ fun main() {
                 vedtakRepository = vedtakRepository,
                 infotrygdService = infotrygdService,
                 journalforingService = journalforingService,
-                oppgaveService = gosysOppgaveService,
+                gosysOppgaveService = gosysOppgaveService,
                 vedtakProducer = vedtakProducer,
             )
             apiModule(

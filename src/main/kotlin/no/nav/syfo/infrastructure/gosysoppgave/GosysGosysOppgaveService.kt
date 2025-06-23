@@ -1,15 +1,15 @@
 package no.nav.syfo.infrastructure.gosysoppgave
 
-import no.nav.syfo.application.IOppgaveService
+import no.nav.syfo.application.IGosysOppgaveService
 import no.nav.syfo.domain.GosysOppgaveId
 import no.nav.syfo.domain.Vedtak
 import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
 import no.nav.syfo.infrastructure.clients.gosysoppgave.OppgaveRequest
 import java.time.format.DateTimeFormatter
 
-class GosysOppgaveService(
+class GosysGosysOppgaveService(
     val gosysOppgaveClient: GosysOppgaveClient,
-) : IOppgaveService {
+) : IGosysOppgaveService {
 
     private val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 

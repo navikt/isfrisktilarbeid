@@ -9,7 +9,7 @@ class VedtakService(
     private val pdfService: IPdfService,
     private val vedtakRepository: IVedtakRepository,
     private val journalforingService: IJournalforingService,
-    private val oppgaveService: IOppgaveService,
+    private val gosysOppgaveService: IGosysOppgaveService,
     private val infotrygdService: InfotrygdService,
     private val vedtakProducer: IVedtakProducer,
 ) {
@@ -88,7 +88,7 @@ class VedtakService(
 
     suspend fun createGosysOppgaveForVedtakUtenOppgave(): List<Result<Vedtak>> =
         vedtakRepository.getVedtakUtenGosysOppgave().map { vedtak ->
-            oppgaveService.createGosysOppgave(
+            gosysOppgaveService.createGosysOppgave(
                 vedtak = vedtak,
             ).map { gosysOppgaveId ->
                 vedtak.setGosysOppgaveId(gosysOppgaveId = gosysOppgaveId).also { updatedVedtak ->

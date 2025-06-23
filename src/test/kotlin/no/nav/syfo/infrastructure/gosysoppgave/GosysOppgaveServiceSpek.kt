@@ -14,9 +14,9 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
 class GosysOppgaveServiceSpek : Spek({
-    describe(GosysOppgaveService::class.java.simpleName) {
+    describe(GosysGosysOppgaveService::class.java.simpleName) {
         val gosysOppgaveClientMock = mockk<GosysOppgaveClient>(relaxed = true)
-        val gosysOppgaveService = GosysOppgaveService(
+        val gosysOppgaveService = GosysGosysOppgaveService(
             gosysOppgaveClient = gosysOppgaveClientMock,
         )
 
