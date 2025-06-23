@@ -5,9 +5,9 @@ import io.ktor.client.request.*
 import no.nav.syfo.infrastructure.clients.gosysoppgave.OppgaveRequest
 import no.nav.syfo.infrastructure.clients.gosysoppgave.OppgaveResponse
 
-const val oppgaveId = "456"
+const val gosysOppgaveId = "456"
 val oppgaveResponse = OppgaveResponse(
-    id = oppgaveId
+    id = gosysOppgaveId
 )
 
 suspend fun MockRequestHandleScope.oppgaveMockResponse(request: HttpRequestData): HttpResponseData {

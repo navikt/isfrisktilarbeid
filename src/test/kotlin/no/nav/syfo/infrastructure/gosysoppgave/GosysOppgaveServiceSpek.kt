@@ -13,7 +13,7 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-class OppgaveServiceSpek : Spek({
+class GosysOppgaveServiceSpek : Spek({
     describe(GosysOppgaveService::class.java.simpleName) {
         val gosysOppgaveClientMock = mockk<GosysOppgaveClient>(relaxed = true)
         val gosysOppgaveService = GosysOppgaveService(
