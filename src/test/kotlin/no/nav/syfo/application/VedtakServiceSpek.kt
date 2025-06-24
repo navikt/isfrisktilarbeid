@@ -24,7 +24,7 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.HendelseType
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
-import no.nav.syfo.infrastructure.gosysoppgave.GosysGosysOppgaveService
+import no.nav.syfo.infrastructure.gosysoppgave.GosysOppgaveService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -49,7 +49,7 @@ class VedtakServiceSpek : Spek({
             pdlClient = externalMockEnvironment.pdlClient,
             isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
         )
-        val gosysOppgaveService = GosysGosysOppgaveService(
+        val gosysOppgaveService = GosysOppgaveService(
             gosysOppgaveClient = externalMockEnvironment.gosysOppgaveClient,
         )
 

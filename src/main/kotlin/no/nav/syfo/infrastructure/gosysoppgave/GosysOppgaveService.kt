@@ -7,7 +7,7 @@ import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
 import no.nav.syfo.infrastructure.clients.gosysoppgave.OppgaveRequest
 import java.time.format.DateTimeFormatter
 
-class GosysGosysOppgaveService(
+class GosysOppgaveService(
     val gosysOppgaveClient: GosysOppgaveClient,
 ) : IGosysOppgaveService {
 
