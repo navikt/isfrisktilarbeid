@@ -33,12 +33,6 @@ class GosysOppgaveServiceSpek : Spek({
                 coEvery { gosysOppgaveClientMock.createOppgave(any(), any()) } returns
                     OppgaveResponse(
                         id = expectedOppgaveId,
-                        beskrivelse = "Innvilget i perioden (${vedtak.fom} - ${vedtak.tom})",
-                        status = "OPPRETTET",
-                        oppgavetype = "VURD_HENV",
-                        tema = "SYK",
-                        tildeltEnhetsnr = "4488",
-                        versjon = 1
                     )
 
                 val result = runBlocking {
