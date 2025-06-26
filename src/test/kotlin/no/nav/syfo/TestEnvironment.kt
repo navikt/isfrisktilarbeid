@@ -48,7 +48,7 @@ fun testEnvironment() = Environment(
             baseUrl = "dokarkivUrl",
             clientId = "dokarkivClientId",
         ),
-        oppgave = ClientEnvironment(
+        gosysoppgave = ClientEnvironment(
             baseUrl = "oppgaveUrl",
             clientId = "oppgaveClientId",
         ),

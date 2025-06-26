@@ -47,7 +47,7 @@ class ExternalMockEnvironment private constructor() {
     )
     val gosysOppgaveClient = GosysOppgaveClient(
         azureAdClient = azureAdClient,
-        environment = environment.clients.oppgave,
+        environment = environment.clients.gosysoppgave,
         httpClient = mockHttpClient,
     )
     val arbeidssokeroppslagClient = ArbeidssokeroppslagClient(

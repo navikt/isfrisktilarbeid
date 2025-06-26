@@ -62,7 +62,7 @@ fun main() {
     )
     val gosysOppgaveClient = GosysOppgaveClient(
         azureAdClient = azureAdClient,
-        environment = environment.clients.oppgave,
+        environment = environment.clients.gosysoppgave,
     )
 
     val pdfGenClient = PdfGenClient(
