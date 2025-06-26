@@ -413,6 +413,14 @@ class VedtakServiceSpek : Spek({
                 oppdatertVedtak.gosysOppgaveId.shouldNotBeNull()
                 oppdatertVedtak.gosysOppgaveAt.shouldNotBeNull()
             }
+            it("returns empty when vedtak without oppgaveId is not journalfort") {
+                vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                )
+                val result = runBlocking { vedtakService.createGosysOppgaveForVedtakUtenOppgave() }
+                result.shouldBeEmpty()
+            }
 
             it("returns empty when no vedtak without oppgaveId") {
                 val result = runBlocking { vedtakService.createGosysOppgaveForVedtakUtenOppgave() }
