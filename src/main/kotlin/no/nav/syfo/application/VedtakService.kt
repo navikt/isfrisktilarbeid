@@ -9,6 +9,7 @@ class VedtakService(
     private val pdfService: IPdfService,
     private val vedtakRepository: IVedtakRepository,
     private val journalforingService: IJournalforingService,
+    private val gosysOppgaveService: IGosysOppgaveService,
     private val infotrygdService: InfotrygdService,
     private val vedtakProducer: IVedtakProducer,
 ) {
@@ -84,6 +85,17 @@ class VedtakService(
             }
         }
     }
+
+    suspend fun createGosysOppgaveForVedtakUtenOppgave(): List<Result<Vedtak>> =
+        vedtakRepository.getVedtakUtenGosysOppgave().map { vedtak ->
+            gosysOppgaveService.createGosysOppgave(
+                vedtak = vedtak,
+            ).map { gosysOppgaveId ->
+                vedtak.setGosysOppgaveId(gosysOppgaveId = gosysOppgaveId).also { updatedVedtak ->
+                    vedtakRepository.setGosysOppgaveId(updatedVedtak)
+                }
+            }
+        }
 
     fun publishVedtakVarsel(): List<Result<Vedtak>> {
         val unpublishedVedtakVarsler = vedtakRepository.getUnpublishedVedtakVarsler()

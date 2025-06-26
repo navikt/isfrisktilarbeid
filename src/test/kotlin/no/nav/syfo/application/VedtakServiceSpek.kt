@@ -24,6 +24,7 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.HendelseType
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
+import no.nav.syfo.infrastructure.gosysoppgave.GosysOppgaveService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -48,6 +49,9 @@ class VedtakServiceSpek : Spek({
             pdlClient = externalMockEnvironment.pdlClient,
             isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
         )
+        val gosysOppgaveService = GosysOppgaveService(
+            gosysOppgaveClient = externalMockEnvironment.gosysOppgaveClient,
+        )
 
         val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
         val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(mockEsyfoVarselKafkaProducer)
@@ -66,6 +70,7 @@ class VedtakServiceSpek : Spek({
                 pdlClient = externalMockEnvironment.pdlClient,
             ),
             journalforingService = journalforingService,
+            gosysOppgaveService = gosysOppgaveService,
             infotrygdService = InfotrygdService(
                 pdlClient = externalMockEnvironment.pdlClient,
                 mqSender = infotrygdMQSender,
@@ -387,6 +392,39 @@ class VedtakServiceSpek : Spek({
 
                 verify(exactly = 1) { infotrygdMQSender.sendToMQ(any(), any()) }
                 result.isFailure.shouldBeTrue()
+            }
+        }
+
+        describe("createOppgaveForVedtakWithNoOppgave") {
+            it("creates oppgave for vedtak without oppgaveId") {
+                val vedtakUtenOppgave = vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                )
+                vedtakRepository.setJournalpostId(vedtakUtenOppgave.journalfor(journalpostId = journalpostId))
+
+                val result = runBlocking { vedtakService.createGosysOppgaveForVedtakUtenOppgave() }
+
+                val (success, failed) = result.partition { it.isSuccess }
+                failed.shouldBeEmpty()
+                success.size shouldBeEqualTo 1
+
+                val oppdatertVedtak = vedtakRepository.getVedtak(vedtakUtenOppgave.uuid)
+                oppdatertVedtak.gosysOppgaveId.shouldNotBeNull()
+                oppdatertVedtak.gosysOppgaveAt.shouldNotBeNull()
+            }
+            it("returns empty when vedtak without oppgaveId is not journalfort") {
+                vedtakRepository.createVedtak(
+                    vedtak = vedtak,
+                    vedtakPdf = UserConstants.PDF_VEDTAK,
+                )
+                val result = runBlocking { vedtakService.createGosysOppgaveForVedtakUtenOppgave() }
+                result.shouldBeEmpty()
+            }
+
+            it("returns empty when no vedtak without oppgaveId") {
+                val result = runBlocking { vedtakService.createGosysOppgaveForVedtakUtenOppgave() }
+                result.shouldBeEmpty()
             }
         }
     }

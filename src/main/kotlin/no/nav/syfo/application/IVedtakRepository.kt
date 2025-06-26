@@ -21,7 +21,11 @@ interface IVedtakRepository {
 
     fun getNotJournalforteVedtak(): List<Pair<Vedtak, ByteArray>>
 
+    fun getVedtakUtenGosysOppgave(): List<Vedtak>
+
     fun setJournalpostId(vedtak: Vedtak)
+
+    fun setGosysOppgaveId(vedtak: Vedtak)
 
     fun getUnpublishedVedtakVarsler(): List<Vedtak>
 

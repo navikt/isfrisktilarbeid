@@ -65,6 +65,10 @@ data class Environment(
                 baseUrl = getEnvVar("DOKARKIV_URL"),
                 clientId = getEnvVar("DOKARKIV_CLIENT_ID"),
             ),
+            gosysoppgave = ClientEnvironment(
+                baseUrl = getEnvVar("OPPGAVE_URL"),
+                clientId = getEnvVar("OPPGAVE_CLIENT_ID"),
+            ),
             arbeidssokeroppslag = ClientEnvironment(
                 baseUrl = getEnvVar("ARBEIDSSOKER_OPPSLAG_URL"),
                 clientId = getEnvVar("ARBEIDSSOKER_OPPSLAG_CLIENT_ID"),

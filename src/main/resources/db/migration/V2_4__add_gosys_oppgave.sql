@@ -1,0 +1,4 @@
+ALTER TABLE VEDTAK ADD COLUMN gosys_oppgave_at TIMESTAMPTZ;
+ALTER TABLE VEDTAK ADD COLUMN gosys_oppgave_id VARCHAR(20);
+
+UPDATE VEDTAK SET gosys_oppgave_id='0';

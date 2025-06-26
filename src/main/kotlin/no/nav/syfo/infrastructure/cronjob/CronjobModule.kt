@@ -26,6 +26,9 @@ fun launchCronjobs(
     val journalforVedtakCronjob = JournalforVedtakCronjob(vedtakService = vedtakService)
     cronjobs.add(journalforVedtakCronjob)
 
+    val gosysOppgaveCronjob = GosysOppgaveCronjob(vedtakService = vedtakService)
+    cronjobs.add(gosysOppgaveCronjob)
+
     val publishVedtakVarselCronjob = PublishVedtakVarselCronjob(vedtakService = vedtakService)
     cronjobs.add(publishVedtakVarselCronjob)
 

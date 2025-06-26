@@ -11,6 +11,7 @@ import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
+import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
@@ -31,6 +32,7 @@ import no.nav.syfo.infrastructure.mq.InfotrygdKvitteringMQConsumer
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.mq.connectionFactory
 import no.nav.syfo.infrastructure.mq.consumerForQueue
+import no.nav.syfo.infrastructure.gosysoppgave.GosysOppgaveService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
@@ -58,6 +60,11 @@ fun main() {
         azureAdClient = azureAdClient,
         dokarkivEnvironment = environment.clients.dokarkiv,
     )
+    val gosysOppgaveClient = GosysOppgaveClient(
+        azureAdClient = azureAdClient,
+        environment = environment.clients.gosysoppgave,
+    )
+
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.clients.ispdfgen.baseUrl,
     )
@@ -94,6 +101,10 @@ fun main() {
         isJournalforingRetryEnabled = environment.isJournalforingRetryEnabled,
     )
 
+    val gosysOppgaveService = GosysOppgaveService(
+        gosysOppgaveClient = gosysOppgaveClient,
+    )
+
     lateinit var vedtakRepository: IVedtakRepository
     lateinit var vedtakService: VedtakService
 
@@ -123,6 +134,7 @@ fun main() {
                 vedtakRepository = vedtakRepository,
                 infotrygdService = infotrygdService,
                 journalforingService = journalforingService,
+                gosysOppgaveService = gosysOppgaveService,
                 vedtakProducer = vedtakProducer,
             )
             apiModule(

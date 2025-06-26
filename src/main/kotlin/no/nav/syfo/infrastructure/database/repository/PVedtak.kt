@@ -16,6 +16,8 @@ data class PVedtak(
     val begrunnelse: String,
     val document: List<DocumentComponent>,
     val journalpostId: String?,
+    val gosysOppgaveId: String?,
+    val gosysOppgaveAt: OffsetDateTime?,
     val pdfId: Int,
     val publishedInfotrygdAt: OffsetDateTime?,
     val varselPublishedAt: OffsetDateTime?,
@@ -30,6 +32,8 @@ data class PVedtak(
         fom = fom,
         tom = tom,
         journalpostId = journalpostId?.let { JournalpostId(it) },
+        gosysOppgaveId = gosysOppgaveId?.let { GosysOppgaveId(it) },
+        gosysOppgaveAt = gosysOppgaveAt,
         vedtakStatus = statusListe.map {
             it.toVedtakStatus()
         },
