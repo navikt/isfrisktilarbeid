@@ -12,6 +12,7 @@ import no.nav.syfo.infrastructure.clients.gosysoppgave.OppgaveResponse
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 
 class GosysOppgaveServiceSpek : Spek({
     describe(GosysOppgaveService::class.java.simpleName) {
@@ -45,7 +46,8 @@ class GosysOppgaveServiceSpek : Spek({
                     gosysOppgaveClientMock.createOppgave(
                         request = match {
                             it.personident == vedtak.personident.value &&
-                                it.journalpostId == vedtak.journalpostId!!.value
+                                it.journalpostId == vedtak.journalpostId!!.value &&
+                                it.fristFerdigstillelse == LocalDate.now()
                         },
                         correlationId = vedtak.uuid,
                     )
