@@ -12,4 +12,5 @@ data class OppgaveRequest(
     val beskrivelse: String,
     val prioritet: String,
     val aktivDato: LocalDate = LocalDate.now(),
+    val fristFerdigstillelse: LocalDate = LocalDate.now(),
 )
