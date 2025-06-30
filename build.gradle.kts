@@ -2,13 +2,13 @@ group = "no.nav.syfo"
 version = "0.0.1"
 
 val CONFLUENT = "7.9.0"
-val FLYWAY = "11.9.2"
+val FLYWAY = "11.10.0"
 val HIKARI = "6.3.0"
 val POSTGRES = "42.7.7"
 val POSTGRES_EMBEDDED = "2.1.0"
 val LOGBACK = "1.5.18"
 val LOGSTASH_ENCODER = "8.1"
-val MICROMETER_REGISTRY = "1.12.13"
+val MICROMETER_REGISTRY = "1.15.1"
 val JACKSON_DATATYPE = "2.19.1"
 val KAFKA = "3.9.0"
 val KTOR = "3.2.0"
@@ -20,7 +20,7 @@ val KLUENT = "1.73"
 
 plugins {
     kotlin("jvm") version "2.2.0"
-    id("com.gradleup.shadow") version "8.3.6"
+    id("com.gradleup.shadow") version "8.3.7"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
