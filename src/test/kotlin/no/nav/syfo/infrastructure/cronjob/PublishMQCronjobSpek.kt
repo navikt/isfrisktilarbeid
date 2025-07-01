@@ -69,7 +69,7 @@ class PublishMQCronjobSpek : Spek({
                 verify(exactly = 0) { mqSenderMock.sendToMQ(any(), any()) }
             }
             it("Sender vedtak lagret for 1 minutt siden") {
-                val vedtak = runBlocking {
+                val (vedtak, _) = runBlocking {
                     vedtakService.createVedtak(
                         personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
                         veilederident = UserConstants.VEILEDER_IDENT,

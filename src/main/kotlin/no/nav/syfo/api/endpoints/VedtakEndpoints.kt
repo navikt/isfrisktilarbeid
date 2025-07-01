@@ -5,7 +5,11 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.api.model.VilkarResponseDTO
@@ -32,7 +36,10 @@ fun Route.registerVedtakEndpoints(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     vedtakService: VedtakService,
     arbeidssokeroppslagClient: ArbeidssokeroppslagClient,
+    dispatcher: CoroutineDispatcher,
 ) {
+    val coroutineScope = CoroutineScope(SupervisorJob() + dispatcher)
+
     route(apiBasePath) {
         install(VeilederTilgangskontrollPlugin) {
             this.action = API_ACTION
@@ -87,7 +94,7 @@ fun Route.registerVedtakEndpoints(
                 log.warn("Forsøker å opprette vedtak for person som ikke er registrert som arbeidssøker")
                 call.respond(HttpStatusCode.BadRequest, "Personen er ikke registrert som arbeidssøker")
             } else {
-                val newVedtak = vedtakService.createVedtak(
+                val (newVedtak, pdf) = vedtakService.createVedtak(
                     personident = personident,
                     veilederident = navIdent,
                     begrunnelse = requestDTO.begrunnelse,
@@ -101,6 +108,15 @@ fun Route.registerVedtakEndpoints(
 
                 val vedtak = vedtakService.getVedtak(uuid = newVedtak.uuid)
                 log.info("Created vedtak with infotrygd status: ${vedtak.infotrygdStatus}")
+
+                coroutineScope.launch {
+                    try {
+                        val journalfortVedtak = vedtakService.journalforVedtak(vedtak, pdf).getOrThrow()
+                        vedtakService.createGosysOppgaveForVedtak(journalfortVedtak)
+                    } catch (exc: Exception) {
+                        log.error("Journalforing eller gosysoppgave feilet, cronjob vil forsøke på nytt", exc)
+                    }
+                }
 
                 call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = vedtak))
             }

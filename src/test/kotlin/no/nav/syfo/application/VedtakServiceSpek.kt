@@ -12,6 +12,7 @@ import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtakStatusPublishedAt
 import no.nav.syfo.infrastructure.database.getVedtakVarselPublishedAt
+import no.nav.syfo.infrastructure.database.setVedtakCreatedAt
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.VedtakStatusProducer
@@ -32,6 +33,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
 import java.util.concurrent.Future
 
 val vedtak = generateVedtak()
@@ -112,6 +114,7 @@ class VedtakServiceSpek : Spek({
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
                 )
+                database.setVedtakCreatedAt(OffsetDateTime.now().minusMinutes(1), vedtak.uuid)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -152,6 +155,7 @@ class VedtakServiceSpek : Spek({
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
                 )
+                database.setVedtakCreatedAt(OffsetDateTime.now().minusMinutes(1), failingVedtak.uuid)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -167,6 +171,7 @@ class VedtakServiceSpek : Spek({
                     vedtak = failingVedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
                 )
+                database.setVedtakCreatedAt(OffsetDateTime.now().minusMinutes(1), failingVedtak.uuid)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -186,6 +191,8 @@ class VedtakServiceSpek : Spek({
                     vedtak = vedtak,
                     vedtakPdf = UserConstants.PDF_VEDTAK,
                 )
+                database.setVedtakCreatedAt(OffsetDateTime.now().minusMinutes(1), failingVedtak.uuid)
+                database.setVedtakCreatedAt(OffsetDateTime.now().minusMinutes(1), vedtak.uuid)
 
                 val journalforteVedtak = runBlocking { vedtakService.journalforVedtak() }
 
@@ -402,6 +409,7 @@ class VedtakServiceSpek : Spek({
                     vedtakPdf = UserConstants.PDF_VEDTAK,
                 )
                 vedtakRepository.setJournalpostId(vedtakUtenOppgave.journalfor(journalpostId = journalpostId))
+                database.setVedtakCreatedAt(OffsetDateTime.now().minusMinutes(1), vedtakUtenOppgave.uuid)
 
                 val result = runBlocking { vedtakService.createGosysOppgaveForVedtakUtenOppgave() }
 

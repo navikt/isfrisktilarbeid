@@ -26,7 +26,7 @@ class VedtakService(
         fom: LocalDate,
         tom: LocalDate,
         callId: String,
-    ): Vedtak {
+    ): Pair<Vedtak, ByteArray> {
         val vedtak = Vedtak(
             personident = personident,
             veilederident = veilederident,
@@ -41,7 +41,7 @@ class VedtakService(
             vedtakPdf = vedtakPdf,
         )
 
-        return createdVedtak
+        return Pair(createdVedtak, vedtakPdf)
     }
 
     fun ferdigbehandleVedtak(
@@ -73,27 +73,30 @@ class VedtakService(
     suspend fun journalforVedtak(): List<Result<Vedtak>> {
         val notJournalforteVedtak = vedtakRepository.getNotJournalforteVedtak()
 
-        return notJournalforteVedtak.map { (vedtak, pdf) ->
-            journalforingService.journalfor(
-                vedtak = vedtak,
-                pdf = pdf,
-            ).map {
-                val journalfortVedtak = vedtak.journalfor(journalpostId = it)
-                vedtakRepository.setJournalpostId(journalfortVedtak)
-
-                journalfortVedtak
-            }
-        }
+        return notJournalforteVedtak.map { (vedtak, pdf) -> journalforVedtak(vedtak, pdf) }
     }
+
+    suspend fun journalforVedtak(vedtak: Vedtak, pdf: ByteArray): Result<Vedtak> =
+        journalforingService.journalfor(
+            vedtak = vedtak,
+            pdf = pdf,
+        ).map {
+            val journalfortVedtak = vedtak.journalfor(journalpostId = it)
+            vedtakRepository.setJournalpostId(journalfortVedtak)
+            journalfortVedtak
+        }
 
     suspend fun createGosysOppgaveForVedtakUtenOppgave(): List<Result<Vedtak>> =
         vedtakRepository.getVedtakUtenGosysOppgave().map { vedtak ->
-            gosysOppgaveService.createGosysOppgave(
-                vedtak = vedtak,
-            ).map { gosysOppgaveId ->
-                vedtak.setGosysOppgaveId(gosysOppgaveId = gosysOppgaveId).also { updatedVedtak ->
-                    vedtakRepository.setGosysOppgaveId(updatedVedtak)
-                }
+            createGosysOppgaveForVedtak(vedtak)
+        }
+
+    suspend fun createGosysOppgaveForVedtak(vedtak: Vedtak): Result<Vedtak> =
+        gosysOppgaveService.createGosysOppgave(
+            vedtak = vedtak,
+        ).map { gosysOppgaveId ->
+            vedtak.setGosysOppgaveId(gosysOppgaveId = gosysOppgaveId).also { updatedVedtak ->
+                vedtakRepository.setGosysOppgaveId(updatedVedtak)
             }
         }
 
