@@ -109,6 +109,7 @@ fun Route.registerVedtakEndpoints(
 
                 val vedtak = vedtakService.getVedtak(uuid = newVedtak.uuid)
                 log.info("Created vedtak with infotrygd status: ${vedtak.infotrygdStatus}")
+                call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = vedtak))
 
                 coroutineScope.launch {
                     try {
@@ -123,8 +124,6 @@ fun Route.registerVedtakEndpoints(
                         log.error("Journalforing eller gosysoppgave feilet, cronjob vil forsøke på nytt", exc)
                     }
                 }
-
-                call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = vedtak))
             }
         }
         put(ferdigbehandlingPath) {
