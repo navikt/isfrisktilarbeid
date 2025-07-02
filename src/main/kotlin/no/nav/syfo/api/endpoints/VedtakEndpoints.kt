@@ -114,10 +114,7 @@ fun Route.registerVedtakEndpoints(
                 coroutineScope.launch {
                     try {
                         val journalfortVedtak = vedtakService.journalforVedtak(vedtak, pdf).getOrThrow()
-                        if (
-                            journalfortVedtak.journalpostId != null &&
-                            journalfortVedtak.journalpostId.value != DEFAULT_FAILED_JP_ID.toString()
-                        ) {
+                        if (journalfortVedtak.isJournalfort()) {
                             vedtakService.createGosysOppgaveForVedtak(journalfortVedtak)
                         }
                     } catch (exc: Exception) {

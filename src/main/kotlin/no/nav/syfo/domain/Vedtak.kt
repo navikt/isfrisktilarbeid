@@ -1,5 +1,6 @@
 package no.nav.syfo.domain
 
+import no.nav.syfo.infrastructure.journalforing.JournalforingService.Companion.DEFAULT_FAILED_JP_ID
 import no.nav.syfo.util.nowUTC
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -47,6 +48,8 @@ data class Vedtak private constructor(
     )
 
     fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
+
+    fun isJournalfort(): Boolean = journalpostId != null && journalpostId.value != DEFAULT_FAILED_JP_ID.toString()
 
     fun setGosysOppgaveId(gosysOppgaveId: GosysOppgaveId): Vedtak = this.copy(gosysOppgaveId = gosysOppgaveId, gosysOppgaveAt = nowUTC())
 
