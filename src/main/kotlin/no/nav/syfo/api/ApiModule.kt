@@ -12,6 +12,7 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
+import kotlinx.coroutines.Dispatchers
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
 import no.nav.syfo.api.auth.JwtIssuer
@@ -66,6 +67,7 @@ fun Application.apiModule(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 vedtakService = vedtakService,
                 arbeidssokeroppslagClient = arbeidssokeroppslagClient,
+                dispatcher = Dispatchers.IO.limitedParallelism(20),
             )
         }
     }

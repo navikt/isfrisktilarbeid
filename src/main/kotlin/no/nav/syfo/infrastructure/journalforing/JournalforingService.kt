@@ -77,7 +77,7 @@ class JournalforingService(
         )
     }
     companion object {
-        private const val DEFAULT_FAILED_JP_ID = 0
+        const val DEFAULT_FAILED_JP_ID = 0
         private val log = LoggerFactory.getLogger(JournalforingService::class.java)
     }
 }

@@ -339,14 +339,14 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                  SELECT v.*, p.pdf
                  FROM vedtak v
                  INNER JOIN pdf p ON v.pdf_id = p.id
-                 WHERE v.journalpost_id IS NULL
+                 WHERE v.journalpost_id IS NULL AND v.created_at < now() - interval '1 minutes'
             """
 
         private const val GET_VEDTAK_UTEN_OPPGAVE =
             """
                  SELECT *
                  FROM vedtak
-                 WHERE journalpost_id IS NOT NULL AND journalpost_id != '0' AND gosys_oppgave_id IS NULL
+                 WHERE journalpost_id IS NOT NULL AND journalpost_id != '0' AND gosys_oppgave_id IS NULL AND created_at < now() - interval '1 minutes'
             """
 
         private const val GET_UNPUBLISHED_VEDTAK_VARSLER =

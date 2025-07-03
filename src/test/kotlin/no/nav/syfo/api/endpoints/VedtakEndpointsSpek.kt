@@ -461,7 +461,7 @@ object VedtakEndpointsSpek : Spek({
                 }
             }
             it("Returns status Conflict when overlapping vedtak exists") {
-                val vedtak = createVedtak(vedtakRequestDTO)
+                val (vedtak, _) = createVedtak(vedtakRequestDTO)
                 vedtakService.ferdigbehandleVedtak(vedtak, UserConstants.VEILEDER_IDENT)
 
                 val newRequest = vedtakRequestDTO.copy(
@@ -482,7 +482,7 @@ object VedtakEndpointsSpek : Spek({
                 }
             }
             it("Does not return status Conflict when non-overlapping vedtak exists") {
-                val vedtak = createVedtak(vedtakRequestDTO)
+                val (vedtak, _) = createVedtak(vedtakRequestDTO)
                 vedtakService.ferdigbehandleVedtak(vedtak, UserConstants.VEILEDER_IDENT)
 
                 val newRequest = vedtakRequestDTO.copy(
@@ -506,7 +506,7 @@ object VedtakEndpointsSpek : Spek({
 
         describe("PUT vedtak ferdigbehandlet") {
             it("Sets vedtak ferdigbehandlet and updates veileder") {
-                val vedtak = createVedtak(vedtakRequestDTO)
+                val (vedtak, _) = createVedtak(vedtakRequestDTO)
 
                 testApplication {
                     val client = setupApiAndClient()
@@ -537,7 +537,7 @@ object VedtakEndpointsSpek : Spek({
                 }
             }
             it("Throws error when ferdigbehandler already ferdigbehandlet vedtak") {
-                val vedtak = createVedtak(vedtakRequestDTO)
+                val (vedtak, _) = createVedtak(vedtakRequestDTO)
                 vedtakService.ferdigbehandleVedtak(vedtak, UserConstants.VEILEDER_IDENT)
 
                 testApplication {
