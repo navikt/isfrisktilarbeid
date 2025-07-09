@@ -6,6 +6,7 @@ val FLYWAY = "11.9.2"
 val HIKARI = "6.3.0"
 val POSTGRES = "42.7.7"
 val POSTGRES_EMBEDDED = "2.1.0"
+val POSTGRES_RUNTIME_VERSION = "17.5.0"
 val LOGBACK = "1.5.18"
 val LOGSTASH_ENCODER = "8.1"
 val MICROMETER_REGISTRY = "1.12.13"
@@ -55,6 +56,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$HIKARI")
     implementation("org.flywaydb:flyway-database-postgresql:$FLYWAY")
     testImplementation("io.zonky.test:embedded-postgres:$POSTGRES_EMBEDDED")
+    testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:$POSTGRES_RUNTIME_VERSION"))
 
     // Kafka
     val excludeLog4j = fun ExternalModuleDependency.() {
