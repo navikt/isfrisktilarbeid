@@ -3,7 +3,7 @@ version = "0.0.1"
 
 val CONFLUENT = "7.9.0"
 val FLYWAY = "11.9.2"
-val HIKARI = "6.3.0"
+val HIKARI = "7.0.0"
 val POSTGRES = "42.7.7"
 val POSTGRES_EMBEDDED = "2.1.0"
 val POSTGRES_RUNTIME_VERSION = "17.5.0"
