@@ -16,7 +16,7 @@ jobs:
     name: Deploy Kafka topics to dev-gcp
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Deploy isfrisktilarbeid-vedtak-status topic to dev
         uses: nais/deploy/actions/deploy@v2
@@ -31,7 +31,7 @@ jobs:
     needs: deploy-kafka-frisktilarbeid-dev
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Deploy isfrisktilarbeid-vedtak-status topic to prod
         uses: nais/deploy/actions/deploy@v2
