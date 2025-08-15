@@ -103,16 +103,6 @@ fun Route.registerVedtakEndpoints(
                     tom = requestDTO.tom,
                     callId = callId,
                 )
-                coroutineScope.launch {
-                    try {
-                        val journalfortVedtak = vedtakService.journalforVedtak(newVedtak, pdf).getOrThrow()
-                        if (journalfortVedtak.isJournalfort()) {
-                            vedtakService.createGosysOppgaveForVedtak(journalfortVedtak)
-                        }
-                    } catch (exc: Exception) {
-                        log.error("Journalforing eller gosysoppgave feilet, cronjob vil forsøke på nytt", exc)
-                    }
-                }
                 vedtakService.sendVedtakToInfotrygd(vedtak = newVedtak)
                 delay(1000) // Wait for infotrygd kvittering to be consumed
 
@@ -120,6 +110,16 @@ fun Route.registerVedtakEndpoints(
                 log.info("Created vedtak with infotrygd status: ${vedtak.infotrygdStatus}")
                 call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = vedtak))
 
+                coroutineScope.launch {
+                    try {
+                        val journalfortVedtak = vedtakService.journalforVedtak(vedtak, pdf).getOrThrow()
+                        if (journalfortVedtak.isJournalfort()) {
+                            vedtakService.createGosysOppgaveForVedtak(journalfortVedtak)
+                        }
+                    } catch (exc: Exception) {
+                        log.error("Journalforing eller gosysoppgave feilet, cronjob vil forsøke på nytt", exc)
+                    }
+                }
             }
         }
         put(ferdigbehandlingPath) {
