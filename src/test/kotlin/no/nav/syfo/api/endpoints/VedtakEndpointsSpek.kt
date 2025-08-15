@@ -181,6 +181,8 @@ object VedtakEndpointsSpek : Spek({
                     vedtakResponse[0].personident shouldBeEqualTo personident.value
                     vedtakResponse[0].veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
                     vedtakResponse[0].infotrygdStatus shouldBeEqualTo InfotrygdStatus.IKKE_SENDT.name
+                    vedtakResponse[0].journalfort shouldBeEqualTo false
+                    vedtakResponse[0].gosysOppgave shouldBeEqualTo false
 
                     val vedtakPdf = database.getVedtakPdf(vedtakUuid = vedtakResponse[0].uuid)?.pdf!!
                     vedtakPdf.size shouldBeEqualTo PDF_VEDTAK.size
@@ -212,6 +214,10 @@ object VedtakEndpointsSpek : Spek({
                     val vedtakResponse = response.body<List<VedtakResponseDTO>>()
                     vedtakResponse.size shouldBeEqualTo 2
                     vedtakResponse[0].createdAt shouldBeAfter vedtakResponse[1].createdAt
+                    vedtakResponse[0].journalfort shouldBeEqualTo false
+                    vedtakResponse[0].gosysOppgave shouldBeEqualTo false
+                    vedtakResponse[1].journalfort shouldBeEqualTo false
+                    vedtakResponse[1].gosysOppgave shouldBeEqualTo false
                 }
             }
         }
@@ -270,6 +276,8 @@ object VedtakEndpointsSpek : Spek({
                     vedtakResponse.tom shouldBeEqualTo vedtakTom
                     vedtakResponse.personident shouldBeEqualTo personident.value
                     vedtakResponse.veilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
+                    vedtakResponse.journalfort shouldBeEqualTo true
+                    vedtakResponse.gosysOppgave shouldBeEqualTo true
 
                     val vedtakPdf = database.getVedtakPdf(vedtakUuid = vedtakResponse.uuid)?.pdf!!
                     vedtakPdf.size shouldBeEqualTo PDF_VEDTAK.size
@@ -299,6 +307,9 @@ object VedtakEndpointsSpek : Spek({
                     }
 
                     response.status shouldBeEqualTo HttpStatusCode.Created
+                    val vedtakResponse = response.body<VedtakResponseDTO>()
+                    vedtakResponse.journalfort shouldBeEqualTo true
+                    vedtakResponse.gosysOppgave shouldBeEqualTo true
                 }
             }
 
@@ -349,6 +360,8 @@ object VedtakEndpointsSpek : Spek({
 
                     val vedtakResponse = response.body<VedtakResponseDTO>()
                     vedtakResponse.infotrygdStatus shouldBeEqualTo InfotrygdStatus.KVITTERING_MANGLER.name
+                    vedtakResponse.journalfort shouldBeEqualTo true
+                    vedtakResponse.gosysOppgave shouldBeEqualTo true
                 }
             }
 
@@ -370,6 +383,8 @@ object VedtakEndpointsSpek : Spek({
 
                     val vedtakResponse = response.body<VedtakResponseDTO>()
                     vedtakResponse.infotrygdStatus shouldBeEqualTo InfotrygdStatus.IKKE_SENDT.name
+                    vedtakResponse.journalfort shouldBeEqualTo true
+                    vedtakResponse.gosysOppgave shouldBeEqualTo true
                 }
             }
 
@@ -391,6 +406,8 @@ object VedtakEndpointsSpek : Spek({
 
                     val vedtakResponse = response.body<VedtakResponseDTO>()
                     vedtakResponse.infotrygdStatus shouldBeEqualTo InfotrygdStatus.KVITTERING_OK.name
+                    vedtakResponse.journalfort shouldBeEqualTo true
+                    vedtakResponse.gosysOppgave shouldBeEqualTo true
                 }
             }
 
@@ -412,6 +429,8 @@ object VedtakEndpointsSpek : Spek({
 
                     val vedtakResponse = response.body<VedtakResponseDTO>()
                     vedtakResponse.infotrygdStatus shouldBeEqualTo InfotrygdStatus.KVITTERING_FEIL.name
+                    vedtakResponse.journalfort shouldBeEqualTo true
+                    vedtakResponse.gosysOppgave shouldBeEqualTo true
                 }
             }
 
@@ -519,6 +538,8 @@ object VedtakEndpointsSpek : Spek({
                     vedtakResponse.uuid shouldBeEqualTo vedtak.uuid
                     vedtakResponse.ferdigbehandletAt shouldNotBe null
                     vedtakResponse.ferdigbehandletBy shouldBeEqualTo UserConstants.VEILEDER_IDENT_OTHER
+                    vedtakResponse.journalfort shouldBeEqualTo false
+                    vedtakResponse.gosysOppgave shouldBeEqualTo false
 
                     val vedtakPersisted = vedtakRepository.getVedtak(vedtak.uuid)
 
