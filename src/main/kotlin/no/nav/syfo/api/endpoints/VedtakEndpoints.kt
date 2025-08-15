@@ -119,7 +119,6 @@ fun Route.registerVedtakEndpoints(
                 val vedtak = vedtakService.getVedtak(uuid = newVedtak.uuid)
                 log.info("Created vedtak with infotrygd status: ${vedtak.infotrygdStatus}")
                 call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = vedtak))
-
             }
         }
         put(ferdigbehandlingPath) {
