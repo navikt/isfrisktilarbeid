@@ -117,8 +117,9 @@ fun Route.registerVedtakEndpoints(
                 delay(1000) // Wait for infotrygd kvittering to be consumed
 
                 val vedtak = vedtakService.getVedtak(uuid = newVedtak.uuid)
-                log.info("Created vedtak with infotrygd status: ${vedtak.infotrygdStatus}")
-                call.respond(HttpStatusCode.Created, VedtakResponseDTO.createFromVedtak(vedtak = vedtak))
+                val response = VedtakResponseDTO.createFromVedtak(vedtak = vedtak)
+                log.info("Created vedtak with infotrygd status: ${response.infotrygdStatus}, isJournalfort: ${response.isJournalfort}, hasGosysOppgave: ${response.hasGosysOppgave}")
+                call.respond(HttpStatusCode.Created, response)
             }
         }
         put(ferdigbehandlingPath) {
