@@ -63,6 +63,20 @@ dependencies {
         exclude(group = "log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$KAFKA", excludeLog4j)
+    constraints {
+        implementation("org.apache.zookeeper:zookeeper") {
+            because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
+            version {
+                require("3.9.4")
+            }
+        }
+        implementation("commons-beanutils:commons-beanutils") {
+            because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+            version {
+                require("1.11.0")
+            }
+        }
+    }
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$JACKSON_DATATYPE")
@@ -82,6 +96,12 @@ dependencies {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
                 require("1.27.1")
+            }
+        }
+        implementation("org.apache.commons:commons-compress") {
+            because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
+            version {
+                require("3.19.0")
             }
         }
     }
