@@ -29,7 +29,6 @@ fun generateJournalpostRequest(
     mottakerPersonident: Personident,
     mottakerNavn: String,
     brukerPersonident: Personident,
-    kanal: JournalpostKanal? = null,
     overstyrInnsynsregler: OverstyrInnsynsregler? = null,
 ) = JournalpostRequest(
     avsenderMottaker = AvsenderMottaker.create(
@@ -56,7 +55,6 @@ fun generateJournalpostRequest(
             ),
         )
     ),
-    kanal = kanal?.name,
     overstyrInnsynsregler = overstyrInnsynsregler?.name,
     journalpostType = JournalpostType.UTGAAENDE.name,
     eksternReferanseId = eksternReferanse.toString(),
