@@ -98,7 +98,7 @@ dependencies {
                 require("1.27.1")
             }
         }
-        implementation("org.apache.commons:commons-compress") {
+        implementation("org.apache.commons:commons-lang3") {
             because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
             version {
                 require("3.19.0")
