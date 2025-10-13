@@ -1,7 +1,7 @@
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val CONFLUENT = "7.9.0"
+val CONFLUENT = "8.0.2"
 val FLYWAY = "11.13.1"
 val HIKARI = "6.3.0"
 val POSTGRES = "42.7.8"
