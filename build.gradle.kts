@@ -1,3 +1,5 @@
+import com.adarshr.gradle.testlogger.theme.ThemeType
+
 group = "no.nav.syfo"
 version = "0.0.1"
 
@@ -14,15 +16,14 @@ val JACKSON_DATATYPE = "2.20.0"
 val KAFKA = "3.9.1"
 val KTOR = "3.3.0"
 val MQ = "9.4.3.0"
-val SPEK = "2.0.19"
 val MOCKK = "1.14.5"
 val NIMBUS_JOSE_JWT = "10.5"
-val KLUENT = "1.73"
 
 plugins {
     kotlin("jvm") version "2.2.20"
     id("com.gradleup.shadow") version "8.3.6"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    id("com.adarshr.test-logger") version "4.0.0"
 }
 
 repositories {
@@ -111,9 +112,7 @@ dependencies {
     testImplementation("io.mockk:mockk:$MOCKK")
     testImplementation("io.ktor:ktor-client-mock:$KTOR")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$NIMBUS_JOSE_JWT")
-    testImplementation("org.amshove.kluent:kluent:$KLUENT")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$SPEK")
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$SPEK")
+    testImplementation(kotlin("test"))
 }
 
 kotlin {
@@ -139,10 +138,12 @@ tasks {
     }
 
     test {
-        useJUnitPlatform {
-            includeEngines("spek2")
+        useJUnitPlatform()
+        testlogger {
+            theme = ThemeType.STANDARD_PARALLEL
+            showFullStackTraces = true
+            showPassed = false
         }
-        testLogging.showStandardStreams = true
 
         val failedTests = mutableListOf<String>()
         var passedCount = 0
@@ -160,6 +161,7 @@ tasks {
                     }
                 }
             }
+
             override fun beforeTest(testDescriptor: TestDescriptor) {}
             override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
                 when (result.resultType) {
