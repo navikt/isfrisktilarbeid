@@ -3,25 +3,25 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val CONFLUENT = "7.9.0"
-val FLYWAY = "11.13.1"
-val HIKARI = "6.3.0"
+val CONFLUENT = "8.1.0"
+val FLYWAY = "11.17.1"
+val HIKARI = "7.0.2"
 val POSTGRES = "42.7.8"
-val POSTGRES_EMBEDDED = "2.1.1"
+val POSTGRES_EMBEDDED = "2.2.0"
 val POSTGRES_RUNTIME_VERSION = "17.6.0"
-val LOGBACK = "1.5.18"
-val LOGSTASH_ENCODER = "8.1"
+val LOGBACK = "1.5.21"
+val LOGSTASH_ENCODER = "9.0"
 val MICROMETER_REGISTRY = "1.12.13"
-val JACKSON_DATATYPE = "2.20.0"
-val KAFKA = "3.9.1"
-val KTOR = "3.3.0"
-val MQ = "9.4.3.0"
-val MOCKK = "1.14.5"
-val NIMBUS_JOSE_JWT = "10.5"
+val JACKSON_DATATYPE = "2.20.1"
+val KAFKA = "4.1.0"
+val KTOR = "3.3.3"
+val MQ = "9.4.4.0"
+val MOCKK = "1.14.6"
+val NIMBUS_JOSE_JWT = "10.6"
 
 plugins {
-    kotlin("jvm") version "2.2.20"
-    id("com.gradleup.shadow") version "8.3.6"
+    kotlin("jvm") version "2.2.21"
+    id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.adarshr.test-logger") version "4.0.0"
 }
@@ -65,12 +65,6 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$KAFKA", excludeLog4j)
     constraints {
-        implementation("org.apache.zookeeper:zookeeper") {
-            because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
-            version {
-                require("3.9.4")
-            }
-        }
         implementation("commons-beanutils:commons-beanutils") {
             because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
             version {
@@ -96,13 +90,13 @@ dependencies {
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
-                require("1.27.1")
+                require("1.28.0")
             }
         }
         implementation("org.apache.commons:commons-lang3") {
             because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
             version {
-                require("3.19.0")
+                require("3.20.0")
             }
         }
     }
