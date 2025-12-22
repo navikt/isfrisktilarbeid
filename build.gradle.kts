@@ -15,7 +15,7 @@ val MICROMETER_REGISTRY = "1.12.13"
 val JACKSON_DATATYPE = "2.20.1"
 val KAFKA = "4.1.0"
 val KTOR = "3.3.3"
-val MQ = "9.4.4.0"
+val MQ = "9.4.4.1"
 val MOCKK = "1.14.7"
 val NIMBUS_JOSE_JWT = "10.6"
 
