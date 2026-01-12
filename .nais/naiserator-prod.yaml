@@ -53,7 +53,7 @@ spec:
       rules:
         - application: istilgangskontroll
         - application: ispdfgen
-        - application: paw-arbeidssoekerregisteret-api-oppslag
+        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
           namespace: paw
   gcp:
     sqlInstances:
@@ -103,9 +103,9 @@ spec:
     - name: ISTILGANGSKONTROLL_URL
       value: "http://istilgangskontroll"
     - name: ARBEIDSSOKER_OPPSLAG_CLIENT_ID
-      value: "prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag"
+      value: "prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag-v2"
     - name: ARBEIDSSOKER_OPPSLAG_URL
-      value: "http://paw-arbeidssoekerregisteret-api-oppslag.paw"
+      value: "http://paw-arbeidssoekerregisteret-api-oppslag-v2.paw"
     - name: PDL_CLIENT_ID
       value: "prod-fss.pdl.pdl-api"
     - name: PDL_URL
