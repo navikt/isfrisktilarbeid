@@ -4,7 +4,7 @@ group = "no.nav.syfo"
 version = "0.0.1"
 
 val CONFLUENT = "8.1.1"
-val FLYWAY = "11.19.0"
+val FLYWAY = "12.0.3"
 val HIKARI = "7.0.2"
 val POSTGRES = "42.7.10"
 val POSTGRES_EMBEDDED = "2.2.0"
