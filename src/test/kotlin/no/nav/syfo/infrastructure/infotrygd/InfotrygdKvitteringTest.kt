@@ -15,10 +15,10 @@ import no.nav.syfo.infrastructure.mq.EBCDIC
 import no.nav.syfo.infrastructure.mq.InfotrygdKvitteringMQConsumer
 import no.nav.syfo.infrastructure.mq.asBytes
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertNull
 import javax.jms.MessageConsumer
 
 class InfotrygdKvitteringTest {
