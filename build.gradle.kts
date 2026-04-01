@@ -21,7 +21,7 @@ val MOCKK = "1.14.9"
 val NIMBUS_JOSE_JWT = "10.8"
 
 plugins {
-    kotlin("jvm") version "2.3.20"
+    kotlin("jvm") version "2.3.10"
     id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.adarshr.test-logger") version "4.0.0"
