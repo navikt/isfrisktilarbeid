@@ -18,10 +18,10 @@ val KAFKA = "4.2.0"
 val KTOR = "3.4.2"
 val MQ = "9.4.5.0"
 val MOCKK = "1.14.9"
-val NIMBUS_JOSE_JWT = "10.8"
+val NIMBUS_JOSE_JWT = "10.9"
 
 plugins {
-    kotlin("jvm") version "2.3.10"
+    kotlin("jvm") version "2.3.20"
     id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.adarshr.test-logger") version "4.0.0"
