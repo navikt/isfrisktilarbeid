@@ -63,6 +63,7 @@ dependencies {
     // Kafka
     val excludeLog4j = fun ExternalModuleDependency.() {
         exclude(group = "log4j")
+        exclude(group = "org.apache.logging.log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$KAFKA", excludeLog4j)
     constraints {
