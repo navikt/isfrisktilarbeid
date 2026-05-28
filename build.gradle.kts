@@ -19,6 +19,7 @@ val KTOR = "3.5.0"
 val MQ = "9.4.5.0"
 val MOCKK = "1.14.9"
 val NIMBUS_JOSE_JWT = "10.9"
+val ISYFO_BACKEND_COMMON = "0.0.31"
 
 plugins {
     kotlin("jvm") version "2.3.21"
@@ -30,11 +31,20 @@ plugins {
 repositories {
     mavenCentral()
     maven(url = "https://packages.confluent.io/maven/")
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/isyfo-backend-common")
+        credentials {
+            username = project.findProperty("githubUser") as String? ?: "x-access-token"
+            password = project.findProperty("githubPassword") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
+
+    implementation("no.nav.syfo:isyfo-backend-common:$ISYFO_BACKEND_COMMON")
 
     implementation("io.ktor:ktor-client-apache:$KTOR")
     implementation("io.ktor:ktor-client-content-negotiation:$KTOR")

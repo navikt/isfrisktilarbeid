@@ -5,8 +5,8 @@ import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
-import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
@@ -19,9 +19,9 @@ fun Application.testApiModule(
     infotrygdMQSender: InfotrygdMQSender,
 ) {
     val database = externalMockEnvironment.database
-    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
-        azureAdClient = externalMockEnvironment.azureAdClient,
-        clientEnvironment = externalMockEnvironment.environment.clients.istilgangskontroll,
+    val tilgangskontrollClient = TilgangskontrollClient(
+        oboTokenProvider = externalMockEnvironment.azureAdClient,
+        clientConfig = externalMockEnvironment.environment.clients.istilgangskontroll,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
     val pdfService = PdfService(
@@ -37,7 +37,7 @@ fun Application.testApiModule(
         gosysOppgaveClient = externalMockEnvironment.gosysOppgaveClient
     )
     val arbeidssokeroppslagClient = ArbeidssokeroppslagClient(
-        azureAdClient = externalMockEnvironment.azureAdClient,
+        oboTokenProvider = externalMockEnvironment.azureAdClient,
         clientEnvironment = externalMockEnvironment.environment.clients.arbeidssokeroppslag,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
@@ -58,7 +58,7 @@ fun Application.testApiModule(
         environment = externalMockEnvironment.environment,
         wellKnownInternalAzureAD = externalMockEnvironment.wellKnownInternalAzureAD,
         database = database,
-        veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+        tilgangskontrollClient = tilgangskontrollClient,
         vedtakService = vedtakService,
         arbeidssokeroppslagClient = arbeidssokeroppslagClient,
     )
