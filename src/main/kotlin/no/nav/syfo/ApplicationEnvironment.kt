@@ -1,9 +1,9 @@
 package no.nav.syfo
 
-import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.ClientsEnvironment
-import no.nav.syfo.infrastructure.clients.OpenClientEnvironment
-import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
+import no.nav.syfo.common.util.ClientConfig
+import no.nav.syfo.common.util.OpenClientConfig
+import no.nav.syfo.common.token.azuread.AzureAdClientConfig
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.mq.MQEnvironment
@@ -28,8 +28,8 @@ data class Environment(
         aivenRegistryUser = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
         aivenRegistryPassword = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
     ),
-    val azure: AzureEnvironment =
-        AzureEnvironment(
+    val azure: AzureAdClientConfig =
+        AzureAdClientConfig(
             appClientId = getEnvVar("AZURE_APP_CLIENT_ID"),
             appClientSecret = getEnvVar("AZURE_APP_CLIENT_SECRET"),
             appWellKnownUrl = getEnvVar("AZURE_APP_WELL_KNOWN_URL"),
@@ -50,26 +50,26 @@ data class Environment(
     val isJournalforingRetryEnabled: Boolean = getEnvVar("JOURNALFORING_RETRY_ENABLED").toBoolean(),
     val clients: ClientsEnvironment =
         ClientsEnvironment(
-            istilgangskontroll = ClientEnvironment(
+            istilgangskontroll = ClientConfig(
                 baseUrl = getEnvVar("ISTILGANGSKONTROLL_URL"),
                 clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID")
             ),
-            ispdfgen = OpenClientEnvironment(
+            ispdfgen = OpenClientConfig(
                 baseUrl = "http://ispdfgen"
             ),
-            pdl = ClientEnvironment(
+            pdl = ClientConfig(
                 baseUrl = getEnvVar("PDL_URL"),
                 clientId = getEnvVar("PDL_CLIENT_ID"),
             ),
-            dokarkiv = ClientEnvironment(
+            dokarkiv = ClientConfig(
                 baseUrl = getEnvVar("DOKARKIV_URL"),
                 clientId = getEnvVar("DOKARKIV_CLIENT_ID"),
             ),
-            gosysoppgave = ClientEnvironment(
+            gosysoppgave = ClientConfig(
                 baseUrl = getEnvVar("OPPGAVE_URL"),
                 clientId = getEnvVar("OPPGAVE_CLIENT_ID"),
             ),
-            arbeidssokeroppslag = ClientEnvironment(
+            arbeidssokeroppslag = ClientConfig(
                 baseUrl = getEnvVar("ARBEIDSSOKER_OPPSLAG_URL"),
                 clientId = getEnvVar("ARBEIDSSOKER_OPPSLAG_CLIENT_ID"),
             ),

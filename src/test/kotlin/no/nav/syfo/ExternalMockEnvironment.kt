@@ -1,7 +1,7 @@
 package no.nav.syfo
 
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
-import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.common.token.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
@@ -28,7 +28,7 @@ class ExternalMockEnvironment private constructor() {
     val mockHttpClient = mockHttpClient(environment = environment)
     val wellKnownInternalAzureAD = wellKnownInternalAzureAD()
     val azureAdClient = AzureAdClient(
-        azureEnvironment = environment.azure,
+        config = environment.azure,
         httpClient = mockHttpClient,
     )
     val pdfgenClient = PdfGenClient(
@@ -36,22 +36,22 @@ class ExternalMockEnvironment private constructor() {
         httpClient = mockHttpClient,
     )
     val pdlClient = PdlClient(
-        azureAdClient = azureAdClient,
+        systemTokenProvider = azureAdClient,
         pdlEnvironment = environment.clients.pdl,
         httpClient = mockHttpClient,
     )
     val dokarkivClient = DokarkivClient(
-        azureAdClient = azureAdClient,
+        systemTokenProvider = azureAdClient,
         dokarkivEnvironment = environment.clients.dokarkiv,
         httpClient = mockHttpClient,
     )
     val gosysOppgaveClient = GosysOppgaveClient(
-        azureAdClient = azureAdClient,
+        systemTokenProvider = azureAdClient,
         environment = environment.clients.gosysoppgave,
         httpClient = mockHttpClient,
     )
     val arbeidssokeroppslagClient = ArbeidssokeroppslagClient(
-        azureAdClient = azureAdClient,
+        oboTokenProvider = azureAdClient,
         clientEnvironment = environment.clients.arbeidssokeroppslag,
         httpClient = mockHttpClient,
     )
