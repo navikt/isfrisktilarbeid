@@ -3,6 +3,8 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
+val isyfoBackendCommonVersion = "0.0.42"
+
 val CONFLUENT = "8.2.1"
 val FLYWAY = "11.20.3"
 val HIKARI = "7.0.2"
@@ -30,11 +32,20 @@ plugins {
 repositories {
     mavenCentral()
     maven(url = "https://packages.confluent.io/maven/")
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/isyfo-backend-common")
+        credentials {
+            username = project.findProperty("githubUser") as String? ?: "x-access-token"
+            password = project.findProperty("githubPassword") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
+
+    implementation("no.nav.syfo:isyfo-backend-common:$isyfoBackendCommonVersion")
 
     implementation("io.ktor:ktor-client-apache:$KTOR")
     implementation("io.ktor:ktor-client-content-negotiation:$KTOR")
@@ -99,6 +110,7 @@ dependencies {
     }
 
     // Tests
+    testImplementation(testFixtures("no.nav.syfo:isyfo-backend-common:$isyfoBackendCommonVersion"))
     testImplementation("io.ktor:ktor-server-test-host:$KTOR")
     testImplementation("io.mockk:mockk:$MOCKK")
     testImplementation("io.ktor:ktor-client-mock:$KTOR")

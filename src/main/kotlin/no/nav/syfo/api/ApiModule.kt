@@ -24,8 +24,8 @@ import no.nav.syfo.api.endpoints.registerVedtakEndpoints
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
-import no.nav.syfo.infrastructure.clients.veiledertilgang.ForbiddenAccessVeilederException
-import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.common.tilgangskontroll.TilgangDeniedException
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
@@ -40,7 +40,7 @@ fun Application.apiModule(
     environment: Environment,
     wellKnownInternalAzureAD: WellKnown,
     database: DatabaseInterface,
-    veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    tilgangskontrollClient: TilgangskontrollClient,
     vedtakService: VedtakService,
     arbeidssokeroppslagClient: ArbeidssokeroppslagClient,
 ) {
@@ -64,7 +64,7 @@ fun Application.apiModule(
         metricEndpoints()
         authenticate(JwtIssuerType.INTERNAL_AZUREAD.name) {
             registerVedtakEndpoints(
-                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                tilgangskontrollClient = tilgangskontrollClient,
                 vedtakService = vedtakService,
                 arbeidssokeroppslagClient = arbeidssokeroppslagClient,
                 dispatcher = Dispatchers.IO.limitedParallelism(20),
@@ -104,15 +104,26 @@ fun Application.installStatusPages() {
         exception<Throwable> { call, cause ->
             val callId = call.getCallId()
             val consumerClientId = call.getConsumerClientId()
-            val logExceptionMessage = "Caught exception, callId=$callId, consumerClientId=$consumerClientId"
+            val logExceptionMessage = "Caught exception: ${cause.message}"
             val log = call.application.log
+
             when (cause) {
-                is ForbiddenAccessVeilederException -> {
-                    log.warn(logExceptionMessage, cause)
+                is TilgangDeniedException -> {
+                    log.atWarn()
+                        .setCause(cause)
+                        .setMessage(logExceptionMessage)
+                        .addKeyValue("callId", callId)
+                        .addKeyValue("consumerClientId", consumerClientId)
+                        .log()
                 }
 
                 else -> {
-                    log.error(logExceptionMessage, cause)
+                    log.atError()
+                        .setCause(cause)
+                        .setMessage(logExceptionMessage)
+                        .addKeyValue("callId", callId)
+                        .addKeyValue("consumerClientId", consumerClientId)
+                        .log()
                 }
             }
 
@@ -128,7 +139,7 @@ fun Application.installStatusPages() {
                         HttpStatusCode.BadRequest
                     }
 
-                    is ForbiddenAccessVeilederException -> {
+                    is TilgangDeniedException -> {
                         HttpStatusCode.Forbidden
                     }
 
