@@ -10,10 +10,9 @@ import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
-import no.nav.syfo.common.util.ClientConfig
+import no.nav.syfo.common.token.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
-import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
@@ -58,41 +57,33 @@ fun main() {
         wellKnownUrl = environment.azure.appWellKnownUrl
     )
     val azureAdClient = AzureAdClient(
-        azureEnvironment = environment.azure
+        config = environment.azure
     )
 
     val pdlClient = PdlClient(
-        azureAdClient = azureAdClient,
-        pdlEnvironment = environment.clients.pdl,
+        systemTokenProvider = azureAdClient,
+        clientConfig = environment.clients.pdl,
     )
     val dokarkivClient = DokarkivClient(
-        azureAdClient = azureAdClient,
-        dokarkivEnvironment = environment.clients.dokarkiv,
+        systemTokenProvider = azureAdClient,
+        clientConfig = environment.clients.dokarkiv,
     )
     val gosysOppgaveClient = GosysOppgaveClient(
-        azureAdClient = azureAdClient,
-        environment = environment.clients.gosysoppgave,
+        systemTokenProvider = azureAdClient,
+        clientConfig = environment.clients.gosysoppgave,
     )
 
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.clients.ispdfgen.baseUrl,
     )
     val arbeidssokeroppslagClient = ArbeidssokeroppslagClient(
-        azureAdClient = azureAdClient,
-        clientEnvironment = environment.clients.arbeidssokeroppslag,
+        oboTokenProvider = azureAdClient,
+        clientConfig = environment.clients.arbeidssokeroppslag,
     )
     val tilgangskontrollClient =
         TilgangskontrollClient(
-            oboTokenProvider = { scopeClientId, token ->
-                azureAdClient.getOnBehalfOfToken(
-                    scopeClientId,
-                    token
-                )?.accessToken
-            },
-            clientConfig = ClientConfig(
-                baseUrl = environment.clients.istilgangskontroll.baseUrl,
-                clientId = environment.clients.istilgangskontroll.clientId
-            )
+            oboTokenProvider = azureAdClient,
+            clientConfig = environment.clients.istilgangskontroll
         )
 
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)

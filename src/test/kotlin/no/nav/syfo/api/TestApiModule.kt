@@ -6,7 +6,6 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
-import no.nav.syfo.common.util.ClientConfig
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
@@ -22,17 +21,9 @@ fun Application.testApiModule(
     val database = externalMockEnvironment.database
 
     val tilgangskontrollClient = TilgangskontrollClient(
-        oboTokenProvider = { scopeClientId, token ->
-            externalMockEnvironment.azureAdClient.getOnBehalfOfToken(
-                scopeClientId,
-                token
-            )?.accessToken
-        },
-        clientConfig = ClientConfig(
-            baseUrl = externalMockEnvironment.environment.clients.istilgangskontroll.baseUrl,
-            clientId = externalMockEnvironment.environment.clients.istilgangskontroll.clientId
-        ),
-        httpClient = externalMockEnvironment.mockHttpClient
+        oboTokenProvider = externalMockEnvironment.azureAdClient,
+        clientConfig = externalMockEnvironment.environment.clients.istilgangskontroll,
+        httpClient = externalMockEnvironment.mockHttpClient,
     )
     val pdfService = PdfService(
         pdfGenClient = externalMockEnvironment.pdfgenClient,
@@ -47,8 +38,8 @@ fun Application.testApiModule(
         gosysOppgaveClient = externalMockEnvironment.gosysOppgaveClient
     )
     val arbeidssokeroppslagClient = ArbeidssokeroppslagClient(
-        azureAdClient = externalMockEnvironment.azureAdClient,
-        clientEnvironment = externalMockEnvironment.environment.clients.arbeidssokeroppslag,
+        oboTokenProvider = externalMockEnvironment.azureAdClient,
+        clientConfig = externalMockEnvironment.environment.clients.arbeidssokeroppslag,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
     val vedtakService = VedtakService(

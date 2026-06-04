@@ -8,9 +8,9 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.micrometer.core.instrument.Counter
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.common.token.SystemTokenProvider
+import no.nav.syfo.common.util.ClientConfig
 import no.nav.syfo.common.util.bearerHeader
-import no.nav.syfo.infrastructure.clients.ClientEnvironment
-import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostRequest
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostResponse
 import no.nav.syfo.infrastructure.clients.httpClientDefault
@@ -19,16 +19,16 @@ import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import org.slf4j.LoggerFactory
 
 class DokarkivClient(
-    private val azureAdClient: AzureAdClient,
-    private val dokarkivEnvironment: ClientEnvironment,
+    private val systemTokenProvider: SystemTokenProvider,
+    private val clientConfig: ClientConfig,
     private val httpClient: HttpClient = httpClientDefault(),
 ) {
-    private val journalpostUrl: String = "${dokarkivEnvironment.baseUrl}$JOURNALPOST_PATH"
+    private val journalpostUrl: String = "${clientConfig.baseUrl}$JOURNALPOST_PATH"
 
     suspend fun journalfor(
         journalpostRequest: JournalpostRequest,
     ): JournalpostResponse {
-        val token = azureAdClient.getSystemToken(dokarkivEnvironment.clientId)?.accessToken
+        val token = systemTokenProvider.getSystemToken(clientConfig.clientId)
             ?: throw RuntimeException("Failed to Journalfor Journalpost: No token was found")
         return try {
             val response: HttpResponse = httpClient.post(journalpostUrl) {
