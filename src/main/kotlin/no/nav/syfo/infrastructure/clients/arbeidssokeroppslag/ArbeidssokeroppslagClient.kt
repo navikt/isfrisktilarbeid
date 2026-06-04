@@ -7,9 +7,9 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.common.util.NAV_CALL_ID_HEADER
+import no.nav.syfo.common.util.bearerHeader
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
-import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.httpClientDefault

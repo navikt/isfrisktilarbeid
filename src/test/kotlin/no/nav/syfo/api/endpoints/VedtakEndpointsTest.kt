@@ -22,9 +22,9 @@ import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.api.model.VilkarResponseDTO
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
+import no.nav.syfo.common.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.domain.InfotrygdStatus
 import no.nav.syfo.generator.generateDocumentComponent
-import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtakPdf
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
