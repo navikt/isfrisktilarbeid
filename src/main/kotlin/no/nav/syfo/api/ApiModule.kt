@@ -27,12 +27,12 @@ import no.nav.syfo.common.tilgangskontroll.TilgangDeniedException
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 import no.nav.syfo.common.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.common.util.consumerClientId
+import no.nav.syfo.common.util.generateCallId
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.util.configure
 import java.time.Duration
-import java.util.*
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -88,8 +88,6 @@ fun Application.installMetrics() {
                 .build()
     }
 }
-
-fun generateCallId(): String = UUID.randomUUID().toString()
 
 fun Application.installCallId() {
     install(CallId) {
