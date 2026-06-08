@@ -45,6 +45,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.*
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class VedtakEndpointsTest {
     private val urlVedtak = "$apiBasePath/$vedtakPath"
@@ -63,6 +65,12 @@ class VedtakEndpointsTest {
         issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
         navIdent = UserConstants.VEILEDER_IDENT_OTHER,
     )
+    private val validTokenReadNavIdent = generateJWT(
+        audience = externalMockEnvironment.environment.azure.appClientId,
+        issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
+        navIdent = UserConstants.VEILEDER_IDENT_READ_ACCESS,
+    )
+
     private val personident = UserConstants.ARBEIDSTAKER_PERSONIDENT
 
     private val begrunnelse = "Dette er en begrunnelse for vedtak 8-5"
@@ -115,7 +123,7 @@ class VedtakEndpointsTest {
     private fun mockInfotrygdKvitteringReceived(kvitteringOk: Boolean) {
         GlobalScope.launch {
             try {
-                withTimeout(1000) {
+                withTimeout(1.seconds) {
                     while (testAppState().ready) {
                         val vedtak = vedtakRepository.getVedtak(personident = UserConstants.ARBEIDSTAKER_PERSONIDENT).firstOrNull()
                         if (vedtak != null) {
@@ -126,7 +134,7 @@ class VedtakEndpointsTest {
                             )
                             break
                         } else {
-                            delay(100)
+                            delay(100.milliseconds)
                         }
                     }
                 }
@@ -202,6 +210,18 @@ class VedtakEndpointsTest {
             assertFalse(vedtakResponse[1].isJournalfort)
             assertFalse(vedtakResponse[1].hasGosysOppgave)
         }
+
+        @Test
+        fun `Veileder with read access gets list of vedtak`() = testApplication {
+            createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.get(urlVedtak) {
+                bearerAuth(validTokenReadNavIdent)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+            }
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(1, response.body<List<VedtakResponseDTO>>().size)
+        }
     }
 
     @Nested
@@ -226,6 +246,19 @@ class VedtakEndpointsTest {
             val response = client.get(urlVilkar) {
                 contentType(ContentType.Application.Json)
                 bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                setBody(vedtakRequestDTO)
+            }
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertTrue(response.body<VilkarResponseDTO>().isArbeidssoker)
+        }
+
+        @Test
+        fun `Veileder with read access gets vilkar`() = testApplication {
+            val client = setupApiAndClient()
+            val response = client.get(urlVilkar) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validTokenReadNavIdent)
                 header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
                 setBody(vedtakRequestDTO)
             }
@@ -262,6 +295,18 @@ class VedtakEndpointsTest {
             assertEquals(PDF_VEDTAK[1], vedtakPdf[1])
             val vedtak = vedtakRepository.getVedtak(vedtakResponse.uuid)
             assertEquals(vedtak.uuid, vedtakResponse.uuid)
+        }
+
+        @Test
+        fun `Returns status Forbidden when veileder only has read access`() = testApplication {
+            val client = setupApiAndClient()
+            val response = client.post(urlVedtak) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validTokenReadNavIdent)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(vedtakRequestDTO)
+            }
+            assertEquals(HttpStatusCode.Forbidden, response.status)
         }
     }
 
@@ -499,6 +544,17 @@ class VedtakEndpointsTest {
                 header(NAV_PERSONIDENT_HEADER, personident.value)
             }
             assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
+        fun `Returns status Forbidden when veileder only has read access`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.put("$urlVedtak/${vedtak.uuid}/ferdigbehandling") {
+                bearerAuth(validTokenReadNavIdent)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+            }
+            assertEquals(HttpStatusCode.Forbidden, response.status)
         }
     }
 
