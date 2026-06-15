@@ -19,6 +19,7 @@ object UserConstants {
     val PDF_VEDTAK = byteArrayOf(0x2E, 0x28)
     const val VEILEDER_IDENT = "Z999999"
     const val VEILEDER_IDENT_OTHER = "Z999998"
+    const val VEILEDER_IDENT_READ_ACCESS = "Z999997"
 
     const val PERSON_FORNAVN = "Fornavn"
     const val PERSON_MELLOMNAVN = "Mellomnavn"

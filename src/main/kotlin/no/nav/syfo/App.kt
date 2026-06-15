@@ -5,16 +5,19 @@ import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.micrometer.core.instrument.Metrics
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.IVedtakRepository
 import no.nav.syfo.application.VedtakService
-import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.util.ClientConfig
+import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
+import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
-import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
@@ -46,12 +49,18 @@ fun main() {
     val environment = Environment()
     val logger = LoggerFactory.getLogger("ktor.application")
 
+    // Wire METRICS_REGISTRY into Micrometer's global registry so that counters registered
+    // on Metrics.globalRegistry (e.g. by shared libraries like isyfo-backend-common) are
+    // also exposed at /internal/metrics and scraped by Prometheus.
+    Metrics.addRegistry(METRICS_REGISTRY)
+
     val wellKnownInternalAzureAD = getWellKnown(
         wellKnownUrl = environment.azure.appWellKnownUrl
     )
     val azureAdClient = AzureAdClient(
         azureEnvironment = environment.azure
     )
+
     val pdlClient = PdlClient(
         azureAdClient = azureAdClient,
         pdlEnvironment = environment.clients.pdl,
@@ -72,10 +81,18 @@ fun main() {
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.arbeidssokeroppslag,
     )
-    val veilederTilgangskontrollClient =
-        VeilederTilgangskontrollClient(
-            azureAdClient = azureAdClient,
-            clientEnvironment = environment.clients.istilgangskontroll
+    val tilgangskontrollClient =
+        TilgangskontrollClient(
+            oboTokenProvider = { scopeClientId, token ->
+                azureAdClient.getOnBehalfOfToken(
+                    scopeClientId,
+                    token
+                )?.accessToken
+            },
+            clientConfig = ClientConfig(
+                baseUrl = environment.clients.istilgangskontroll.baseUrl,
+                clientId = environment.clients.istilgangskontroll.clientId
+            )
         )
 
     val pdfService = PdfService(pdfGenClient = pdfGenClient, pdlClient = pdlClient)
@@ -142,7 +159,7 @@ fun main() {
                 environment = environment,
                 wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                 database = applicationDatabase,
-                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                tilgangskontrollClient = tilgangskontrollClient,
                 vedtakService = vedtakService,
                 arbeidssokeroppslagClient = arbeidssokeroppslagClient,
             )

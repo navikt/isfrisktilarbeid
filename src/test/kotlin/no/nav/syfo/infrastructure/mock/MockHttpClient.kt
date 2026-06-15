@@ -3,6 +3,8 @@ package no.nav.syfo.infrastructure.mock
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import no.nav.syfo.Environment
+import no.nav.syfo.common.mock.tilgangskontroll.mockTilgangskontrollRequestHandler
+import no.nav.syfo.common.mock.token.azuread.mockAzureAdRequestHandler
 import no.nav.syfo.infrastructure.clients.commonConfig
 
 fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
@@ -11,9 +13,10 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
         addHandler { request ->
             val requestUrl = request.url.encodedPath
             when {
-                requestUrl == "/${environment.azure.openidConfigTokenEndpoint}" -> azureAdMockResponse()
-                requestUrl.startsWith("/${environment.clients.istilgangskontroll.baseUrl}") -> tilgangskontrollResponse(
-                    request
+                requestUrl == "/${environment.azure.openidConfigTokenEndpoint}" -> mockAzureAdRequestHandler(request)
+                requestUrl.startsWith("/${environment.clients.istilgangskontroll.baseUrl}") -> mockTilgangskontrollRequestHandler(
+                    request,
+                    mockTilgangDetailsPerNavIdent
                 )
                 requestUrl.startsWith("/${environment.clients.ispdfgen.baseUrl}") -> pdfGenMockResponse(
                     request
