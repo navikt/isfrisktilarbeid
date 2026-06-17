@@ -7,25 +7,25 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.common.token.azuread.AzureAdClient
+import no.nav.syfo.common.util.ClientConfig
 import no.nav.syfo.common.util.bearerHeader
-import no.nav.syfo.infrastructure.clients.ClientEnvironment
-import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.httpClientDefault
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class GosysOppgaveClient(
-    private val azureAdClient: AzureAdClient,
-    private val environment: ClientEnvironment,
+    private val systemTokenProvider: AzureAdClient,
+    private val clientConfig: ClientConfig,
     private val httpClient: HttpClient = httpClientDefault(),
 ) {
-    private val oppgaveUrl: String = "${environment.baseUrl}$OPPGAVE_PATH"
+    private val oppgaveUrl: String = "${clientConfig.baseUrl}$OPPGAVE_PATH"
 
     suspend fun createOppgave(
         request: OppgaveRequest,
         correlationId: UUID,
     ): OppgaveResponse {
-        val token = azureAdClient.getSystemToken(environment.clientId)?.accessToken
+        val token = systemTokenProvider.getSystemToken(clientConfig.clientId)
             ?: throw RuntimeException("Failed to create Gosys-oppgave: No token was found")
         return try {
             val response: HttpResponse = httpClient.post(oppgaveUrl) {

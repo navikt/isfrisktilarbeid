@@ -1,19 +1,13 @@
 package no.nav.syfo.infrastructure.clients
 
+import no.nav.syfo.common.util.ClientConfig
+import no.nav.syfo.common.util.OpenClientConfig
+
 data class ClientsEnvironment(
-    val istilgangskontroll: ClientEnvironment,
-    val pdl: ClientEnvironment,
-    val ispdfgen: OpenClientEnvironment,
-    val dokarkiv: ClientEnvironment,
-    val gosysoppgave: ClientEnvironment,
-    val arbeidssokeroppslag: ClientEnvironment,
-)
-
-data class ClientEnvironment(
-    val baseUrl: String,
-    val clientId: String,
-)
-
-data class OpenClientEnvironment(
-    val baseUrl: String,
+    val istilgangskontroll: ClientConfig,
+    val pdl: ClientConfig,
+    val ispdfgen: OpenClientConfig,
+    val dokarkiv: ClientConfig,
+    val gosysoppgave: ClientConfig,
+    val arbeidssokeroppslag: ClientConfig,
 )

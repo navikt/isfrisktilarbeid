@@ -3,7 +3,7 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val isyfoBackendCommonVersion = "0.0.47"
+val isyfoBackendCommonVersion = "0.0.48"
 
 val CONFLUENT = "8.2.1"
 val FLYWAY = "11.20.3"

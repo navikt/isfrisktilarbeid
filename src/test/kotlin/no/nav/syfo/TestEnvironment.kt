@@ -1,9 +1,9 @@
 package no.nav.syfo
 
-import no.nav.syfo.infrastructure.clients.ClientEnvironment
+import no.nav.syfo.common.token.azuread.AzureAdClientConfig
+import no.nav.syfo.common.util.ClientConfig
+import no.nav.syfo.common.util.OpenClientConfig
 import no.nav.syfo.infrastructure.clients.ClientsEnvironment
-import no.nav.syfo.infrastructure.clients.OpenClientEnvironment
-import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.mq.MQEnvironment
@@ -26,33 +26,33 @@ fun testEnvironment() = Environment(
         aivenRegistryUser = "registryuser",
         aivenRegistryPassword = "registrypassword",
     ),
-    azure = AzureEnvironment(
+    azure = AzureAdClientConfig(
         appClientId = "isfrisktilarbeid-client-id",
         appClientSecret = "isfrisktilarbeid-secret",
         appWellKnownUrl = "wellknown",
         openidConfigTokenEndpoint = "azureOpenIdTokenEndpoint",
     ),
     clients = ClientsEnvironment(
-        istilgangskontroll = ClientEnvironment(
+        istilgangskontroll = ClientConfig(
             baseUrl = "isTilgangskontrollUrl",
             clientId = "dev-gcp.teamsykefravr.istilgangskontroll",
         ),
-        pdl = ClientEnvironment(
+        pdl = ClientConfig(
             baseUrl = "pdlUrl",
             clientId = "pdlClientId",
         ),
-        ispdfgen = OpenClientEnvironment(
+        ispdfgen = OpenClientConfig(
             baseUrl = "ispdfgenurl"
         ),
-        dokarkiv = ClientEnvironment(
+        dokarkiv = ClientConfig(
             baseUrl = "dokarkivUrl",
             clientId = "dokarkivClientId",
         ),
-        gosysoppgave = ClientEnvironment(
+        gosysoppgave = ClientConfig(
             baseUrl = "oppgaveUrl",
             clientId = "oppgaveClientId",
         ),
-        arbeidssokeroppslag = ClientEnvironment(
+        arbeidssokeroppslag = ClientConfig(
             baseUrl = "arbeidssokeroppslagUrl",
             clientId = "arbeidssokeroppslagClientId",
         )

@@ -6,7 +6,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
-import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.common.token.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.pdl.dto.Adressebeskyttelse
 import no.nav.syfo.infrastructure.clients.pdl.dto.Gradering
 import no.nav.syfo.infrastructure.clients.pdl.dto.PdlPerson
@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Assertions.*
 class PdlClientTest {
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val pdlClient = PdlClient(
-        azureAdClient = externalMockEnvironment.azureAdClient,
-        pdlEnvironment = externalMockEnvironment.environment.clients.pdl,
+        systemTokenProvider = externalMockEnvironment.azureAdClient,
+        clientConfig = externalMockEnvironment.environment.clients.pdl,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
 
@@ -98,8 +98,8 @@ class PdlClientTest {
             runBlocking {
                 val azureAdMock = mockk<AzureAdClient>(relaxed = true)
                 val pdlClientMockedAzure = PdlClient(
-                    azureAdClient = azureAdMock,
-                    pdlEnvironment = externalMockEnvironment.environment.clients.pdl,
+                    systemTokenProvider = azureAdMock,
+                    clientConfig = externalMockEnvironment.environment.clients.pdl,
                 )
                 coEvery { azureAdMock.getSystemToken(any()) } returns null
                 assertThrows<RuntimeException> {

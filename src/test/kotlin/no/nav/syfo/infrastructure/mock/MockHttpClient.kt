@@ -16,7 +16,7 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
                 requestUrl == "/${environment.azure.openidConfigTokenEndpoint}" -> mockAzureAdRequestHandler(request)
                 requestUrl.startsWith("/${environment.clients.istilgangskontroll.baseUrl}") -> mockTilgangskontrollRequestHandler(
                     request,
-                    mockTilgangDetailsPerNavIdent
+                    mockTilgangDetailsPerNavident
                 )
                 requestUrl.startsWith("/${environment.clients.ispdfgen.baseUrl}") -> pdfGenMockResponse(
                     request

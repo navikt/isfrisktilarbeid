@@ -8,10 +8,10 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.micrometer.core.instrument.Counter
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.common.token.SystemTokenProvider
+import no.nav.syfo.common.util.ClientConfig
 import no.nav.syfo.common.util.bearerHeader
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.infrastructure.clients.ClientEnvironment
-import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.pdl.dto.*
 import no.nav.syfo.infrastructure.clients.httpClientDefault
 import no.nav.syfo.infrastructure.metric.METRICS_NS
@@ -19,20 +19,19 @@ import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import org.slf4j.LoggerFactory
 
 class PdlClient(
-    private val azureAdClient: AzureAdClient,
-    private val pdlEnvironment: ClientEnvironment,
+    private val systemTokenProvider: SystemTokenProvider,
+    private val clientConfig: ClientConfig,
     private val httpClient: HttpClient = httpClientDefault(),
 ) {
-
     suspend fun getPerson(personident: Personident): PdlPerson {
-        val token = azureAdClient.getSystemToken(pdlEnvironment.clientId)
+        val token = systemTokenProvider.getSystemToken(clientConfig.clientId)
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
         val request = PdlHentPersonRequest(getPdlQuery(PDL_QUERY_HENT_PERSON_PATH), PdlHentPersonRequestVariables(personident.value))
 
-        val response: HttpResponse = httpClient.post(pdlEnvironment.baseUrl) {
+        val response: HttpResponse = httpClient.post(clientConfig.baseUrl) {
             setBody(request)
             header(HttpHeaders.ContentType, "application/json")
-            header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
+            header(HttpHeaders.Authorization, bearerHeader(token))
             header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
         }
 
@@ -53,7 +52,7 @@ class PdlClient(
 
             else -> {
                 Metrics.COUNT_CALL_PDL_PERSON_FAIL.increment()
-                logger.error("Request with url: ${pdlEnvironment.baseUrl} failed with reponse code ${response.status.value}")
+                logger.error("Request with url: ${clientConfig.baseUrl} failed with reponse code ${response.status.value}")
                 null
             }
         }
@@ -64,10 +63,9 @@ class PdlClient(
     suspend fun geografiskTilknytning(
         personident: Personident,
     ): GeografiskTilknytning {
-        val systemToken = azureAdClient.getSystemToken(
-            scopeClientId = pdlEnvironment.clientId,
-        )?.accessToken
-            ?: throw RuntimeException("Failed to request PDL: Failed to get system token from AzureAD")
+        val systemToken = systemTokenProvider.getSystemToken(
+            targetClientId = clientConfig.clientId,
+        ) ?: throw RuntimeException("Failed to request PDL: Failed to get system token from AzureAD")
 
         val query = getPdlQuery(PDL_QUERY_GEOGRAFISK_TILKNYTNING_PATH)
         val request = PdlGeografiskTilknytningRequest(
@@ -75,7 +73,7 @@ class PdlClient(
             variables = PdlGeografiskTilknytningRequestVariables(personident.value)
         )
         try {
-            val pdlGTResponse: PdlGeografiskTilknytningResponse = httpClient.post(pdlEnvironment.baseUrl) {
+            val pdlGTResponse: PdlGeografiskTilknytningResponse = httpClient.post(clientConfig.baseUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(systemToken))
                 header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
                 header(GT_HEADER, GT_HEADER)
