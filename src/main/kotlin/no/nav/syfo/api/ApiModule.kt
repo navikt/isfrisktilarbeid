@@ -22,18 +22,17 @@ import no.nav.syfo.api.endpoints.metricEndpoints
 import no.nav.syfo.api.endpoints.podEndpoints
 import no.nav.syfo.api.endpoints.registerVedtakEndpoints
 import no.nav.syfo.application.VedtakService
-import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.common.tilgangskontroll.TilgangDeniedException
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.util.NAV_CALL_ID_HEADER
+import no.nav.syfo.common.util.consumerClientId
+import no.nav.syfo.common.util.generateCallId
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.util.configure
-import no.nav.syfo.util.getCallId
-import no.nav.syfo.util.getConsumerClientId
 import java.time.Duration
-import java.util.*
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -93,7 +92,7 @@ fun Application.installMetrics() {
 fun Application.installCallId() {
     install(CallId) {
         retrieve { it.request.headers[NAV_CALL_ID_HEADER] }
-        generate { UUID.randomUUID().toString() }
+        generate { generateCallId() }
         verify { callId: String -> callId.isNotEmpty() }
         header(NAV_CALL_ID_HEADER)
     }
@@ -102,8 +101,8 @@ fun Application.installCallId() {
 fun Application.installStatusPages() {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            val callId = call.getCallId()
-            val consumerClientId = call.getConsumerClientId()
+            val callId = call.callId
+            val consumerClientId = call.consumerClientId
             val logExceptionMessage = "Caught exception: ${cause.message}"
             val log = call.application.log
 

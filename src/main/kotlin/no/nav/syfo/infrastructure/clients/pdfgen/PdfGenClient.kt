@@ -8,7 +8,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.micrometer.core.instrument.Counter
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
+import no.nav.syfo.common.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.clients.httpClientDefault
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
