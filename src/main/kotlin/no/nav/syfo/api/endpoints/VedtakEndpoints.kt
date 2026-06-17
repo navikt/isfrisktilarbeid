@@ -39,8 +39,8 @@ fun Route.registerVedtakEndpoints(
             checkPersonAndSyfoTilgang(
                 action = "get vilkar for person",
                 tilgangskontrollClient = tilgangskontrollClient,
-            ) { authorizedUser, targetPersonIdent, callId ->
-                val personident = Personident(targetPersonIdent.value)
+            ) { authorizedUser, targetPersonident, callId ->
+                val personident = Personident(targetPersonident.value)
 
                 val isArbeidssoker =
                     arbeidssokeroppslagClient.isArbeidssoker(
@@ -57,8 +57,8 @@ fun Route.registerVedtakEndpoints(
             checkPersonAndSyfoTilgang(
                 action = "get vedtak for person",
                 tilgangskontrollClient = tilgangskontrollClient,
-            ) { _, targetPersonIdent, _ ->
-                val personident = Personident(targetPersonIdent.value)
+            ) { _, targetPersonident, _ ->
+                val personident = Personident(targetPersonident.value)
 
                 val vedtak = vedtakService.getVedtak(personident = personident)
                 val responseDTO = vedtak.map { VedtakResponseDTO.createFromVedtak(it) }
@@ -74,8 +74,8 @@ fun Route.registerVedtakEndpoints(
                 action = "create vedtak",
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
-            ) { authorizedUser, targetPersonIdent, callId ->
-                val personident = Personident(targetPersonIdent.value)
+            ) { authorizedUser, targetPersonident, callId ->
+                val personident = Personident(targetPersonident.value)
 
                 val requestDTO = call.receive<VedtakRequestDTO>()
                 if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
@@ -103,7 +103,7 @@ fun Route.registerVedtakEndpoints(
                 } else {
                     val (newVedtak, pdf) = vedtakService.createVedtak(
                         personident = personident,
-                        veilederident = authorizedUser.navIdent.value,
+                        veilederident = authorizedUser.navident.value,
                         begrunnelse = requestDTO.begrunnelse,
                         document = requestDTO.document,
                         fom = requestDTO.fom,
@@ -136,8 +136,8 @@ fun Route.registerVedtakEndpoints(
                 action = "update ferdigbehandling for person",
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
-            ) { authorizedUser, targetPersonIdent, _ ->
-                val personident = Personident(targetPersonIdent.value)
+            ) { authorizedUser, targetPersonident, _ ->
+                val personident = Personident(targetPersonident.value)
                 val vedtakUUID = UUID.fromString(
                     requireNotNull(call.parameters[vedtakUUIDParam]) { "Missing vedtakUUID" }
                 )
@@ -148,7 +148,7 @@ fun Route.registerVedtakEndpoints(
                 } else {
                     val ferdigbehandletVedtak = vedtakService.ferdigbehandleVedtak(
                         vedtak = vedtak,
-                        veilederident = authorizedUser.navIdent.value,
+                        veilederident = authorizedUser.navident.value,
                     )
                     call.respond(
                         HttpStatusCode.OK,
