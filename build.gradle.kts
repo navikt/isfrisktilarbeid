@@ -18,7 +18,7 @@ val JACKSON_DATATYPE = "2.22.1"
 val JACKSON_DATABIND = "3.2.1"
 val KAFKA = "4.3.1"
 val KTOR = "3.5.2"
-val MQ = "9.4.5.0"
+val MQ = "10.0.0.0"
 val MOCKK = "1.14.11"
 val NIMBUS_JOSE_JWT = "10.9.1"
 
