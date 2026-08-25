@@ -29,18 +29,6 @@ plugins {
     id("com.adarshr.test-logger") version "4.0.0"
 }
 
-repositories {
-    mavenCentral()
-    maven(url = "https://packages.confluent.io/maven/")
-    maven {
-        url = uri("https://maven.pkg.github.com/navikt/isyfo-backend-common")
-        credentials {
-            username = providers.gradleProperty("githubUser").getOrElse("")
-            password = providers.gradleProperty("githubPassword").orNull
-        }
-    }
-}
-
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))

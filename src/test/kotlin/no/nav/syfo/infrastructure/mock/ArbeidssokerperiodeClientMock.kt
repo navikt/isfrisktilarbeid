@@ -6,6 +6,7 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokerperiodeRequest
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokerperiodeResponse
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.MetadataResponse
+import java.time.Duration
 
 val arbeidssokeroppslagMockResponseOld = ArbeidssokerperiodeResponse(
     startet = MetadataResponse(
@@ -18,7 +19,7 @@ val arbeidssokeroppslagMockResponseOld = ArbeidssokerperiodeResponse(
 
 val arbeidssokeroppslagMockResponse = ArbeidssokerperiodeResponse(
     startet = MetadataResponse(
-        tidspunkt = java.time.Instant.now().minusSeconds(60)
+        tidspunkt = java.time.Instant.now().minus(Duration.ofDays(1))
     ),
     avsluttet = null,
 )

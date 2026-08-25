@@ -14,6 +14,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.*
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.infrastructure.mock.arbeidssokeroppslagMockResponse
 import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.PDF_VEDTAK
 import no.nav.syfo.api.*
@@ -39,6 +40,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -237,7 +239,9 @@ class VedtakEndpointsTest {
                 setBody(vedtakRequestDTO)
             }
             assertEquals(HttpStatusCode.OK, response.status)
-            assertFalse(response.body<VilkarResponseDTO>().isArbeidssoker)
+            val vilkar = response.body<VilkarResponseDTO>()
+            assertFalse(vilkar.isArbeidssoker)
+            assertNull(vilkar.arbeidssokerFom)
         }
 
         @Test
@@ -250,7 +254,9 @@ class VedtakEndpointsTest {
                 setBody(vedtakRequestDTO)
             }
             assertEquals(HttpStatusCode.OK, response.status)
-            assertTrue(response.body<VilkarResponseDTO>().isArbeidssoker)
+            val vilkar = response.body<VilkarResponseDTO>()
+            assertTrue(vilkar.isArbeidssoker)
+            assertEquals(arbeidssokeroppslagMockResponse.startet.tidspunkt, vilkar.arbeidssokerFom)
         }
 
         @Test
@@ -263,7 +269,9 @@ class VedtakEndpointsTest {
                 setBody(vedtakRequestDTO)
             }
             assertEquals(HttpStatusCode.OK, response.status)
-            assertTrue(response.body<VilkarResponseDTO>().isArbeidssoker)
+            val vilkar = response.body<VilkarResponseDTO>()
+            assertTrue(vilkar.isArbeidssoker)
+            assertEquals(arbeidssokeroppslagMockResponse.startet.tidspunkt, vilkar.arbeidssokerFom)
         }
     }
 
@@ -316,8 +324,8 @@ class VedtakEndpointsTest {
         val vedtakRequestDTOInvalidTom = VedtakRequestDTO(
             document = vedtakDocument,
             begrunnelse = begrunnelse,
-            fom = LocalDate.now().minusDays(90),
-            tom = LocalDate.now().minusDays(10),
+            fom = LocalDate.now().minusDays(1),
+            tom = LocalDate.now().plusDays(11),
         )
         val response = client.post(urlVedtak) {
             contentType(ContentType.Application.Json)
@@ -359,6 +367,19 @@ class VedtakEndpointsTest {
             setBody(vedtakRequestDTO)
         }
         assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `Error when vedtak fom is before arbeidssokerperiode start`() = testApplication {
+        val client = setupApiAndClient()
+        val response = client.post(urlVedtak) {
+            contentType(ContentType.Application.Json)
+            bearerAuth(validToken)
+            header(NAV_PERSONIDENT_HEADER, personident.value)
+            setBody(vedtakRequestDTO.copy(fom = LocalDate.now().minusDays(2)))
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        verify(exactly = 0) { infotrygdMQSender.sendToMQ(any(), any()) }
     }
 
     @Test
