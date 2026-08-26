@@ -14,7 +14,6 @@ import no.nav.syfo.common.util.bearerHeader
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.httpClientDefault
 import org.slf4j.LoggerFactory
-import java.time.Instant
 
 class ArbeidssokeroppslagClient(
     private val oboTokenProvider: AzureAdClient,
@@ -23,11 +22,11 @@ class ArbeidssokeroppslagClient(
 ) {
     private val arbeidssokerperioderUrl = "${clientConfig.baseUrl}$ARBEIDSSOKERPERIODER_PATH"
 
-    suspend fun isArbeidssoker(
+    suspend fun getLatestArbeidssokerperiode(
         callId: String,
         personIdent: Personident,
         token: String
-    ): Boolean {
+    ): ArbeidssokerperiodeResponse? {
         val onBehalfOfToken =
             oboTokenProvider.getOnBehalfOfToken(
                 targetClientId = clientConfig.clientId,
@@ -43,13 +42,12 @@ class ArbeidssokeroppslagClient(
                 setBody(ArbeidssokerperiodeRequest(personIdent.value))
             }
             val arbeidssokerperioder = response.body<List<ArbeidssokerperiodeResponse>>()
-            val nyeste = arbeidssokerperioder.firstOrNull()
-            nyeste != null && nyeste.startet.tidspunkt.isBefore(Instant.now()) && (nyeste.avsluttet == null || nyeste.avsluttet.tidspunkt.isAfter(Instant.now()))
+            arbeidssokerperioder.firstOrNull()
         } catch (e: ResponseException) {
             if (e.response.status != HttpStatusCode.Forbidden) {
                 handleUnexpectedResponseException(e.response, callId)
             }
-            false
+            null
         }
     }
 

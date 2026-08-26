@@ -18,6 +18,7 @@ import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
+import no.nav.syfo.util.osloZoneId
 import java.util.UUID
 
 const val vedtakUUIDParam = "vedtakUUID"
@@ -42,14 +43,20 @@ fun Route.registerVedtakEndpoints(
             ) { authorizedUser, targetPersonident, callId ->
                 val personident = Personident(targetPersonident.value)
 
-                val isArbeidssoker =
-                    arbeidssokeroppslagClient.isArbeidssoker(
+                val periode =
+                    arbeidssokeroppslagClient.getLatestArbeidssokerperiode(
                         callId,
                         personident,
                         authorizedUser.token
                     )
 
-                call.respond(HttpStatusCode.OK, VilkarResponseDTO(isArbeidssoker))
+                call.respond(
+                    HttpStatusCode.OK,
+                    VilkarResponseDTO(
+                        isArbeidssoker = periode?.isArbeidssoker == true,
+                        arbeidssokerFom = periode?.takeIf { it.isArbeidssoker }?.startet?.tidspunkt,
+                    )
+                )
             }
         }
 
@@ -92,41 +99,47 @@ fun Route.registerVedtakEndpoints(
                 } else if (currentVedtak != null && currentVedtak.tom.isAfter(requestDTO.fom)) {
                     log.warn("Forsøker å opprette vedtak som overlapper med et tidligere vedtak")
                     call.respond(HttpStatusCode.Conflict, "Vedtaksperioden overlapper med et tidligere vedtak")
-                } else if (!arbeidssokeroppslagClient.isArbeidssoker(
+                } else {
+                    val periode = arbeidssokeroppslagClient.getLatestArbeidssokerperiode(
                         callId,
                         personident,
                         authorizedUser.token
                     )
-                ) {
-                    log.warn("Forsøker å opprette vedtak for person som ikke er registrert som arbeidssøker")
-                    call.respond(HttpStatusCode.BadRequest, "Personen er ikke registrert som arbeidssøker")
-                } else {
-                    val (newVedtak, pdf) = vedtakService.createVedtak(
-                        personident = personident,
-                        veilederident = authorizedUser.navident.value,
-                        begrunnelse = requestDTO.begrunnelse,
-                        document = requestDTO.document,
-                        fom = requestDTO.fom,
-                        tom = requestDTO.tom,
-                        callId = callId,
-                    )
-                    coroutineScope.launch {
-                        try {
-                            val journalfortVedtak = vedtakService.journalforVedtak(newVedtak, pdf).getOrThrow()
-                            if (journalfortVedtak.isJournalfort()) {
-                                vedtakService.createGosysOppgaveForVedtak(journalfortVedtak)
-                            }
-                        } catch (exc: Exception) {
-                            log.error("Journalforing eller gosysoppgave feilet, cronjob vil forsøke på nytt", exc)
-                        }
-                    }
-                    vedtakService.sendVedtakToInfotrygd(vedtak = newVedtak)
-                    delay(1000) // Wait for infotrygd kvittering to be consumed
 
-                    val vedtak = vedtakService.getVedtak(uuid = newVedtak.uuid)
-                    val response = VedtakResponseDTO.createFromVedtak(vedtak = vedtak)
-                    log.info("Created vedtak with infotrygd status: ${response.infotrygdStatus}, isJournalfort: ${response.isJournalfort}, hasGosysOppgave: ${response.hasGosysOppgave}")
-                    call.respond(HttpStatusCode.Created, response)
+                    if (periode?.isArbeidssoker != true) {
+                        log.warn("Forsøker å opprette vedtak for person som ikke er registrert som arbeidssøker")
+                        call.respond(HttpStatusCode.BadRequest, "Personen er ikke registrert som arbeidssøker")
+                    } else if (requestDTO.fom.isBefore(periode.startet.tidspunkt.atZone(osloZoneId).toLocalDate())) {
+                        log.warn("Forsøker å opprette vedtak med fradato før arbeidssøkerperioden startet")
+                        call.respond(HttpStatusCode.BadRequest, "Fradato i vedtak kan ikke være før arbeidssøkerperioden startet")
+                    } else {
+                        val (newVedtak, pdf) = vedtakService.createVedtak(
+                            personident = personident,
+                            veilederident = authorizedUser.navident.value,
+                            begrunnelse = requestDTO.begrunnelse,
+                            document = requestDTO.document,
+                            fom = requestDTO.fom,
+                            tom = requestDTO.tom,
+                            callId = callId,
+                        )
+                        coroutineScope.launch {
+                            try {
+                                val journalfortVedtak = vedtakService.journalforVedtak(newVedtak, pdf).getOrThrow()
+                                if (journalfortVedtak.isJournalfort()) {
+                                    vedtakService.createGosysOppgaveForVedtak(journalfortVedtak)
+                                }
+                            } catch (exc: Exception) {
+                                log.error("Journalforing eller gosysoppgave feilet, cronjob vil forsøke på nytt", exc)
+                            }
+                        }
+                        vedtakService.sendVedtakToInfotrygd(vedtak = newVedtak)
+                        delay(1000) // Wait for infotrygd kvittering to be consumed
+
+                        val vedtak = vedtakService.getVedtak(uuid = newVedtak.uuid)
+                        val response = VedtakResponseDTO.createFromVedtak(vedtak = vedtak)
+                        log.info("Created vedtak with infotrygd status: ${response.infotrygdStatus}, isJournalfort: ${response.isJournalfort}, hasGosysOppgave: ${response.hasGosysOppgave}")
+                        call.respond(HttpStatusCode.Created, response)
+                    }
                 }
             }
         }
