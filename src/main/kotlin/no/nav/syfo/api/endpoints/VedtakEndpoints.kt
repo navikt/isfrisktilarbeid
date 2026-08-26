@@ -18,7 +18,7 @@ import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
-import no.nav.syfo.util.defaultZoneOffset
+import no.nav.syfo.util.osloZoneId
 import java.util.UUID
 
 const val vedtakUUIDParam = "vedtakUUID"
@@ -109,7 +109,7 @@ fun Route.registerVedtakEndpoints(
                     if (periode?.isArbeidssoker != true) {
                         log.warn("Forsøker å opprette vedtak for person som ikke er registrert som arbeidssøker")
                         call.respond(HttpStatusCode.BadRequest, "Personen er ikke registrert som arbeidssøker")
-                    } else if (requestDTO.fom.isBefore(periode.startet.tidspunkt.atOffset(defaultZoneOffset).toLocalDate())) {
+                    } else if (requestDTO.fom.isBefore(periode.startet.tidspunkt.atZone(osloZoneId).toLocalDate())) {
                         log.warn("Forsøker å opprette vedtak med fradato før arbeidssøkerperioden startet")
                         call.respond(HttpStatusCode.BadRequest, "Fradato i vedtak kan ikke være før arbeidssøkerperioden startet")
                     } else {
