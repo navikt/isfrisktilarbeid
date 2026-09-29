@@ -5,6 +5,8 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.*
+import no.nav.syfo.generator.generateDocumentComponent
+import no.nav.syfo.generator.generateKorrigering
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.database.*
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
@@ -24,6 +26,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -275,6 +278,87 @@ class VedtakServiceTest {
     }
 
     @Nested
+    @DisplayName("Korriger vedtak")
+    inner class KorrigerVedtak {
+        @Test
+        fun `arver begrunnelse og ferdigbehandler det korrigerte vedtaket`() {
+            val createdVedtak = vedtakRepository.createVedtak(
+                vedtak = vedtak,
+                vedtakPdf = UserConstants.PDF_VEDTAK,
+            )
+            val korrigertDocument = generateDocumentComponent("Korrigert fritekst")
+
+            val (korrigering, pdf) = runBlocking {
+                vedtakService.createKorrigering(
+                    korrigertVedtak = createdVedtak,
+                    veilederident = UserConstants.VEILEDER_IDENT_OTHER,
+                    document = korrigertDocument,
+                    fom = createdVedtak.fom.plusDays(1),
+                    tom = createdVedtak.tom.minusDays(1),
+                    callId = "callId",
+                )
+            }
+
+            assertEquals(createdVedtak.uuid, korrigering.korrigererVedtakUuid)
+            assertEquals(createdVedtak.begrunnelse, korrigering.begrunnelse)
+            assertEquals(korrigertDocument, korrigering.document)
+            assertEquals(UserConstants.VEILEDER_IDENT_OTHER, korrigering.getFattetStatus().veilederident)
+            assertEquals(UserConstants.PDF_VEDTAK.size, pdf.size)
+            assertTrue(vedtakRepository.getVedtak(createdVedtak.uuid).isFerdigbehandlet())
+            assertFalse(vedtakRepository.getVedtak(korrigering.uuid).isFerdigbehandlet())
+        }
+
+        @Test
+        fun `endrer ikke ferdigbehandlet status naar korrigert vedtak allerede er ferdigbehandlet`() {
+            val createdVedtak = vedtakRepository.createVedtak(
+                vedtak = vedtak,
+                vedtakPdf = UserConstants.PDF_VEDTAK,
+            )
+            val ferdigbehandletVedtak = vedtakService.ferdigbehandleVedtak(createdVedtak, UserConstants.VEILEDER_IDENT)
+
+            runBlocking {
+                vedtakService.createKorrigering(
+                    korrigertVedtak = ferdigbehandletVedtak,
+                    veilederident = UserConstants.VEILEDER_IDENT_OTHER,
+                    document = generateDocumentComponent("Korrigert fritekst"),
+                    fom = createdVedtak.fom,
+                    tom = createdVedtak.tom,
+                    callId = "callId",
+                )
+            }
+
+            val persistedVedtak = vedtakRepository.getVedtak(createdVedtak.uuid)
+            assertEquals(1, persistedVedtak.statusListe.count { it.status == Status.FERDIG_BEHANDLET })
+            assertEquals(UserConstants.VEILEDER_IDENT, persistedVedtak.getFerdigbehandletStatus()!!.veilederident)
+        }
+
+        @Test
+        fun `korrigering sendes ikke til infotrygd`() {
+            val createdVedtak = vedtakRepository.createVedtak(
+                vedtak = vedtak,
+                vedtakPdf = UserConstants.PDF_VEDTAK,
+            )
+            val (korrigering, _) = runBlocking {
+                vedtakService.createKorrigering(
+                    korrigertVedtak = createdVedtak,
+                    veilederident = UserConstants.VEILEDER_IDENT,
+                    document = generateDocumentComponent("Korrigert fritekst"),
+                    fom = createdVedtak.fom,
+                    tom = createdVedtak.tom,
+                    callId = "callId",
+                )
+            }
+            database.setVedtakCreatedAt(OffsetDateTime.now().minusMinutes(1), createdVedtak.uuid)
+            database.setVedtakCreatedAt(OffsetDateTime.now().minusMinutes(1), korrigering.uuid)
+
+            val results = runBlocking { vedtakService.sendUnpublishedVedtakToInfotrygd() }
+
+            assertEquals(1, results.size)
+            assertEquals(createdVedtak.uuid, results.single().getOrThrow().uuid)
+        }
+    }
+
+    @Nested
     @DisplayName("Publish unpublished vedtak status to kafka")
     inner class PublishUnpublishedVedtakstatus {
         @Test
@@ -303,6 +387,31 @@ class VedtakServiceTest {
             assertEquals(publishedVedtak.tom, record.tom)
             assertEquals(Status.FATTET, record.status)
             assertEquals(publishedVedtak.getFattetStatus().veilederident, record.statusBy)
+            assertNull(record.korrigererVedtakUuid)
+        }
+
+        @Test
+        fun `publishes korrigering with korrigererVedtakUuid to kafka`() {
+            val createdVedtak = vedtakRepository.createVedtak(
+                vedtak = vedtak,
+                vedtakPdf = UserConstants.PDF_VEDTAK,
+            )
+            val korrigering = vedtakRepository.createKorrigering(
+                korrigering = generateKorrigering(korrigertVedtak = createdVedtak),
+                vedtakPdf = UserConstants.PDF_VEDTAK,
+                ferdigbehandling = null,
+            )
+
+            val (success, failed) = vedtakService.publishUnpublishedVedtakStatus().partition { it.isSuccess }
+            assertEquals(0, failed.size)
+            assertEquals(2, success.size)
+
+            val producerRecordSlot = mutableListOf<ProducerRecord<String, VedtakStatusRecord>>()
+            verify(exactly = 2) { mockVedtakStatusKafkaProducer.send(capture(producerRecordSlot)) }
+
+            val records = producerRecordSlot.map { it.value() }
+            assertNull(records.single { it.uuid == createdVedtak.uuid }.korrigererVedtakUuid)
+            assertEquals(createdVedtak.uuid, records.single { it.uuid == korrigering.uuid }.korrigererVedtakUuid)
         }
 
         @Test

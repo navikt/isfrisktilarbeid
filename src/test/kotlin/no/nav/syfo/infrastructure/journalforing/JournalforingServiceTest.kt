@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.generator.generateJournalpostRequest
+import no.nav.syfo.generator.generateKorrigering
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.BrevkodeType
@@ -50,6 +51,30 @@ class JournalforingServiceTest {
                     brevkodeType = BrevkodeType.VEDTAK_FRISKMELDING_TIL_ARBEIDSFORMIDLING,
                     pdf = UserConstants.PDF_VEDTAK,
                     eksternReferanse = vedtak.uuid,
+                    mottakerPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                    mottakerNavn = UserConstants.PERSON_FULLNAME,
+                    brukerPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `sender forventet journalpost for korrigering til dokarkiv`() = runBlocking {
+        val korrigering = generateKorrigering()
+
+        journalforingService.journalfor(
+            vedtak = korrigering,
+            pdf = UserConstants.PDF_VEDTAK,
+        ).getOrThrow()
+
+        coVerify(exactly = 1) {
+            dokarkivMock.journalfor(
+                journalpostRequest = generateJournalpostRequest(
+                    tittel = "Korrigert vedtak om friskmelding til arbeidsformidling",
+                    brevkodeType = BrevkodeType.VEDTAK_FRISKMELDING_TIL_ARBEIDSFORMIDLING,
+                    pdf = UserConstants.PDF_VEDTAK,
+                    eksternReferanse = korrigering.uuid,
                     mottakerPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
                     mottakerNavn = UserConstants.PERSON_FULLNAME,
                     brukerPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENT,

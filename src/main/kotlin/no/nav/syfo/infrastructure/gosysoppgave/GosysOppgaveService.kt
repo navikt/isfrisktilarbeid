@@ -22,7 +22,11 @@ class GosysOppgaveService(
                 behandlingstema = BEHANDLINGSTEMA_FRISK_TIL_ARBEID,
                 oppgavetype = OPPGAVE_TYPE_VURDER_HENVENDELSE,
                 tildeltEnhetsnr = NAY_TRONDHEIM,
-                beskrivelse = "Innvilget i perioden ${vedtak.fom.format(dateFormatter)} - ${vedtak.tom.format(dateFormatter)}",
+                beskrivelse = if (vedtak.isKorrigering()) {
+                    "Korrigert vedtak: innvilget i perioden ${vedtak.fom.format(dateFormatter)} - ${vedtak.tom.format(dateFormatter)}"
+                } else {
+                    "Innvilget i perioden ${vedtak.fom.format(dateFormatter)} - ${vedtak.tom.format(dateFormatter)}"
+                },
                 prioritet = PRIORITET_NORMAL,
             ),
             correlationId = vedtak.uuid,

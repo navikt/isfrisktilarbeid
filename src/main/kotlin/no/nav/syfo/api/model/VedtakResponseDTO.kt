@@ -18,6 +18,7 @@ data class VedtakResponseDTO private constructor(
     val ferdigbehandletAt: LocalDateTime?,
     val ferdigbehandletBy: String?,
     val infotrygdStatus: String,
+    val korrigererVedtakUUID: UUID?,
     val isJournalfort: Boolean = false,
     val hasGosysOppgave: Boolean = false,
 ) {
@@ -35,6 +36,7 @@ data class VedtakResponseDTO private constructor(
                 ferdigbehandletAt = vedtak.getFerdigbehandletStatus()?.createdAt?.toLocalDateTime(),
                 ferdigbehandletBy = vedtak.getFerdigbehandletStatus()?.veilederident,
                 infotrygdStatus = vedtak.infotrygdStatus.name,
+                korrigererVedtakUUID = vedtak.korrigererVedtakUuid,
                 isJournalfort = vedtak.journalpostId != null,
                 hasGosysOppgave = vedtak.gosysOppgaveId != null,
             )

@@ -22,6 +22,7 @@ data class PVedtak(
     val publishedInfotrygdAt: OffsetDateTime?,
     val varselPublishedAt: OffsetDateTime?,
     val infotrygdOk: Boolean?,
+    val korrigererVedtakUuid: UUID?,
 ) {
     fun toVedtak(statusListe: List<PVedtakStatus>): Vedtak = Vedtak.createFromDatabase(
         uuid = uuid,
@@ -38,5 +39,6 @@ data class PVedtak(
             it.toVedtakStatus()
         },
         infotrygdStatus = InfotrygdStatus.create(publishedInfotrygdAt, infotrygdOk),
+        korrigererVedtakUuid = korrigererVedtakUuid,
     )
 }

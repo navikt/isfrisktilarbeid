@@ -71,6 +71,35 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         }
     }
 
+    override fun createKorrigering(
+        korrigering: Vedtak,
+        vedtakPdf: ByteArray,
+        ferdigbehandling: Pair<Vedtak, VedtakStatus>?,
+    ): Vedtak {
+        database.connection.use { connection ->
+            val pVedtakPdf = connection.createPdf(pdf = vedtakPdf)
+            val pKorrigering = connection.createVedtak(
+                vedtak = korrigering,
+                pdfId = pVedtakPdf.id,
+            )
+            val pVedtakStatusListe = korrigering.statusListe.map {
+                connection.createVedtakStatus(
+                    vedtakId = pKorrigering.id,
+                    vedtakStatus = it,
+                )
+            }
+            ferdigbehandling?.let { (korrigertVedtak, vedtakStatus) ->
+                connection.createVedtakStatus(
+                    vedtakId = connection.getPVedtak(korrigertVedtak.uuid).id,
+                    vedtakStatus = vedtakStatus,
+                )
+            }
+
+            connection.commit()
+            return pKorrigering.toVedtak(pVedtakStatusListe)
+        }
+    }
+
     override fun getUnpublishedInfotrygd(): List<Vedtak> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_UNPUBLISHED_INFOTRYGD).use {
@@ -242,6 +271,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             it.setString(7, vedtak.begrunnelse)
             it.setObject(8, mapper.writeValueAsString(vedtak.document))
             it.setInt(9, pdfId)
+            it.setString(10, vedtak.korrigererVedtakUuid?.toString())
             it.executeQuery().toList { toPVedtak() }.single()
         }
 
@@ -279,8 +309,9 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
                     tom,
                     begrunnelse,
                     document,
-                    pdf_id
-                ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?)
+                    pdf_id,
+                    korrigerer_vedtak_uuid
+                ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?)
                 RETURNING *
             """
 
@@ -309,7 +340,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
 
         private const val GET_UNPUBLISHED_INFOTRYGD =
             """
-                SELECT * FROM VEDTAK WHERE published_infotrygd_at IS NULL AND created_at < now() - interval '1 minutes'
+                SELECT * FROM VEDTAK WHERE published_infotrygd_at IS NULL AND korrigerer_vedtak_uuid IS NULL AND created_at < now() - interval '1 minutes'
             """
 
         private const val SET_PUBLISHED_INFOTRYGD =
@@ -417,6 +448,7 @@ internal fun ResultSet.toPVedtak(): PVedtak = PVedtak(
     publishedInfotrygdAt = getObject("published_infotrygd_at", OffsetDateTime::class.java),
     varselPublishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),
     infotrygdOk = getNullableBoolean("infotrygd_ok"),
+    korrigererVedtakUuid = getString("korrigerer_vedtak_uuid")?.let { UUID.fromString(it.trim()) },
 )
 
 internal fun ResultSet.toPVedtakStatus(): PVedtakStatus = PVedtakStatus(

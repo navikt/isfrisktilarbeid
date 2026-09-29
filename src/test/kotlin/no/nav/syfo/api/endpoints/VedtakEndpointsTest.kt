@@ -18,6 +18,7 @@ import no.nav.syfo.infrastructure.mock.arbeidssokeroppslagMockResponse
 import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.PDF_VEDTAK
 import no.nav.syfo.api.*
+import no.nav.syfo.api.model.VedtakKorrigeringRequestDTO
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.api.model.VilkarResponseDTO
@@ -25,6 +26,7 @@ import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.common.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.domain.InfotrygdStatus
+import no.nav.syfo.domain.Status
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVedtakPdf
@@ -52,6 +54,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class VedtakEndpointsTest {
     private val urlVedtak = "$apiBasePath/$vedtakPath"
+    private val urlKorrigering = "$apiBasePath$korrigeringPath"
     private val urlVilkar = "$apiBasePath/$vilkarPath"
 
     private val externalMockEnvironment = ExternalMockEnvironment.instance
@@ -87,6 +90,10 @@ class VedtakEndpointsTest {
         begrunnelse = begrunnelse,
         fom = vedtakFom,
         tom = vedtakTom,
+    )
+    private val korrigeringDocument = generateDocumentComponent(
+        fritekst = "Dette er en korrigering av vedtak 8-5",
+        header = "Korrigert vedtak"
     )
     private val vedtakRepository = VedtakRepository(database)
     private val vedtakService = VedtakService(
@@ -313,6 +320,225 @@ class VedtakEndpointsTest {
                 bearerAuth(validTokenReadNavIdent)
                 header(NAV_PERSONIDENT_HEADER, personident.value)
                 setBody(vedtakRequestDTO)
+            }
+            assertEquals(HttpStatusCode.Forbidden, response.status)
+        }
+    }
+
+    @Nested
+    @DisplayName("Post korrigering")
+    inner class PostKorrigering {
+        private fun korrigeringRequest(vedtakUUID: UUID) = VedtakKorrigeringRequestDTO(
+            vedtakUUID = vedtakUUID,
+            document = korrigeringDocument,
+            fom = vedtakFom.plusDays(1),
+            tom = vedtakTom.minusDays(1),
+        )
+
+        @Test
+        fun `Creates korrigering of vedtak`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid))
+            }
+            assertEquals(HttpStatusCode.Created, response.status)
+            val korrigering = response.body<VedtakResponseDTO>()
+            assertEquals(vedtak.uuid, korrigering.korrigererVedtakUUID)
+            assertEquals(begrunnelse, korrigering.begrunnelse)
+            assertEquals(korrigeringDocument, korrigering.document)
+            assertEquals(vedtakFom.plusDays(1), korrigering.fom)
+            assertEquals(vedtakTom.minusDays(1), korrigering.tom)
+            assertEquals(personident.value, korrigering.personident)
+            assertEquals(UserConstants.VEILEDER_IDENT, korrigering.veilederident)
+            assertEquals(InfotrygdStatus.IKKE_SENDT.name, korrigering.infotrygdStatus)
+            assertTrue(korrigering.isJournalfort)
+            assertTrue(korrigering.hasGosysOppgave)
+            val korrigeringPdf = database.getVedtakPdf(vedtakUuid = korrigering.uuid)?.pdf!!
+            assertEquals(PDF_VEDTAK.size, korrigeringPdf.size)
+        }
+
+        @Test
+        fun `Korrigering is not sent to infotrygd`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid))
+            }
+            assertEquals(HttpStatusCode.Created, response.status)
+            verify(exactly = 0) { infotrygdMQSender.sendToMQ(any(), any()) }
+        }
+
+        @Test
+        fun `Ferdigbehandles korrigert vedtak when it is not ferdigbehandlet`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid))
+            }
+            assertEquals(HttpStatusCode.Created, response.status)
+            val korrigertVedtak = vedtakRepository.getVedtak(vedtak.uuid)
+            assertTrue(korrigertVedtak.isFerdigbehandlet())
+            assertEquals(UserConstants.VEILEDER_IDENT, korrigertVedtak.getFerdigbehandletStatus()?.veilederident)
+            val korrigering = vedtakRepository.getVedtak(response.body<VedtakResponseDTO>().uuid)
+            assertFalse(korrigering.isFerdigbehandlet())
+        }
+
+        @Test
+        fun `Keeps ferdigbehandlet status when korrigert vedtak already is ferdigbehandlet`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            vedtakService.ferdigbehandleVedtak(vedtak, UserConstants.VEILEDER_IDENT_OTHER)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid))
+            }
+            assertEquals(HttpStatusCode.Created, response.status)
+            val korrigertVedtak = vedtakRepository.getVedtak(vedtak.uuid)
+            assertEquals(1, korrigertVedtak.statusListe.count { it.status == Status.FERDIG_BEHANDLET })
+            assertEquals(UserConstants.VEILEDER_IDENT_OTHER, korrigertVedtak.getFerdigbehandletStatus()?.veilederident)
+        }
+
+        @Test
+        fun `Creates korrigering of a korrigering`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val firstResponse = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid))
+            }
+            assertEquals(HttpStatusCode.Created, firstResponse.status)
+            val firstKorrigering = firstResponse.body<VedtakResponseDTO>()
+
+            val secondResponse = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(firstKorrigering.uuid))
+            }
+            assertEquals(HttpStatusCode.Created, secondResponse.status)
+            assertEquals(firstKorrigering.uuid, secondResponse.body<VedtakResponseDTO>().korrigererVedtakUUID)
+            assertTrue(vedtakRepository.getVedtak(firstKorrigering.uuid).isFerdigbehandlet())
+            assertEquals(3, vedtakRepository.getVedtak(personident).size)
+        }
+
+        @Test
+        fun `Returns status Conflict when vedtak is not the latest vedtak`() = testApplication {
+            val (oldVedtak, _) = createVedtak(
+                vedtakRequestDTO.copy(fom = vedtakFom.minusYears(1), tom = vedtakTom.minusYears(1))
+            )
+            vedtakService.ferdigbehandleVedtak(oldVedtak, UserConstants.VEILEDER_IDENT)
+            createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(oldVedtak.uuid))
+            }
+            assertEquals(HttpStatusCode.Conflict, response.status)
+        }
+
+        @Test
+        fun `Returns status Conflict when korrigert periode overlaps earlier vedtak`() = testApplication {
+            val (oldVedtak, _) = createVedtak(
+                vedtakRequestDTO.copy(fom = vedtakFom.minusWeeks(20), tom = vedtakFom.minusWeeks(1))
+            )
+            vedtakService.ferdigbehandleVedtak(oldVedtak, UserConstants.VEILEDER_IDENT)
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid).copy(fom = oldVedtak.tom.minusDays(1)))
+            }
+            assertEquals(HttpStatusCode.Conflict, response.status)
+        }
+
+        @Test
+        fun `Allows korrigering of periode entirely before an earlier vedtak`() = testApplication {
+            val (oldVedtak, _) = createVedtak(
+                vedtakRequestDTO.copy(fom = vedtakFom.minusWeeks(20), tom = vedtakFom.minusWeeks(8))
+            )
+            vedtakService.ferdigbehandleVedtak(oldVedtak, UserConstants.VEILEDER_IDENT)
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(
+                    korrigeringRequest(vedtak.uuid).copy(
+                        fom = oldVedtak.fom.minusWeeks(4),
+                        tom = oldVedtak.fom,
+                    )
+                )
+            }
+            assertEquals(HttpStatusCode.Created, response.status)
+        }
+
+        @Test
+        fun `Returns status BadRequest when vedtak does not exist`() = testApplication {
+            createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(UUID.randomUUID()))
+            }
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
+        fun `Returns status BadRequest when tom-date is before fom-date`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid).copy(fom = vedtakTom, tom = vedtakFom))
+            }
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
+        fun `Returns status BadRequest when document is empty`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid).copy(document = emptyList()))
+            }
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
+        fun `Returns status Forbidden when veileder only has read access`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validTokenReadNavIdent)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid))
             }
             assertEquals(HttpStatusCode.Forbidden, response.status)
         }

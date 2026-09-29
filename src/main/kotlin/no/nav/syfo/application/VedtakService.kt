@@ -44,6 +44,39 @@ class VedtakService(
         return Pair(createdVedtak, vedtakPdf)
     }
 
+    suspend fun createKorrigering(
+        korrigertVedtak: Vedtak,
+        veilederident: String,
+        document: List<DocumentComponent>,
+        fom: LocalDate,
+        tom: LocalDate,
+        callId: String,
+    ): Pair<Vedtak, ByteArray> {
+        val korrigering = Vedtak.createKorrigering(
+            korrigertVedtak = korrigertVedtak,
+            veilederident = veilederident,
+            document = document,
+            fom = fom,
+            tom = tom,
+        )
+        val vedtakPdf = pdfService.createVedtakPdf(vedtak = korrigering, callId = callId)
+        val ferdigbehandling = if (korrigertVedtak.isFerdigbehandlet()) {
+            null
+        } else {
+            korrigertVedtak to VedtakStatus(
+                veilederident = veilederident,
+                status = Status.FERDIG_BEHANDLET,
+            )
+        }
+        val createdKorrigering = vedtakRepository.createKorrigering(
+            korrigering = korrigering,
+            vedtakPdf = vedtakPdf,
+            ferdigbehandling = ferdigbehandling,
+        )
+
+        return Pair(createdKorrigering, vedtakPdf)
+    }
+
     fun ferdigbehandleVedtak(
         vedtak: Vedtak,
         veilederident: String,

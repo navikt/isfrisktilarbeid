@@ -6,6 +6,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.domain.JournalpostId
+import no.nav.syfo.generator.generateKorrigering
 import no.nav.syfo.generator.generateVedtak
 import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
 import no.nav.syfo.infrastructure.clients.gosysoppgave.OppgaveResponse
@@ -40,6 +41,21 @@ class GosysOppgaveServiceTest {
                         it.fristFerdigstillelse == LocalDate.now()
                 },
                 correlationId = vedtak.uuid,
+            )
+        }
+    }
+
+    @Test
+    fun `uses korrigering beskrivelse for korrigering`() = runBlocking {
+        val korrigering = generateKorrigering().copy(journalpostId = JournalpostId("1234567890"))
+        coEvery { gosysOppgaveClientMock.createOppgave(any(), any()) } returns OppgaveResponse(id = "123456")
+
+        gosysOppgaveService.createGosysOppgave(korrigering).getOrThrow()
+
+        coVerify(exactly = 1) {
+            gosysOppgaveClientMock.createOppgave(
+                request = match { it.beskrivelse.startsWith("Korrigert vedtak: innvilget i perioden ") },
+                correlationId = korrigering.uuid,
             )
         }
     }
