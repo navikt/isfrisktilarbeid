@@ -157,8 +157,8 @@ fun Route.registerVedtakEndpoints(
                 val personident = Personident(targetPersonident.value)
 
                 val requestDTO = call.receive<VedtakKorrigeringRequestDTO>()
-                if (requestDTO.document.isEmpty()) {
-                    throw IllegalArgumentException("Korrigering av vedtak kan ikke ha tomt dokument")
+                if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
+                    throw IllegalArgumentException("Korrigering av vedtak kan ikke ha tom begrunnelse eller tomt dokument")
                 }
                 if (requestDTO.tom.isBefore(requestDTO.fom)) {
                     throw IllegalArgumentException("Tildato i vedtak kan ikke være før fradato.")
@@ -186,6 +186,7 @@ fun Route.registerVedtakEndpoints(
                     val (korrigering, pdf) = vedtakService.createKorrigering(
                         korrigertVedtak = korrigertVedtak,
                         veilederident = authorizedUser.navident.value,
+                        begrunnelse = requestDTO.begrunnelse,
                         document = requestDTO.document,
                         fom = requestDTO.fom,
                         tom = requestDTO.tom,

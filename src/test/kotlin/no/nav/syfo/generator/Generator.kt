@@ -23,12 +23,14 @@ fun generateVedtak(
 
 fun generateKorrigering(
     korrigertVedtak: Vedtak = generateVedtak(),
-    document: List<DocumentComponent> = generateDocumentComponent("En korrigert begrunnelse"),
+    begrunnelse: String = "En korrigert begrunnelse",
+    document: List<DocumentComponent> = generateDocumentComponent(begrunnelse),
     fom: LocalDate = LocalDate.now(),
     tom: LocalDate = LocalDate.now().plusWeeks(10),
 ): Vedtak = Vedtak.createKorrigering(
     korrigertVedtak = korrigertVedtak,
     veilederident = UserConstants.VEILEDER_IDENT,
+    begrunnelse = begrunnelse,
     document = document,
     fom = fom,
     tom = tom,

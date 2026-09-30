@@ -328,8 +328,11 @@ class VedtakEndpointsTest {
     @Nested
     @DisplayName("Post korrigering")
     inner class PostKorrigering {
+        private val korrigeringBegrunnelse = "Dette er en korrigert begrunnelse"
+
         private fun korrigeringRequest(vedtakUUID: UUID) = VedtakKorrigeringRequestDTO(
             vedtakUUID = vedtakUUID,
+            begrunnelse = korrigeringBegrunnelse,
             document = korrigeringDocument,
             fom = vedtakFom.plusDays(1),
             tom = vedtakTom.minusDays(1),
@@ -348,7 +351,7 @@ class VedtakEndpointsTest {
             assertEquals(HttpStatusCode.Created, response.status)
             val korrigering = response.body<VedtakResponseDTO>()
             assertEquals(vedtak.uuid, korrigering.korrigererVedtakUUID)
-            assertEquals(begrunnelse, korrigering.begrunnelse)
+            assertEquals(korrigeringBegrunnelse, korrigering.begrunnelse)
             assertEquals(korrigeringDocument, korrigering.document)
             assertEquals(vedtakFom.plusDays(1), korrigering.fom)
             assertEquals(vedtakTom.minusDays(1), korrigering.tom)
@@ -526,6 +529,19 @@ class VedtakEndpointsTest {
                 bearerAuth(validToken)
                 header(NAV_PERSONIDENT_HEADER, personident.value)
                 setBody(korrigeringRequest(vedtak.uuid).copy(document = emptyList()))
+            }
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
+        fun `Returns status BadRequest when begrunnelse is blank`() = testApplication {
+            val (vedtak, _) = createVedtak(vedtakRequestDTO)
+            val client = setupApiAndClient()
+            val response = client.post(urlKorrigering) {
+                contentType(ContentType.Application.Json)
+                bearerAuth(validToken)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+                setBody(korrigeringRequest(vedtak.uuid).copy(begrunnelse = " "))
             }
             assertEquals(HttpStatusCode.BadRequest, response.status)
         }

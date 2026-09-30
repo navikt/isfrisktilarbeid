@@ -47,6 +47,7 @@ class VedtakService(
     suspend fun createKorrigering(
         korrigertVedtak: Vedtak,
         veilederident: String,
+        begrunnelse: String,
         document: List<DocumentComponent>,
         fom: LocalDate,
         tom: LocalDate,
@@ -55,6 +56,7 @@ class VedtakService(
         val korrigering = Vedtak.createKorrigering(
             korrigertVedtak = korrigertVedtak,
             veilederident = veilederident,
+            begrunnelse = begrunnelse,
             document = document,
             fom = fom,
             tom = tom,

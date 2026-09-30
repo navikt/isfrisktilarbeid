@@ -67,7 +67,7 @@ class VedtakRepositoryTest {
         val persistedKorrigering = vedtakRepository.getVedtak(createdKorrigering.uuid)
         assertEquals(createdVedtak.uuid, persistedKorrigering.korrigererVedtakUuid)
         assertTrue(persistedKorrigering.isKorrigering())
-        assertEquals(vedtak.begrunnelse, persistedKorrigering.begrunnelse)
+        assertEquals(korrigering.begrunnelse, persistedKorrigering.begrunnelse)
         assertEquals(korrigering.document, persistedKorrigering.document)
         assertEquals(korrigering.fom, persistedKorrigering.fom)
         assertEquals(korrigering.tom, persistedKorrigering.tom)

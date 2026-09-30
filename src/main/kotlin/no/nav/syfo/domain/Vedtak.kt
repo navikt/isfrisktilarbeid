@@ -75,12 +75,13 @@ data class Vedtak private constructor(
 
         /**
          * Oppretter en korrigering av et eksisterende vedtak. Korrigeringen er selv et vedtak, med
-         * ny periode og nytt dokument, men arver personident og begrunnelse fra vedtaket som korrigeres.
+         * ny begrunnelse, periode og dokument, men arver personident fra vedtaket som korrigeres.
          * Korrigeringer sendes ikke til Infotrygd.
          */
         fun createKorrigering(
             korrigertVedtak: Vedtak,
             veilederident: String,
+            begrunnelse: String,
             document: List<DocumentComponent>,
             fom: LocalDate,
             tom: LocalDate,
@@ -88,7 +89,7 @@ data class Vedtak private constructor(
             uuid = UUID.randomUUID(),
             personident = korrigertVedtak.personident,
             createdAt = nowUTC(),
-            begrunnelse = korrigertVedtak.begrunnelse,
+            begrunnelse = begrunnelse,
             document = document,
             fom = fom,
             tom = tom,

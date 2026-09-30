@@ -6,6 +6,7 @@ import java.util.*
 
 data class VedtakKorrigeringRequestDTO(
     val vedtakUUID: UUID,
+    val begrunnelse: String,
     val document: List<DocumentComponent>,
     val fom: LocalDate,
     val tom: LocalDate,

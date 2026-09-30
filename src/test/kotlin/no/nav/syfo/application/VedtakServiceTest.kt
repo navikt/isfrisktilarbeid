@@ -281,17 +281,19 @@ class VedtakServiceTest {
     @DisplayName("Korriger vedtak")
     inner class KorrigerVedtak {
         @Test
-        fun `arver begrunnelse og ferdigbehandler det korrigerte vedtaket`() {
+        fun `bruker ny begrunnelse og ferdigbehandler det korrigerte vedtaket`() {
             val createdVedtak = vedtakRepository.createVedtak(
                 vedtak = vedtak,
                 vedtakPdf = UserConstants.PDF_VEDTAK,
             )
+            val korrigertBegrunnelse = "Korrigert begrunnelse"
             val korrigertDocument = generateDocumentComponent("Korrigert fritekst")
 
             val (korrigering, pdf) = runBlocking {
                 vedtakService.createKorrigering(
                     korrigertVedtak = createdVedtak,
                     veilederident = UserConstants.VEILEDER_IDENT_OTHER,
+                    begrunnelse = korrigertBegrunnelse,
                     document = korrigertDocument,
                     fom = createdVedtak.fom.plusDays(1),
                     tom = createdVedtak.tom.minusDays(1),
@@ -300,7 +302,7 @@ class VedtakServiceTest {
             }
 
             assertEquals(createdVedtak.uuid, korrigering.korrigererVedtakUuid)
-            assertEquals(createdVedtak.begrunnelse, korrigering.begrunnelse)
+            assertEquals(korrigertBegrunnelse, korrigering.begrunnelse)
             assertEquals(korrigertDocument, korrigering.document)
             assertEquals(UserConstants.VEILEDER_IDENT_OTHER, korrigering.getFattetStatus().veilederident)
             assertEquals(UserConstants.PDF_VEDTAK.size, pdf.size)
@@ -320,6 +322,7 @@ class VedtakServiceTest {
                 vedtakService.createKorrigering(
                     korrigertVedtak = ferdigbehandletVedtak,
                     veilederident = UserConstants.VEILEDER_IDENT_OTHER,
+                    begrunnelse = "Korrigert begrunnelse",
                     document = generateDocumentComponent("Korrigert fritekst"),
                     fom = createdVedtak.fom,
                     tom = createdVedtak.tom,
@@ -342,6 +345,7 @@ class VedtakServiceTest {
                 vedtakService.createKorrigering(
                     korrigertVedtak = createdVedtak,
                     veilederident = UserConstants.VEILEDER_IDENT,
+                    begrunnelse = "Korrigert begrunnelse",
                     document = generateDocumentComponent("Korrigert fritekst"),
                     fom = createdVedtak.fom,
                     tom = createdVedtak.tom,
