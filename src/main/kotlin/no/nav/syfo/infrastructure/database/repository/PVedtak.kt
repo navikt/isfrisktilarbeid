@@ -38,7 +38,7 @@ data class PVedtak(
         vedtakStatus = statusListe.map {
             it.toVedtakStatus()
         },
-        infotrygdStatus = InfotrygdStatus.create(publishedInfotrygdAt, infotrygdOk),
+        infotrygdStatus = InfotrygdStatus.create(publishedInfotrygdAt, infotrygdOk, isKorrigering = korrigererVedtakUuid != null),
         korrigererVedtakUuid = korrigererVedtakUuid,
     )
 }

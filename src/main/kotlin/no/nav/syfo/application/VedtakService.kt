@@ -18,6 +18,12 @@ class VedtakService(
 
     fun getVedtak(uuid: UUID): Vedtak = vedtakRepository.getVedtak(uuid = uuid)
 
+    /**
+     * Vedtak som ikke er korrigert av et annet vedtak, nyeste først.
+     */
+    fun getGjeldendeVedtak(vedtakList: List<Vedtak>): List<Vedtak> =
+        vedtakList.filter { vedtak -> vedtakList.none { it.korrigererVedtakUuid == vedtak.uuid } }
+
     suspend fun createVedtak(
         personident: Personident,
         veilederident: String,

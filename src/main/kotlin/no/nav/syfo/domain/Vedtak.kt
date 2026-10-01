@@ -55,7 +55,10 @@ data class Vedtak private constructor(
 
     fun setGosysOppgaveId(gosysOppgaveId: GosysOppgaveId): Vedtak = this.copy(gosysOppgaveId = gosysOppgaveId, gosysOppgaveAt = nowUTC())
 
-    fun sendTilInfotrygd(): Vedtak = this.copy(infotrygdStatus = InfotrygdStatus.KVITTERING_MANGLER)
+    fun sendTilInfotrygd(): Vedtak {
+        check(!isKorrigering()) { "Korrigering skal ikke sendes til Infotrygd" }
+        return this.copy(infotrygdStatus = InfotrygdStatus.KVITTERING_MANGLER)
+    }
 
     fun addVedtakstatus(vedtakStatus: VedtakStatus): Vedtak = this.copy(
         statusListe = this.statusListe.toMutableList().also {
@@ -100,7 +103,7 @@ data class Vedtak private constructor(
                     status = Status.FATTET,
                 )
             ),
-            infotrygdStatus = InfotrygdStatus.IKKE_SENDT,
+            infotrygdStatus = InfotrygdStatus.SKAL_IKKE_SENDES,
             gosysOppgaveId = null,
             gosysOppgaveAt = null,
             korrigererVedtakUuid = korrigertVedtak.uuid,

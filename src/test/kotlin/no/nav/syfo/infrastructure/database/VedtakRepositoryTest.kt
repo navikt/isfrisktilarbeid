@@ -72,9 +72,32 @@ class VedtakRepositoryTest {
         assertEquals(korrigering.fom, persistedKorrigering.fom)
         assertEquals(korrigering.tom, persistedKorrigering.tom)
         assertFalse(persistedKorrigering.isFerdigbehandlet())
+        assertEquals(InfotrygdStatus.SKAL_IKKE_SENDES, persistedKorrigering.infotrygdStatus)
 
         val persistedKorrigertVedtak = vedtakRepository.getVedtak(createdVedtak.uuid)
         assertTrue(persistedKorrigertVedtak.isFerdigbehandlet())
+    }
+
+    @Test
+    fun `Throws when ferdigbehandling status is not FERDIG_BEHANDLET`() {
+        val createdVedtak = vedtakRepository.createVedtak(
+            vedtak = vedtak,
+            vedtakPdf = UserConstants.PDF_VEDTAK,
+        )
+        val korrigering = generateKorrigering(korrigertVedtak = createdVedtak)
+
+        assertThrows(IllegalArgumentException::class.java) {
+            vedtakRepository.createKorrigering(
+                korrigering = korrigering,
+                vedtakPdf = UserConstants.PDF_VEDTAK,
+                ferdigbehandling = createdVedtak to VedtakStatus(
+                    veilederident = UserConstants.VEILEDER_IDENT,
+                    status = Status.FATTET,
+                ),
+            )
+        }
+
+        assertEquals(listOf(createdVedtak.uuid), vedtakRepository.getVedtak(vedtak.personident).map { it.uuid })
     }
 
     @Test

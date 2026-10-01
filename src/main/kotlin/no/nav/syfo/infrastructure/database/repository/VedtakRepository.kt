@@ -76,6 +76,9 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
         vedtakPdf: ByteArray,
         ferdigbehandling: Pair<Vedtak, VedtakStatus>?,
     ): Vedtak {
+        require(ferdigbehandling == null || ferdigbehandling.second.status == Status.FERDIG_BEHANDLET) {
+            "Korrigert vedtak kan bare få status FERDIG_BEHANDLET"
+        }
         database.connection.use { connection ->
             val pVedtakPdf = connection.createPdf(pdf = vedtakPdf)
             val pKorrigering = connection.createVedtak(

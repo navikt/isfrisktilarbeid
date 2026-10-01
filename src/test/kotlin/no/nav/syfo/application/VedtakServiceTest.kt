@@ -281,6 +281,18 @@ class VedtakServiceTest {
     @DisplayName("Korriger vedtak")
     inner class KorrigerVedtak {
         @Test
+        fun `getGjeldendeVedtak excludes vedtak that are corrected, also through a chain`() {
+            val original = vedtak
+            val first = generateKorrigering(korrigertVedtak = original)
+            val second = generateKorrigering(korrigertVedtak = first)
+            val other = generateVedtak(personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_BYDEL)
+
+            val gjeldende = vedtakService.getGjeldendeVedtak(listOf(second, first, original, other))
+
+            assertEquals(listOf(second.uuid, other.uuid), gjeldende.map { it.uuid })
+        }
+
+        @Test
         fun `bruker ny begrunnelse og ferdigbehandler det korrigerte vedtaket`() {
             val createdVedtak = vedtakRepository.createVedtak(
                 vedtak = vedtak,

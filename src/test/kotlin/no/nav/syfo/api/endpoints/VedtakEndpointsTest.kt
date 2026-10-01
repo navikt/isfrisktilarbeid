@@ -357,7 +357,7 @@ class VedtakEndpointsTest {
             assertEquals(vedtakTom.minusDays(1), korrigering.tom)
             assertEquals(personident.value, korrigering.personident)
             assertEquals(UserConstants.VEILEDER_IDENT, korrigering.veilederident)
-            assertEquals(InfotrygdStatus.IKKE_SENDT.name, korrigering.infotrygdStatus)
+            assertEquals(InfotrygdStatus.SKAL_IKKE_SENDES.name, korrigering.infotrygdStatus)
             assertTrue(korrigering.isJournalfort)
             assertTrue(korrigering.hasGosysOppgave)
             val korrigeringPdf = database.getVedtakPdf(vedtakUuid = korrigering.uuid)?.pdf!!
@@ -473,7 +473,7 @@ class VedtakEndpointsTest {
         }
 
         @Test
-        fun `Allows korrigering of periode entirely before an earlier vedtak`() = testApplication {
+        fun `Returns status Conflict when korrigert periode is entirely before an earlier vedtak`() = testApplication {
             val (oldVedtak, _) = createVedtak(
                 vedtakRequestDTO.copy(fom = vedtakFom.minusWeeks(20), tom = vedtakFom.minusWeeks(8))
             )
@@ -491,7 +491,7 @@ class VedtakEndpointsTest {
                     )
                 )
             }
-            assertEquals(HttpStatusCode.Created, response.status)
+            assertEquals(HttpStatusCode.Conflict, response.status)
         }
 
         @Test

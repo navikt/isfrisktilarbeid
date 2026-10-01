@@ -164,27 +164,23 @@ fun Route.registerVedtakEndpoints(
                     throw IllegalArgumentException("Tildato i vedtak kan ikke være før fradato.")
                 }
 
-                val existingVedtak = vedtakService.getVedtak(personident)
-                val korrigertVedtak = existingVedtak.firstOrNull { it.uuid == requestDTO.vedtakUUID }
-                // Vedtak som er korrigert av et annet vedtak er ikke lenger gjeldende
-                val andreGjeldendeVedtak = existingVedtak.filter { vedtak ->
-                    vedtak.uuid != requestDTO.vedtakUUID && existingVedtak.none { it.korrigererVedtakUuid == vedtak.uuid }
-                }
+                val existingVedtakList = vedtakService.getVedtak(personident)
+                val gjeldendeVedtakList = vedtakService.getGjeldendeVedtak(existingVedtakList)
+                val vedtakTilKorrigering = gjeldendeVedtakList.firstOrNull()
+                    ?.takeIf { it.uuid == requestDTO.vedtakUUID }
+                val forrigeGjeldendeVedtak = gjeldendeVedtakList.getOrNull(1)
 
-                if (korrigertVedtak == null) {
+                if (existingVedtakList.none { it.uuid == requestDTO.vedtakUUID }) {
                     call.respond(HttpStatusCode.BadRequest, "Finner ikke vedtak med uuid=${requestDTO.vedtakUUID}")
-                } else if (existingVedtak.any { it.korrigererVedtakUuid == korrigertVedtak.uuid }) {
-                    log.warn("Forsøker å korrigere et vedtak som allerede er korrigert")
-                    call.respond(HttpStatusCode.Conflict, "Vedtaket er allerede korrigert")
-                } else if (korrigertVedtak.uuid != existingVedtak.first().uuid) {
-                    log.warn("Forsøker å korrigere et vedtak som ikke er det siste vedtaket for personen")
-                    call.respond(HttpStatusCode.Conflict, "Kan bare korrigere det siste vedtaket for personen")
-                } else if (andreGjeldendeVedtak.any { it.tom.isAfter(requestDTO.fom) && requestDTO.tom.isAfter(it.fom) }) {
+                } else if (vedtakTilKorrigering == null) {
+                    log.warn("Forsøker å korrigere et vedtak som ikke er det gjeldende vedtaket for personen")
+                    call.respond(HttpStatusCode.Conflict, "Kan bare korrigere det gjeldende vedtaket for personen")
+                } else if (forrigeGjeldendeVedtak != null && forrigeGjeldendeVedtak.tom.isAfter(requestDTO.fom)) {
                     log.warn("Forsøker å korrigere vedtak slik at perioden overlapper med et tidligere vedtak")
                     call.respond(HttpStatusCode.Conflict, "Vedtaksperioden overlapper med et tidligere vedtak")
                 } else {
                     val (korrigering, pdf) = vedtakService.createKorrigering(
-                        korrigertVedtak = korrigertVedtak,
+                        korrigertVedtak = vedtakTilKorrigering,
                         veilederident = authorizedUser.navident.value,
                         begrunnelse = requestDTO.begrunnelse,
                         document = requestDTO.document,
@@ -201,7 +197,7 @@ fun Route.registerVedtakEndpoints(
                         log.error("Journalforing eller gosysoppgave feilet, cronjob vil forsøke på nytt", exc)
                     }
                     val response = VedtakResponseDTO.createFromVedtak(vedtak = vedtakService.getVedtak(uuid = korrigering.uuid))
-                    log.info("Created korrigering of vedtak ${korrigertVedtak.uuid}, isJournalfort: ${response.isJournalfort}, hasGosysOppgave: ${response.hasGosysOppgave}")
+                    log.info("Created korrigering of vedtak ${vedtakTilKorrigering.uuid}, isJournalfort: ${response.isJournalfort}, hasGosysOppgave: ${response.hasGosysOppgave}")
                     call.respond(HttpStatusCode.Created, response)
                 }
             }
