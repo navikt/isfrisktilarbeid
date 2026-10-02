@@ -22,6 +22,7 @@ data class VedtakStatusRecord(
     val status: Status,
     val statusAt: OffsetDateTime,
     val statusBy: String,
+    val korrigererVedtakUuid: UUID?,
 )
 
 class VedtakStatusProducer(private val producer: KafkaProducer<String, VedtakStatusRecord>) {
@@ -44,6 +45,7 @@ class VedtakStatusProducer(private val producer: KafkaProducer<String, VedtakSta
                         status = vedtakStatus.status,
                         statusAt = vedtakStatus.createdAt,
                         statusBy = vedtakStatus.veilederident,
+                        korrigererVedtakUuid = vedtak.korrigererVedtakUuid,
                     )
                 )
             ).get()

@@ -19,6 +19,7 @@ data class Vedtak private constructor(
     val infotrygdStatus: InfotrygdStatus,
     val gosysOppgaveId: GosysOppgaveId?,
     val gosysOppgaveAt: OffsetDateTime?,
+    val korrigererVedtakUuid: UUID?,
 ) {
     constructor(
         personident: Personident,
@@ -45,6 +46,7 @@ data class Vedtak private constructor(
         infotrygdStatus = InfotrygdStatus.IKKE_SENDT,
         gosysOppgaveId = null,
         gosysOppgaveAt = null,
+        korrigererVedtakUuid = null,
     )
 
     fun journalfor(journalpostId: JournalpostId): Vedtak = this.copy(journalpostId = journalpostId)
@@ -53,13 +55,18 @@ data class Vedtak private constructor(
 
     fun setGosysOppgaveId(gosysOppgaveId: GosysOppgaveId): Vedtak = this.copy(gosysOppgaveId = gosysOppgaveId, gosysOppgaveAt = nowUTC())
 
-    fun sendTilInfotrygd(): Vedtak = this.copy(infotrygdStatus = InfotrygdStatus.KVITTERING_MANGLER)
+    fun sendTilInfotrygd(): Vedtak {
+        check(!isKorrigering()) { "Korrigering skal ikke sendes til Infotrygd" }
+        return this.copy(infotrygdStatus = InfotrygdStatus.KVITTERING_MANGLER)
+    }
 
     fun addVedtakstatus(vedtakStatus: VedtakStatus): Vedtak = this.copy(
         statusListe = this.statusListe.toMutableList().also {
             it.add(vedtakStatus)
         }
     )
+
+    fun isKorrigering(): Boolean = korrigererVedtakUuid != null
 
     fun isFerdigbehandlet(): Boolean = statusListe.any { it.status == Status.FERDIG_BEHANDLET }
 
@@ -68,6 +75,39 @@ data class Vedtak private constructor(
     fun getFerdigbehandletStatus(): VedtakStatus? = statusListe.firstOrNull { it.status == Status.FERDIG_BEHANDLET }
 
     companion object {
+
+        /**
+         * Oppretter en korrigering av et eksisterende vedtak. Korrigeringen er selv et vedtak, med
+         * ny begrunnelse, periode og dokument, men arver personident fra vedtaket som korrigeres.
+         * Korrigeringer sendes ikke til Infotrygd.
+         */
+        fun createKorrigering(
+            korrigertVedtak: Vedtak,
+            veilederident: String,
+            begrunnelse: String,
+            document: List<DocumentComponent>,
+            fom: LocalDate,
+            tom: LocalDate,
+        ) = Vedtak(
+            uuid = UUID.randomUUID(),
+            personident = korrigertVedtak.personident,
+            createdAt = nowUTC(),
+            begrunnelse = begrunnelse,
+            document = document,
+            fom = fom,
+            tom = tom,
+            journalpostId = null,
+            statusListe = listOf(
+                VedtakStatus(
+                    veilederident = veilederident,
+                    status = Status.FATTET,
+                )
+            ),
+            infotrygdStatus = InfotrygdStatus.SKAL_IKKE_SENDES,
+            gosysOppgaveId = null,
+            gosysOppgaveAt = null,
+            korrigererVedtakUuid = korrigertVedtak.uuid,
+        )
 
         fun createFromDatabase(
             uuid: UUID,
@@ -82,6 +122,7 @@ data class Vedtak private constructor(
             gosysOppgaveAt: OffsetDateTime?,
             vedtakStatus: List<VedtakStatus>,
             infotrygdStatus: InfotrygdStatus,
+            korrigererVedtakUuid: UUID?,
         ) = Vedtak(
             uuid = uuid,
             personident = personident,
@@ -95,6 +136,7 @@ data class Vedtak private constructor(
             gosysOppgaveAt = gosysOppgaveAt,
             statusListe = vedtakStatus,
             infotrygdStatus = infotrygdStatus,
+            korrigererVedtakUuid = korrigererVedtakUuid,
         )
     }
 }

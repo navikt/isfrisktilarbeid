@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import no.nav.syfo.api.model.VedtakKorrigeringRequestDTO
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.api.model.VilkarResponseDTO
@@ -24,6 +25,7 @@ import java.util.UUID
 const val vedtakUUIDParam = "vedtakUUID"
 const val apiBasePath = "/api/internad/v1/frisktilarbeid"
 const val vedtakPath = "/vedtak"
+const val korrigeringPath = "/vedtak/korrigering"
 const val vilkarPath = "/vedtak-vilkar"
 const val ferdigbehandlingPath = "/vedtak/{$vedtakUUIDParam}/ferdigbehandling"
 
@@ -140,6 +142,63 @@ fun Route.registerVedtakEndpoints(
                         log.info("Created vedtak with infotrygd status: ${response.infotrygdStatus}, isJournalfort: ${response.isJournalfort}, hasGosysOppgave: ${response.hasGosysOppgave}")
                         call.respond(HttpStatusCode.Created, response)
                     }
+                }
+            }
+        }
+
+        post(korrigeringPath) {
+            val log = call.application.log
+
+            checkPersonAndSyfoTilgang(
+                action = "korriger vedtak",
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, targetPersonident, callId ->
+                val personident = Personident(targetPersonident.value)
+
+                val requestDTO = call.receive<VedtakKorrigeringRequestDTO>()
+                if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
+                    throw IllegalArgumentException("Korrigering av vedtak kan ikke ha tom begrunnelse eller tomt dokument")
+                }
+                if (requestDTO.tom.isBefore(requestDTO.fom)) {
+                    throw IllegalArgumentException("Tildato i vedtak kan ikke være før fradato.")
+                }
+
+                val existingVedtakList = vedtakService.getVedtak(personident)
+                val gjeldendeVedtakList = vedtakService.getGjeldendeVedtak(existingVedtakList)
+                val vedtakTilKorrigering = gjeldendeVedtakList.firstOrNull()
+                    ?.takeIf { it.uuid == requestDTO.vedtakUUID }
+                val forrigeGjeldendeVedtak = gjeldendeVedtakList.getOrNull(1)
+
+                if (existingVedtakList.none { it.uuid == requestDTO.vedtakUUID }) {
+                    call.respond(HttpStatusCode.BadRequest, "Finner ikke vedtak med uuid=${requestDTO.vedtakUUID}")
+                } else if (vedtakTilKorrigering == null) {
+                    log.warn("Forsøker å korrigere et vedtak som ikke er det gjeldende vedtaket for personen")
+                    call.respond(HttpStatusCode.Conflict, "Kan bare korrigere det gjeldende vedtaket for personen")
+                } else if (forrigeGjeldendeVedtak != null && forrigeGjeldendeVedtak.tom.isAfter(requestDTO.fom)) {
+                    log.warn("Forsøker å korrigere vedtak slik at perioden overlapper med et tidligere vedtak")
+                    call.respond(HttpStatusCode.Conflict, "Vedtaksperioden overlapper med et tidligere vedtak")
+                } else {
+                    val (korrigering, pdf) = vedtakService.createKorrigering(
+                        korrigertVedtak = vedtakTilKorrigering,
+                        veilederident = authorizedUser.navident.value,
+                        begrunnelse = requestDTO.begrunnelse,
+                        document = requestDTO.document,
+                        fom = requestDTO.fom,
+                        tom = requestDTO.tom,
+                        callId = callId,
+                    )
+                    try {
+                        val journalfortVedtak = vedtakService.journalforVedtak(korrigering, pdf).getOrThrow()
+                        if (journalfortVedtak.isJournalfort()) {
+                            vedtakService.createGosysOppgaveForVedtak(journalfortVedtak)
+                        }
+                    } catch (exc: Exception) {
+                        log.error("Journalforing eller gosysoppgave feilet, cronjob vil forsøke på nytt", exc)
+                    }
+                    val response = VedtakResponseDTO.createFromVedtak(vedtak = vedtakService.getVedtak(uuid = korrigering.uuid))
+                    log.info("Created korrigering of vedtak ${vedtakTilKorrigering.uuid}, isJournalfort: ${response.isJournalfort}, hasGosysOppgave: ${response.hasGosysOppgave}")
+                    call.respond(HttpStatusCode.Created, response)
                 }
             }
         }

@@ -21,6 +21,21 @@ fun generateVedtak(
     tom = LocalDate.now().plusWeeks(12),
 )
 
+fun generateKorrigering(
+    korrigertVedtak: Vedtak = generateVedtak(),
+    begrunnelse: String = "En korrigert begrunnelse",
+    document: List<DocumentComponent> = generateDocumentComponent(begrunnelse),
+    fom: LocalDate = LocalDate.now(),
+    tom: LocalDate = LocalDate.now().plusWeeks(10),
+): Vedtak = Vedtak.createKorrigering(
+    korrigertVedtak = korrigertVedtak,
+    veilederident = UserConstants.VEILEDER_IDENT,
+    begrunnelse = begrunnelse,
+    document = document,
+    fom = fom,
+    tom = tom,
+)
+
 fun generateJournalpostRequest(
     tittel: String,
     brevkodeType: BrevkodeType,

@@ -52,7 +52,11 @@ class JournalforingService(
             idType = BrukerIdType.PERSON_IDENT,
         )
 
-        val tittel = "Vedtak om friskmelding til arbeidsformidling"
+        val tittel = if (vedtak.isKorrigering()) {
+            "Korrigert vedtak om friskmelding til arbeidsformidling"
+        } else {
+            "Vedtak om friskmelding til arbeidsformidling"
+        }
         val dokumenter = listOf(
             Dokument.create(
                 brevkode = BrevkodeType.VEDTAK_FRISKMELDING_TIL_ARBEIDSFORMIDLING,
@@ -70,7 +74,7 @@ class JournalforingService(
 
         return JournalpostRequest(
             avsenderMottaker = avsenderMottaker,
-            tittel = "Vedtak om friskmelding til arbeidsformidling",
+            tittel = tittel,
             bruker = bruker,
             dokumenter = dokumenter,
             eksternReferanseId = vedtak.uuid.toString(),

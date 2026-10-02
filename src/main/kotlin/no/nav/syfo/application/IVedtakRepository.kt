@@ -11,6 +11,16 @@ interface IVedtakRepository {
         vedtakPdf: ByteArray,
     ): Vedtak
 
+    /**
+     * Lagrer en korrigering av et vedtak. Dersom [ferdigbehandling] er satt, ferdigbehandles det
+     * korrigerte vedtaket i samme transaksjon som korrigeringen opprettes.
+     */
+    fun createKorrigering(
+        korrigering: Vedtak,
+        vedtakPdf: ByteArray,
+        ferdigbehandling: Pair<Vedtak, VedtakStatus>?,
+    ): Vedtak
+
     fun getVedtak(personident: Personident): List<Vedtak>
 
     fun getVedtak(uuid: UUID): Vedtak
