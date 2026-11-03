@@ -13,7 +13,7 @@ import no.nav.syfo.common.util.ClientConfig
 import no.nav.syfo.common.util.bearerHeader
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.pdl.dto.*
-import no.nav.syfo.infrastructure.clients.httpClientDefault
+import no.nav.syfo.common.http.defaultHttpClient
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import org.slf4j.LoggerFactory
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 class PdlClient(
     private val systemTokenProvider: SystemTokenProvider,
     private val clientConfig: ClientConfig,
-    private val httpClient: HttpClient = httpClientDefault(),
+    private val httpClient: HttpClient = defaultHttpClient(),
 ) {
     suspend fun getPerson(personident: Personident): PdlPerson {
         val token = systemTokenProvider.getSystemToken(clientConfig.clientId)

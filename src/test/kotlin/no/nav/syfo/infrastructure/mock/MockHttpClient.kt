@@ -5,7 +5,7 @@ import io.ktor.client.engine.mock.*
 import no.nav.syfo.Environment
 import no.nav.syfo.common.mock.tilgangskontroll.mockTilgangskontrollRequestHandler
 import no.nav.syfo.common.mock.token.azuread.mockAzureAdRequestHandler
-import no.nav.syfo.infrastructure.clients.commonConfig
+import no.nav.syfo.common.http.commonConfig
 
 fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
     commonConfig()
