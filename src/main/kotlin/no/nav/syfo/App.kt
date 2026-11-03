@@ -13,11 +13,11 @@ import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 import no.nav.syfo.common.token.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
-import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
+import no.nav.syfo.common.journalforing.client.DokarkivClient
 import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
-import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
+import no.nav.syfo.common.auth.getWellKnown
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule

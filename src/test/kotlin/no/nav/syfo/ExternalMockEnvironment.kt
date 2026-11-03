@@ -2,11 +2,11 @@ package no.nav.syfo
 
 import no.nav.syfo.common.token.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
-import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
+import no.nav.syfo.common.journalforing.client.DokarkivClient
 import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
-import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
+import no.nav.syfo.common.auth.WellKnown
 import no.nav.syfo.infrastructure.database.TestDatabase
 import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.mock.mockHttpClient

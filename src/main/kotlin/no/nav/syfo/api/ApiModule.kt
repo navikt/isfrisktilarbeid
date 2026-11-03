@@ -28,7 +28,7 @@ import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 import no.nav.syfo.common.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.common.util.consumerClientId
 import no.nav.syfo.common.util.generateCallId
-import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
+import no.nav.syfo.common.auth.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.util.configure

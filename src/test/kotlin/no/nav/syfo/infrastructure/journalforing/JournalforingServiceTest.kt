@@ -10,8 +10,7 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.generator.generateJournalpostRequest
 import no.nav.syfo.generator.generateKorrigering
 import no.nav.syfo.generator.generateVedtak
-import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
-import no.nav.syfo.infrastructure.clients.dokarkiv.dto.BrevkodeType
+import no.nav.syfo.common.journalforing.client.DokarkivClient
 import no.nav.syfo.infrastructure.mock.dokarkivResponse
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import org.junit.jupiter.api.Assertions.assertEquals
