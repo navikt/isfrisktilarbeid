@@ -1,10 +1,20 @@
 package no.nav.syfo.generator
 
 import no.nav.syfo.UserConstants
+import no.nav.syfo.common.journalforing.dto.AvsenderMottaker
+import no.nav.syfo.common.journalforing.dto.Bruker
+import no.nav.syfo.common.journalforing.dto.BrukerIdType
+import no.nav.syfo.common.journalforing.dto.Dokument
+import no.nav.syfo.common.journalforing.dto.Dokumentvariant
+import no.nav.syfo.common.journalforing.dto.Filtype
+import no.nav.syfo.common.journalforing.dto.JournalpostKanal
+import no.nav.syfo.common.journalforing.dto.JournalpostRequest
+import no.nav.syfo.common.journalforing.dto.JournalpostType
+import no.nav.syfo.common.journalforing.dto.Variantformat
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Vedtak
-import no.nav.syfo.infrastructure.clients.dokarkiv.dto.*
+import no.nav.syfo.infrastructure.journalforing.BrevkodeType
 import java.time.LocalDate
 import java.util.*
 
@@ -44,33 +54,32 @@ fun generateJournalpostRequest(
     mottakerPersonident: Personident,
     mottakerNavn: String,
     brukerPersonident: Personident,
-    overstyrInnsynsregler: OverstyrInnsynsregler? = null,
 ) = JournalpostRequest(
-    avsenderMottaker = AvsenderMottaker.create(
+    avsenderMottaker = AvsenderMottaker(
         id = mottakerPersonident.value,
-        idType = BrukerIdType.PERSON_IDENT,
+        idType = BrukerIdType.PERSONIDENT.value,
         navn = mottakerNavn,
     ),
-    bruker = Bruker.create(
+    bruker = Bruker(
         id = brukerPersonident.value,
-        idType = BrukerIdType.PERSON_IDENT
+        idType = BrukerIdType.PERSONIDENT.value,
     ),
     tittel = tittel,
     dokumenter = listOf(
-        Dokument.create(
-            brevkode = brevkodeType,
+        Dokument(
+            brevkode = brevkodeType.value,
             tittel = tittel,
             dokumentvarianter = listOf(
-                Dokumentvariant.create(
+                Dokumentvariant(
                     filnavn = tittel,
-                    filtype = FiltypeType.PDFA,
+                    filtype = Filtype.PDFA.value,
                     fysiskDokument = pdf,
-                    variantformat = VariantformatType.ARKIV,
+                    variantformat = Variantformat.ARKIV.value,
                 )
             ),
         )
     ),
-    overstyrInnsynsregler = overstyrInnsynsregler?.name,
-    journalpostType = JournalpostType.UTGAAENDE.name,
+    journalpostType = JournalpostType.UTGAAENDE.value,
+    kanal = JournalpostKanal.DITT_NAV.value,
     eksternReferanseId = eksternReferanse.toString(),
 )

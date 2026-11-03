@@ -10,14 +10,14 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.common.token.azuread.AzureAdClient
 import no.nav.syfo.common.util.ClientConfig
 import no.nav.syfo.common.util.bearerHeader
-import no.nav.syfo.infrastructure.clients.httpClientDefault
+import no.nav.syfo.common.http.defaultHttpClient
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class GosysOppgaveClient(
     private val systemTokenProvider: AzureAdClient,
     private val clientConfig: ClientConfig,
-    private val httpClient: HttpClient = httpClientDefault(),
+    private val httpClient: HttpClient = defaultHttpClient(),
 ) {
     private val oppgaveUrl: String = "${clientConfig.baseUrl}$OPPGAVE_PATH"
 
