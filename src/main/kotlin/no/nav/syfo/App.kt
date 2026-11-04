@@ -159,6 +159,7 @@ fun main() {
             monitor.subscribe(ApplicationStarted) {
                 applicationState.ready = true
                 logger.info("Application is ready, running Java VM ${Runtime.version()}")
+                logger.info("Available processors: ${Runtime.getRuntime().availableProcessors()}")
 
                 launchCronjobs(
                     applicationState = applicationState,
@@ -192,12 +193,11 @@ fun main() {
                     )
                 )
             }
+            monitor.subscribe(ApplicationStopping) {
+                applicationState.ready = false
+                logger.info("Application is stopping")
+            }
         }
     )
-
-    Runtime.getRuntime().addShutdownHook(
-        Thread { server.stop(10, 10, TimeUnit.SECONDS) }
-    )
-
     server.start(wait = true)
 }
