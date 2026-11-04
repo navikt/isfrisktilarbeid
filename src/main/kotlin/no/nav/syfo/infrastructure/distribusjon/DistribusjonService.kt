@@ -15,7 +15,7 @@ class DistribusjonService(
             journalpostId = journalpostId.value,
             bestillendeFagsystem = "MODIA_SYFO",
             dokumentProdApp = "isfrisktilarbeid",
-            distribusjonstype = Distribusjonstype.VIKTIG,
+            distribusjonstype = Distribusjonstype.VEDTAK,
             distribusjonstidspunkt = Distribusjonstidspunkt.KJERNETID,
         )
         return dokdistfordelingClient.distribuer(request).bestillingsId

@@ -48,7 +48,7 @@ spec:
             - port: 1413
         - host: "login.microsoftonline.com"
         - host: "pdl-api.dev-fss-pub.nais.io"
-        - host: "dokarkiv.dev-fss-pub.nais.io"
+        - host: "dokarkiv-q2.dev-fss-pub.nais.io"
         - host: "dokdistfordeling.dev-fss-pub.nais.io"
         - host: "oppgave.dev-fss-pub.nais.io"
       rules:
@@ -123,7 +123,7 @@ spec:
     - name: DOKARKIV_CLIENT_ID
       value: "dev-fss.teamdokumenthandtering.dokarkiv-q1"
     - name: DOKARKIV_URL
-      value: "https://dokarkiv.dev-fss-pub.nais.io"
+      value: "https://dokarkiv-q2.dev-fss-pub.nais.io"
     - name: DOKDISTFORDELING_CLIENT_ID
       value: "dev-fss.teamdokumenthandtering.dokdistfordeling"
     - name: DOKDISTFORDELING_URL

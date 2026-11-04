@@ -6,6 +6,7 @@ import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.getNullableBoolean
 import no.nav.syfo.infrastructure.database.toList
+import no.nav.syfo.infrastructure.journalforing.JournalforingService.Companion.DEFAULT_FAILED_JP_ID
 import no.nav.syfo.util.configuredJacksonMapper
 import no.nav.syfo.util.nowUTC
 import java.sql.Connection
@@ -387,7 +388,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             """
                 SELECT *
                 FROM VEDTAK
-                WHERE varsel_published_at IS NULL AND journalpost_id IS NOT NULL AND journalpost_id != '0'
+                WHERE varsel_published_at IS NULL AND journalpost_id IS NOT NULL AND journalpost_id != '$DEFAULT_FAILED_JP_ID'
             """
 
         private const val SET_PUBLISHED_VEDTAK_VARSEL =
