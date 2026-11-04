@@ -1,5 +1,6 @@
 package no.nav.syfo.application
 
+import kotlinx.coroutines.CancellationException
 import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import java.time.LocalDate
@@ -11,6 +12,7 @@ class VedtakService(
     private val journalforingService: IJournalforingService,
     private val gosysOppgaveService: IGosysOppgaveService,
     private val infotrygdService: InfotrygdService,
+    private val dokdistClient: IDokdistClient,
     private val vedtakProducer: IVedtakProducer,
 ) {
     fun getVedtak(personident: Personident) =
@@ -141,13 +143,15 @@ class VedtakService(
             }
         }
 
-    fun publishVedtakVarsel(): List<Result<Vedtak>> {
+    suspend fun publishVedtakVarsel(): List<Result<Vedtak>> {
         val unpublishedVedtakVarsler = vedtakRepository.getUnpublishedVedtakVarsler()
         return unpublishedVedtakVarsler.map { vedtak ->
-            val result = vedtakProducer.sendVedtakVarsel(vedtak)
-            result.map {
-                vedtakRepository.setVedtakVarselPublished(it)
-                it
+            runCatching {
+                dokdistClient.distribuer(vedtak.journalpostId!!)
+                vedtakRepository.setVedtakVarselPublished(vedtak)
+                vedtak
+            }.onFailure {
+                if (it is CancellationException) throw it
             }
         }
     }

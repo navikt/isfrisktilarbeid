@@ -14,7 +14,9 @@ import no.nav.syfo.common.token.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.infrastructure.clients.arbeidssokeroppslag.ArbeidssokeroppslagClient
 import no.nav.syfo.common.journalforing.client.DokarkivClient
+import no.nav.syfo.common.distribusjon.client.DokdistfordelingClient
 import no.nav.syfo.infrastructure.clients.gosysoppgave.GosysOppgaveClient
+import no.nav.syfo.infrastructure.distribusjon.DistribusjonService
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.common.auth.getWellKnown
@@ -25,8 +27,6 @@ import no.nav.syfo.infrastructure.database.repository.VedtakRepository
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.*
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselHendelseProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaEsyfovarselHendelseSerializer
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumer
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
 import no.nav.syfo.infrastructure.kafka.identhendelse.launchIdenthendelseConsumer
@@ -68,6 +68,12 @@ fun main() {
         systemTokenProvider = azureAdClient,
         clientConfig = environment.clients.dokarkiv,
     )
+    val dokdistClient = DistribusjonService(
+        dokdistfordelingClient = DokdistfordelingClient(
+            systemTokenProvider = azureAdClient,
+            clientConfig = environment.clients.dokdistfordeling,
+        ),
+    )
     val gosysOppgaveClient = GosysOppgaveClient(
         systemTokenProvider = azureAdClient,
         clientConfig = environment.clients.gosysoppgave,
@@ -92,11 +98,6 @@ fun main() {
         mqSender = InfotrygdMQSender(environment.mq),
     )
     val vedtakProducer = VedtakProducer(
-        esyfovarselHendelseProducer = EsyfovarselHendelseProducer(
-            kafkaProducer = KafkaProducer(
-                kafkaAivenProducerConfig<KafkaEsyfovarselHendelseSerializer>(kafkaEnvironment = environment.kafka)
-            )
-        ),
         vedtakStatusProducer = VedtakStatusProducer(
             producer = KafkaProducer(
                 kafkaAivenProducerConfig<VedtakStatusRecordSerializer>(kafkaEnvironment = environment.kafka)
@@ -143,6 +144,7 @@ fun main() {
                 infotrygdService = infotrygdService,
                 journalforingService = journalforingService,
                 gosysOppgaveService = gosysOppgaveService,
+                dokdistClient = dokdistClient,
                 vedtakProducer = vedtakProducer,
             )
             apiModule(

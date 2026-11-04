@@ -387,7 +387,7 @@ class VedtakRepository(private val database: DatabaseInterface) : IVedtakReposit
             """
                 SELECT *
                 FROM VEDTAK
-                WHERE varsel_published_at IS NULL AND journalpost_id IS NOT NULL
+                WHERE varsel_published_at IS NULL AND journalpost_id IS NOT NULL AND journalpost_id != '0'
             """
 
         private const val SET_PUBLISHED_VEDTAK_VARSEL =

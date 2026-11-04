@@ -12,8 +12,6 @@ import no.nav.syfo.infrastructure.database.*
 import no.nav.syfo.infrastructure.infotrygd.InfotrygdService
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.*
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.*
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.*
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
 import no.nav.syfo.infrastructure.mq.InfotrygdMQSender
 import no.nav.syfo.infrastructure.gosysoppgave.GosysOppgaveService
@@ -51,13 +49,11 @@ class VedtakServiceTest {
         gosysOppgaveClient = externalMockEnvironment.gosysOppgaveClient,
     )
 
-    private val mockEsyfoVarselKafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
-    private val esyfovarselHendelseProducer = EsyfovarselHendelseProducer(mockEsyfoVarselKafkaProducer)
+    private val dokdistClient = mockk<IDokdistClient>()
     private val mockVedtakStatusKafkaProducer = mockk<KafkaProducer<String, VedtakStatusRecord>>()
     private val infotrygdMQSender = mockk<InfotrygdMQSender>(relaxed = true)
     private val vedtakStatusProducer = VedtakStatusProducer(mockVedtakStatusKafkaProducer)
     private val vedtakProducer = VedtakProducer(
-        esyfovarselHendelseProducer = esyfovarselHendelseProducer,
         vedtakStatusProducer = vedtakStatusProducer,
     )
 
@@ -73,13 +69,14 @@ class VedtakServiceTest {
             pdlClient = externalMockEnvironment.pdlClient,
             mqSender = infotrygdMQSender,
         ),
+        dokdistClient = dokdistClient,
         vedtakProducer = vedtakProducer,
     )
 
     @BeforeEach
     fun setup() {
         clearAllMocks()
-        coEvery { mockEsyfoVarselKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+        coEvery { dokdistClient.distribuer(journalpostId) } returns "bestillingsId"
         coEvery { mockVedtakStatusKafkaProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
     }
 
@@ -201,8 +198,8 @@ class VedtakServiceTest {
     }
 
     @Nested
-    @DisplayName("Publish varsel for vedtak to esyfovarsel")
-    inner class PublishVarselForVedtakToEsyfovarsel {
+    @DisplayName("Distribute vedtak varsel to dokdist")
+    inner class DistributeVedtakVarselToDokdist {
         private fun createUnpublishedVedtakVarsel(): Vedtak {
             val unpublishedVedtakVarsel = vedtakRepository.createVedtak(
                 vedtak = vedtak,
@@ -213,36 +210,28 @@ class VedtakServiceTest {
         }
 
         @Test
-        fun `Publishes varsel for vedtak`() {
+        fun `Publishes varsel for vedtak`() = runBlocking {
             val unpublishedVedtakVarsel = createUnpublishedVedtakVarsel()
             val (success, failed) = vedtakService.publishVedtakVarsel().partition { it.isSuccess }
             assertEquals(0, failed.size)
             assertEquals(1, success.size)
 
-            val producerRecordSlot = slot<ProducerRecord<String, EsyfovarselHendelse>>()
-            verify(exactly = 1) { mockEsyfoVarselKafkaProducer.send(capture(producerRecordSlot)) }
+            coVerify(exactly = 1) { dokdistClient.distribuer(journalpostId) }
 
             val publishedVedtakVarsel = success.first().getOrThrow()
             assertEquals(unpublishedVedtakVarsel.uuid, publishedVedtakVarsel.uuid)
             assertNotNull(database.getVedtakVarselPublishedAt(publishedVedtakVarsel.uuid))
-
-            val esyfovarselHendelse = producerRecordSlot.captured.value() as ArbeidstakerHendelse
-            assertEquals(HendelseType.SM_VEDTAK_FRISKMELDING_TIL_ARBEIDSFORMIDLING, esyfovarselHendelse.type)
-            assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENT.value, esyfovarselHendelse.arbeidstakerFnr)
-            val varselData = esyfovarselHendelse.data as VarselData
-            assertEquals(publishedVedtakVarsel.uuid.toString(), varselData.journalpost?.uuid)
-            assertEquals(journalpostId.value, varselData.journalpost?.id)
         }
 
         @Test
-        fun `Publishes nothing when no vedtak`() {
+        fun `Publishes nothing when no vedtak`() = runBlocking {
             val (success, failed) = vedtakService.publishVedtakVarsel().partition { it.isSuccess }
             assertEquals(0, failed.size)
             assertEquals(0, success.size)
         }
 
         @Test
-        fun `Publishes nothing when no journalfort vedtak`() {
+        fun `Publishes nothing when no journalfort vedtak`() = runBlocking {
             vedtakRepository.createVedtak(
                 vedtak = vedtak,
                 vedtakPdf = UserConstants.PDF_VEDTAK,
@@ -253,7 +242,7 @@ class VedtakServiceTest {
         }
 
         @Test
-        fun `Publishes nothing when varsel for vedtak already published`() {
+        fun `Publishes nothing when varsel for vedtak already published`() = runBlocking {
             val unpublishedVedtakVarsel = createUnpublishedVedtakVarsel()
             vedtakRepository.setVedtakVarselPublished(unpublishedVedtakVarsel)
             val (success, failed) = vedtakService.publishVedtakVarsel().partition { it.isSuccess }
@@ -262,15 +251,15 @@ class VedtakServiceTest {
         }
 
         @Test
-        fun `Fails publishing when kafka-producer fails`() {
+        fun `Fails publishing when dokdist fails`() = runBlocking {
             val unpublishedVedtak = createUnpublishedVedtakVarsel()
-            every { mockEsyfoVarselKafkaProducer.send(any()) } throws Exception("Error producing to kafka")
+            coEvery { dokdistClient.distribuer(journalpostId) } throws Exception("Error calling dokdist")
 
             val (success, failed) = vedtakService.publishVedtakVarsel().partition { it.isSuccess }
             assertEquals(1, failed.size)
             assertEquals(0, success.size)
 
-            verify(exactly = 1) { mockEsyfoVarselKafkaProducer.send(any()) }
+            coVerify(exactly = 1) { dokdistClient.distribuer(journalpostId) }
 
             val vedtak = vedtakRepository.getUnpublishedVedtakVarsler().first()
             assertEquals(unpublishedVedtak.uuid, vedtak.uuid)

@@ -4,6 +4,7 @@ import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.application.IDokdistClient
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.domain.InfotrygdStatus
@@ -34,6 +35,7 @@ class PublishMQCronjobTest {
         journalforingService = mockk<JournalforingService>(relaxed = true),
         gosysOppgaveService = mockk<GosysOppgaveService>(relaxed = true),
         infotrygdService = InfotrygdService(externalMockEnvironment.pdlClient, mqSenderMock),
+        dokdistClient = mockk<IDokdistClient>(relaxed = true),
         vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
     )
     private val publishMQCronjob = PublishMQCronjob(vedtakService)

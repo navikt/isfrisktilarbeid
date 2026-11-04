@@ -3,6 +3,7 @@ package no.nav.syfo.api
 import io.ktor.server.application.*
 import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.application.IDokdistClient
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
@@ -51,6 +52,7 @@ fun Application.testApiModule(
             pdlClient = externalMockEnvironment.pdlClient,
             mqSender = infotrygdMQSender,
         ),
+        dokdistClient = mockk<IDokdistClient>(relaxed = true),
         vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
     )
 

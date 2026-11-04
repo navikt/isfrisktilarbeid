@@ -22,6 +22,7 @@ import no.nav.syfo.api.model.VedtakKorrigeringRequestDTO
 import no.nav.syfo.api.model.VedtakRequestDTO
 import no.nav.syfo.api.model.VedtakResponseDTO
 import no.nav.syfo.api.model.VilkarResponseDTO
+import no.nav.syfo.application.IDokdistClient
 import no.nav.syfo.application.IVedtakProducer
 import no.nav.syfo.application.VedtakService
 import no.nav.syfo.common.util.NAV_PERSONIDENT_HEADER
@@ -102,6 +103,7 @@ class VedtakEndpointsTest {
         journalforingService = mockk<JournalforingService>(relaxed = true),
         gosysOppgaveService = mockk<GosysOppgaveService>(relaxed = true),
         infotrygdService = mockk<InfotrygdService>(relaxed = true),
+        dokdistClient = mockk<IDokdistClient>(relaxed = true),
         vedtakProducer = mockk<IVedtakProducer>(relaxed = true),
     )
     private val infotrygdMQSender = mockk<InfotrygdMQSender>(relaxed = true)
