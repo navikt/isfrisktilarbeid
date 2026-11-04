@@ -38,7 +38,6 @@ import no.nav.syfo.infrastructure.gosysoppgave.GosysOppgaveService
 import no.nav.syfo.infrastructure.pdf.PdfService
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
 import javax.jms.Session
 
 const val applicationPort = 8080
