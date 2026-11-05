@@ -48,6 +48,10 @@ fun testEnvironment() = Environment(
             baseUrl = "dokarkivUrl",
             clientId = "dokarkivClientId",
         ),
+        dokdistfordeling = ClientConfig(
+            baseUrl = "dokdistfordelingUrl",
+            clientId = "dokdistfordelingClientId",
+        ),
         gosysoppgave = ClientConfig(
             baseUrl = "oppgaveUrl",
             clientId = "oppgaveClientId",

@@ -8,6 +8,7 @@ data class ClientsEnvironment(
     val pdl: ClientConfig,
     val ispdfgen: OpenClientConfig,
     val dokarkiv: ClientConfig,
+    val dokdistfordeling: ClientConfig,
     val gosysoppgave: ClientConfig,
     val arbeidssokeroppslag: ClientConfig,
 )
