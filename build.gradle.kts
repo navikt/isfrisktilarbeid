@@ -66,10 +66,9 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$KAFKA", excludeLog4j)
     constraints {
-        implementation("commons-beanutils:commons-beanutils") {
-            because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+        implementation("at.yawk.lz4:lz4-java") {
             version {
-                require("1.11.0")
+                require("1.11.4")
             }
         }
     }
@@ -83,16 +82,9 @@ dependencies {
 
     implementation("io.confluent:kafka-avro-serializer:$CONFLUENT", excludeLog4j)
     constraints {
-        implementation("org.apache.commons:commons-compress") {
-            because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
+        implementation("com.google.guava:guava") {
             version {
-                require("1.28.0")
-            }
-        }
-        implementation("org.apache.commons:commons-lang3") {
-            because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
-            version {
-                require("3.20.0")
+                require("33.8.0-jre")
             }
         }
     }
