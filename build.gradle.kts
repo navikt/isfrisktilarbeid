@@ -6,7 +6,7 @@ version = "0.0.1"
 val isyfoBackendCommonVersion = "1.3.3"
 
 val CONFLUENT = "8.4.0"
-val FLYWAY = "13.12.0"
+val FLYWAY = "13.12.2"
 val HIKARI = "7.1.0"
 val POSTGRES = "42.7.14"
 val POSTGRES_EMBEDDED = "2.2.2"
@@ -14,12 +14,12 @@ val POSTGRES_RUNTIME_VERSION = "17.9.0"
 val LOGBACK = "1.6.6"
 val LOGSTASH_ENCODER = "9.0"
 val MICROMETER_REGISTRY = "1.17.2"
-val JACKSON_DATATYPE = "2.22.4"
-val JACKSON_DATABIND = "3.2.4"
+val JACKSON_DATATYPE = "2.23.0"
+val JACKSON_DATABIND = "3.3.0"
 val KAFKA = "4.4.0"
 val KTOR = "3.6.1"
 val MQ = "10.0.1.0"
-val MOCKK = "1.14.11"
+val MOCKK = "1.14.12"
 val NIMBUS_JOSE_JWT = "10.10"
 
 plugins {
@@ -66,10 +66,9 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$KAFKA", excludeLog4j)
     constraints {
-        implementation("commons-beanutils:commons-beanutils") {
-            because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+        implementation("at.yawk.lz4:lz4-java") {
             version {
-                require("1.11.0")
+                require("1.11.4")
             }
         }
     }
@@ -83,16 +82,9 @@ dependencies {
 
     implementation("io.confluent:kafka-avro-serializer:$CONFLUENT", excludeLog4j)
     constraints {
-        implementation("org.apache.commons:commons-compress") {
-            because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
+        implementation("com.google.guava:guava") {
             version {
-                require("1.28.0")
-            }
-        }
-        implementation("org.apache.commons:commons-lang3") {
-            because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
-            version {
-                require("3.20.0")
+                require("33.8.0-jre")
             }
         }
     }
